@@ -1,0 +1,1652 @@
+{
+  "suite": "LeaseMind Matching Data Contracts Offline Suite",
+  "contract_version": "1.0",
+  "architecture_version": "1.1",
+  "executed_at": "2026-07-26T07:21:46.863Z",
+  "synthetic_data_only": true,
+  "production_adapters_used": false,
+  "status": "PASS",
+  "validators": {
+    "openapi": "@apidevtools/swagger-parser@12.1.0",
+    "asyncapi": "@asyncapi/parser@3.6.0",
+    "jsonSchema": "ajv@8.20.0"
+  },
+  "evidence_policy": {
+    "rule": "CT PASS requires every exact dependency to exist and PASS and every semantic evidence requirement to match",
+    "missing_dependency": "NOT_RUN",
+    "failing_dependency": "BLOCKED",
+    "missing_or_undersized_semantic_evidence": "BLOCKED",
+    "runner_self_tests": [
+      {
+        "id": "EV-001",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "missing dependency produces NOT_RUN"
+      },
+      {
+        "id": "EV-002",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "renamed dependency produces NOT_RUN"
+      },
+      {
+        "id": "EV-003",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "failed dependency produces BLOCKED"
+      },
+      {
+        "id": "EV-004",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "all exact dependencies are required for PASS"
+      },
+      {
+        "id": "EV-005",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "missing required evidence counter produces BLOCKED"
+      },
+      {
+        "id": "EV-006",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "counter below machine minimum produces BLOCKED"
+      },
+      {
+        "id": "EV-007",
+        "status": "PASS",
+        "level": "runner_self_test",
+        "name": "exact evidence schema and count produce PASS"
+      }
+    ]
+  },
+  "contract_tests": [
+    {
+      "id": "CT-001",
+      "status": "PASS",
+      "dependencies": [
+        "CT-001"
+      ],
+      "evidence": [
+        {
+          "id": "CT-001",
+          "status": "PASS",
+          "level": "validator_fixture"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-002",
+      "status": "PASS",
+      "dependencies": [
+        "CT-002",
+        "PG-019"
+      ],
+      "evidence": [
+        {
+          "id": "CT-002",
+          "status": "PASS",
+          "level": "validator_fixture"
+        },
+        {
+          "id": "PG-019",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "PG-019",
+          "path": "negative_payload_mutations",
+          "minimum": 232,
+          "actual": 1020,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "rollback_absence_checks",
+          "minimum": 232,
+          "actual": 1020,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "independent_regression_probes.invalid_calendar_timestamp",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-003",
+      "status": "PASS",
+      "dependencies": [
+        "CT-003"
+      ],
+      "evidence": [
+        {
+          "id": "CT-003",
+          "status": "PASS",
+          "level": "validator_fixture"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-004",
+      "status": "PASS",
+      "dependencies": [
+        "CT-004"
+      ],
+      "evidence": [
+        {
+          "id": "CT-004",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-005",
+      "status": "PASS",
+      "dependencies": [
+        "CT-005"
+      ],
+      "evidence": [
+        {
+          "id": "CT-005",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-006",
+      "status": "PASS",
+      "dependencies": [
+        "CT-006"
+      ],
+      "evidence": [
+        {
+          "id": "CT-006",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-007",
+      "status": "PASS",
+      "dependencies": [
+        "CT-007",
+        "PG-010"
+      ],
+      "evidence": [
+        {
+          "id": "CT-007",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-010",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-008",
+      "status": "PASS",
+      "dependencies": [
+        "CT-008",
+        "PG-007"
+      ],
+      "evidence": [
+        {
+          "id": "CT-008",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-007",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-009",
+      "status": "PASS",
+      "dependencies": [
+        "CT-009",
+        "PG-014"
+      ],
+      "evidence": [
+        {
+          "id": "CT-009",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-014",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "PG-014",
+          "path": "provider_operation_duplicate_rejected",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-014",
+          "path": "receipt_duplicate_rejected",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-014",
+          "path": "credit_application_duplicate_rejected",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-014",
+          "path": "event_inbox_duplicate_insert_rejected",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-014",
+          "path": "event_inbox_unique_key",
+          "equals": [
+            "consumer_id",
+            "event_id"
+          ],
+          "actual": [
+            "consumer_id",
+            "event_id"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-010",
+      "status": "PASS",
+      "dependencies": [
+        "CT-010",
+        "PG-015"
+      ],
+      "evidence": [
+        {
+          "id": "CT-010",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-015",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-011",
+      "status": "PASS",
+      "dependencies": [
+        "CT-011",
+        "PG-016"
+      ],
+      "evidence": [
+        {
+          "id": "CT-011",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-016",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-012",
+      "status": "PASS",
+      "dependencies": [
+        "CT-012",
+        "PG-016"
+      ],
+      "evidence": [
+        {
+          "id": "CT-012",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-016",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-013",
+      "status": "PASS",
+      "dependencies": [
+        "CT-013",
+        "PG-024"
+      ],
+      "evidence": [
+        {
+          "id": "CT-013",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-024",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-014",
+      "status": "PASS",
+      "dependencies": [
+        "CT-014",
+        "PG-005"
+      ],
+      "evidence": [
+        {
+          "id": "CT-014",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-005",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-015",
+      "status": "PASS",
+      "dependencies": [
+        "CT-015",
+        "PG-017"
+      ],
+      "evidence": [
+        {
+          "id": "CT-015",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-017",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-016",
+      "status": "PASS",
+      "dependencies": [
+        "CT-016",
+        "PG-025"
+      ],
+      "evidence": [
+        {
+          "id": "CT-016",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-025",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-017",
+      "status": "PASS",
+      "dependencies": [
+        "CT-017",
+        "PG-018"
+      ],
+      "evidence": [
+        {
+          "id": "CT-017",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-018",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-018",
+      "status": "PASS",
+      "dependencies": [
+        "CT-018"
+      ],
+      "evidence": [
+        {
+          "id": "CT-018",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "CT-018",
+          "path": "individual_fields_rejected",
+          "equals": 11,
+          "actual": 11,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-018",
+          "path": "side_effects_before_rejection",
+          "equals": {
+            "token_lookup": 0,
+            "attempt_created": 0,
+            "bytes_issued": 0
+          },
+          "actual": {
+            "token_lookup": 0,
+            "attempt_created": 0,
+            "bytes_issued": 0
+          },
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-019",
+      "status": "PASS",
+      "dependencies": [
+        "CT-019"
+      ],
+      "evidence": [
+        {
+          "id": "CT-019",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-020",
+      "status": "PASS",
+      "dependencies": [
+        "CT-020"
+      ],
+      "evidence": [
+        {
+          "id": "CT-020",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-021",
+      "status": "PASS",
+      "dependencies": [
+        "CT-021",
+        "PG-019"
+      ],
+      "evidence": [
+        {
+          "id": "CT-021",
+          "status": "PASS",
+          "level": "validator_fixture"
+        },
+        {
+          "id": "PG-019",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "PG-019",
+          "path": "valid_event_payloads",
+          "equals": 33,
+          "actual": 33,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "negative_payload_mutations",
+          "minimum": 232,
+          "actual": 1020,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "independent_regression_probes.identity_authority_version_below_minimum",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "independent_regression_probes.purpose_code_above_maxLength",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-019",
+          "path": "independent_regression_probes.policy_version_below_minLength",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-022",
+      "status": "PASS",
+      "dependencies": [
+        "PG-009",
+        "PG-022"
+      ],
+      "evidence": [
+        {
+          "id": "PG-009",
+          "status": "PASS",
+          "level": "database_behavior"
+        },
+        {
+          "id": "PG-022",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-023",
+      "status": "PASS",
+      "dependencies": [
+        "CT-023",
+        "PG-020",
+        "PG-026"
+      ],
+      "evidence": [
+        {
+          "id": "CT-023",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-020",
+          "status": "PASS",
+          "level": "database_behavior"
+        },
+        {
+          "id": "PG-026",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "PG-026",
+          "path": "classifier_version",
+          "equals": "DLP_EVENT_CONTENT_V1",
+          "actual": "DLP_EVENT_CONTENT_V1",
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "normalized_phone_probes",
+          "minimum": 6,
+          "actual": 6,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "normalized_passport_probes",
+          "minimum": 3,
+          "actual": 3,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "rollback_absence_checks",
+          "minimum": 15,
+          "actual": 15,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "unsafe_value_echoes",
+          "equals": 0,
+          "actual": 0,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-024",
+      "status": "PASS",
+      "dependencies": [
+        "CT-024"
+      ],
+      "evidence": [
+        {
+          "id": "CT-024",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "CT-024",
+          "path": "allowed_tombstone_fields",
+          "equals": [
+            "deleted_at",
+            "deletion_act_hash",
+            "deletion_category",
+            "policy_version",
+            "unlink_operation_id"
+          ],
+          "actual": [
+            "deleted_at",
+            "deletion_act_hash",
+            "deletion_category",
+            "policy_version",
+            "unlink_operation_id"
+          ],
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "prohibited_source_fields_absent",
+          "minimum": 8,
+          "actual": 8,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "stable_source_hashes_absent",
+          "minimum": 2,
+          "actual": 2,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "deletion_act_hash_preserved",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-025",
+      "status": "PASS",
+      "dependencies": [
+        "CT-025"
+      ],
+      "evidence": [
+        {
+          "id": "CT-025",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-026",
+      "status": "PASS",
+      "dependencies": [
+        "CT-026",
+        "PG-030"
+      ],
+      "evidence": [
+        {
+          "id": "CT-026",
+          "status": "PASS",
+          "level": "service_behavior"
+        },
+        {
+          "id": "PG-030",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "CT-026",
+          "path": "persisted_attempt",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-026",
+          "path": "crash_after_commit_replayed_same_attempt",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "immutable_attempt_created_atomically",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "server_calculated_result_hash",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "caller_supplied_result_fields",
+          "equals": 0,
+          "actual": 0,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "failure_rollbacks_verified",
+          "minimum": 2,
+          "actual": 2,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "concurrent_connections",
+          "minimum": 2,
+          "actual": 2,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-030",
+          "path": "concurrent_attempt_rows",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-027",
+      "status": "PASS",
+      "dependencies": [
+        "CT-027"
+      ],
+      "evidence": [
+        {
+          "id": "CT-027",
+          "status": "PASS",
+          "level": "validator_fixture"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-028",
+      "status": "PASS",
+      "dependencies": [
+        "CT-028"
+      ],
+      "evidence": [
+        {
+          "id": "CT-028",
+          "status": "PASS",
+          "level": "validator_fixture"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "CT-028",
+          "path": "explicit_routing_rows",
+          "equals": 33,
+          "actual": 33,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "owner_consumer_bindings",
+          "equals": 33,
+          "actual": 33,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "consumer_operations_checked",
+          "equals": 33,
+          "actual": 33,
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-029",
+      "status": "PASS",
+      "dependencies": [
+        "CT-029"
+      ],
+      "evidence": [
+        {
+          "id": "CT-029",
+          "status": "PASS",
+          "level": "service_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-030",
+      "status": "PASS",
+      "dependencies": [
+        "PG-027"
+      ],
+      "evidence": [
+        {
+          "id": "PG-027",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [
+        {
+          "dependency": "PG-027",
+          "path": "mismatch_rejections",
+          "equals": 5,
+          "actual": 5,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-027",
+          "path": "rollback_absence_checks",
+          "equals": 5,
+          "actual": 5,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-027",
+          "path": "exact_composite_acceptances",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-027",
+          "path": "mismatch_dimensions",
+          "equals": [
+            "introduction_record_id",
+            "encounter_id",
+            "reveal_gate_snapshot_id",
+            "recipient_party_id",
+            "manifest_hash"
+          ],
+          "actual": [
+            "introduction_record_id",
+            "encounter_id",
+            "reveal_gate_snapshot_id",
+            "recipient_party_id",
+            "manifest_hash"
+          ],
+          "status": "PASS"
+        }
+      ],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-031",
+      "status": "PASS",
+      "dependencies": [
+        "PG-028"
+      ],
+      "evidence": [
+        {
+          "id": "PG-028",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-032",
+      "status": "PASS",
+      "dependencies": [
+        "PG-022"
+      ],
+      "evidence": [
+        {
+          "id": "PG-022",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    },
+    {
+      "id": "CT-033",
+      "status": "PASS",
+      "dependencies": [
+        "PG-029"
+      ],
+      "evidence": [
+        {
+          "id": "PG-029",
+          "status": "PASS",
+          "level": "database_behavior"
+        }
+      ],
+      "missing": [],
+      "non_pass": [],
+      "semantic_checks": [],
+      "semantic_gaps": []
+    }
+  ],
+  "raw_contract_assertions": [
+    {
+      "id": "CT-001",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "9 OpenAPI operations and every declared 4xx execute positive validation",
+      "evidence": {
+        "operations": 9,
+        "declared_4xx": 17
+      }
+    },
+    {
+      "id": "CT-002",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "Every canonical event executes positive and malformed fixture validation",
+      "evidence": {
+        "typed_events": 33,
+        "positive": 33,
+        "malformed_rejected": 33
+      }
+    },
+    {
+      "id": "CT-003",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "Unknown fields are rejected for every command schema",
+      "evidence": {
+        "negative_fixtures": 8
+      }
+    },
+    {
+      "id": "CT-004",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Minor compatibility accepts only additive optional fields",
+      "evidence": {
+        "scenario": "optional field added"
+      }
+    },
+    {
+      "id": "CT-005",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Breaking required/enum changes are classified major",
+      "evidence": {
+        "scenarios": 2
+      }
+    },
+    {
+      "id": "CT-006",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Unsupported major is rejected before handler execution",
+      "evidence": {
+        "supported": "1.x",
+        "rejected": "2.x"
+      }
+    },
+    {
+      "id": "CT-007",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Idempotent replay returns immutable stored response",
+      "evidence": {
+        "replays": 1
+      }
+    },
+    {
+      "id": "CT-008",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Idempotency payload conflict is rejected",
+      "evidence": {
+        "conflicts_rejected": 1
+      }
+    },
+    {
+      "id": "CT-009",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Provider/receipt/credit/inbox duplicate keys reject replay",
+      "evidence": {
+        "declared_unique_keys": [
+          "provider_operation_id",
+          "receipt_id",
+          "credit_application_id",
+          "consumer_id+event_id"
+        ],
+        "dedupe_keys_exercised": 4,
+        "database_probe": "PG-014"
+      }
+    },
+    {
+      "id": "CT-010",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Payer pair uniqueness and assigned-payer invariants reject conflicts",
+      "evidence": {
+        "database_probe": "PG-015"
+      }
+    },
+    {
+      "id": "CT-011",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Advance total rejects any value other than 1,000,000 minor units",
+      "evidence": {
+        "database_probe": "PG-016"
+      }
+    },
+    {
+      "id": "CT-012",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "DEBIT/CREDIT/MIXED composition is executed for valid and invalid cases",
+      "evidence": {
+        "valid": 3,
+        "invalid_rejected": 1,
+        "database_probe": "PG-016"
+      }
+    },
+    {
+      "id": "CT-013",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Snapshot lease set requires six current, active, unexpired owners",
+      "evidence": {
+        "positive": 1,
+        "negative": 2,
+        "database_probe": "PG-005/PG-017"
+      }
+    },
+    {
+      "id": "CT-014",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Safety invalidation atomically revokes lease and increments epoch",
+      "evidence": {
+        "database_probe": "PG-005"
+      }
+    },
+    {
+      "id": "CT-015",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Lease acquisition binds current source version",
+      "evidence": {
+        "database_probe": "PG-017"
+      }
+    },
+    {
+      "id": "CT-016",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Guard epoch fences stale tokens",
+      "evidence": {
+        "database_probe": "PG-005"
+      }
+    },
+    {
+      "id": "CT-017",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Expired lease/token is rejected",
+      "evidence": {
+        "database_probe": "PG-018"
+      }
+    },
+    {
+      "id": "CT-018",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Any caller-supplied Reveal context is rejected fail-closed",
+      "evidence": {
+        "individual_fields_rejected": 11,
+        "combination_rejected": 1,
+        "unknown_field_rejected": 1,
+        "allowed_external_inputs": 3,
+        "authoritative_context": 1,
+        "side_effects_before_rejection": {
+          "token_lookup": 0,
+          "attempt_created": 0,
+          "bytes_issued": 0
+        }
+      }
+    },
+    {
+      "id": "CT-019",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Delivery requires established delivery evidence",
+      "evidence": {
+        "negative": 1,
+        "positive": 1
+      }
+    },
+    {
+      "id": "CT-020",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Forbidden record transitions fail closed",
+      "evidence": {
+        "negative": 1
+      }
+    },
+    {
+      "id": "CT-021",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "AsyncAPI, DB allowlist and fixtures are identical; each payload has negative validation",
+      "evidence": {
+        "event_count": 33,
+        "malformed_database_probe": "PG-019"
+      }
+    },
+    {
+      "id": "CT-023",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Direct identifiers violate event DLP classifier",
+      "evidence": {
+        "negative_patterns": 13,
+        "safe_control": 1
+      }
+    },
+    {
+      "id": "CT-024",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Crypto-unlink preserves immutable hashes and removes PII linkage",
+      "evidence": {
+        "allowed_tombstone_fields": [
+          "deleted_at",
+          "deletion_act_hash",
+          "deletion_category",
+          "policy_version",
+          "unlink_operation_id"
+        ],
+        "prohibited_source_fields_absent": 8,
+        "stable_source_hashes_absent": 2,
+        "deletion_act_hash_preserved": 1
+      }
+    },
+    {
+      "id": "CT-025",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Token ID without opaque secret and binding mismatches are rejected",
+      "evidence": {
+        "token_id_only_rejected": 1,
+        "missing_secret_rejected": 1,
+        "binding_rejected": 1
+      }
+    },
+    {
+      "id": "CT-026",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Token replay distinguishes same key, new key, conflict and crash boundaries",
+      "evidence": {
+        "first_commit": 1,
+        "persisted_attempt": 1,
+        "same_key_replay": 1,
+        "new_key_rejected": 1,
+        "payload_conflict": 1,
+        "failure_before_attempt_recovered": 1,
+        "failure_before_token_update_recovered": 1,
+        "crash_after_commit_replayed_same_attempt": 1,
+        "database_probe": "PG-030"
+      }
+    },
+    {
+      "id": "CT-027",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "Every AsyncAPI address parameter resolves to a declared payload pointer",
+      "evidence": {
+        "parameters": 9
+      }
+    },
+    {
+      "id": "CT-028",
+      "status": "PASS",
+      "level": "validator_fixture",
+      "name": "Canonical invalidation event/reason namespace validates",
+      "evidence": {
+        "events": 7,
+        "reason_codes": 22,
+        "explicit_routing_rows": 33,
+        "owner_consumer_bindings": 33,
+        "consumer_operations_checked": 33
+      }
+    },
+    {
+      "id": "CT-029",
+      "status": "PASS",
+      "level": "service_behavior",
+      "name": "Human delivery decision is forbidden directly from REVEAL_COMMITTED",
+      "evidence": {
+        "forbidden_direct": 1,
+        "allowed_disputed": 1
+      }
+    }
+  ],
+  "postgres": {
+    "version": "18.4 embedded disposable cluster",
+    "lifecycle": "up → catalog/behavior assertions → down → empty post-down catalog",
+    "tests": [
+      {
+        "id": "PG-001",
+        "status": "PASS",
+        "detail": "exact up migration executed",
+        "evidence": {}
+      },
+      {
+        "id": "PG-002",
+        "status": "PASS",
+        "detail": "catalog, grants, RLS and immutable-trigger assertions executed",
+        "evidence": {}
+      },
+      {
+        "id": "PG-003",
+        "status": "PASS",
+        "detail": "encounter trigger initialized guard idempotently at epoch 1",
+        "evidence": {}
+      },
+      {
+        "id": "PG-004",
+        "status": "PASS",
+        "detail": "source lease initialized source state through guarded trigger",
+        "evidence": {}
+      },
+      {
+        "id": "PG-005",
+        "status": "PASS",
+        "detail": "source version, lease revocation, epoch bump and outbox write committed atomically",
+        "evidence": {}
+      },
+      {
+        "id": "PG-006",
+        "status": "PASS",
+        "detail": "same event and payload replay is idempotent",
+        "evidence": {}
+      },
+      {
+        "id": "PG-007",
+        "status": "PASS",
+        "detail": "rejected as required: 23505",
+        "evidence": {}
+      },
+      {
+        "id": "PG-008",
+        "status": "PASS",
+        "detail": "rejected as required: 42501",
+        "evidence": {}
+      },
+      {
+        "id": "PG-009",
+        "status": "PASS",
+        "detail": "all 56 ordered cross-domain role pairs rejected for outbox and idempotency",
+        "evidence": {}
+      },
+      {
+        "id": "PG-010",
+        "status": "PASS",
+        "detail": "rejected as required: 55000",
+        "evidence": {}
+      },
+      {
+        "id": "PG-011",
+        "status": "PASS",
+        "detail": "Acceptance from another party/encounter/version cannot bind to Introduction Record",
+        "evidence": {}
+      },
+      {
+        "id": "PG-014",
+        "status": "PASS",
+        "detail": "provider operation, receipt, credit application and transactional event_inbox duplicates rejected",
+        "evidence": {
+          "provider_operation_duplicate_rejected": 1,
+          "receipt_duplicate_rejected": 1,
+          "credit_application_duplicate_rejected": 1,
+          "event_inbox_duplicate_insert_rejected": 1,
+          "event_inbox_unique_key": [
+            "consumer_id",
+            "event_id"
+          ]
+        }
+      },
+      {
+        "id": "PG-015",
+        "status": "PASS",
+        "detail": "payer assignment and active pair invariants reject invalid aggregate",
+        "evidence": {}
+      },
+      {
+        "id": "PG-016",
+        "status": "PASS",
+        "detail": "invalid amount and DEBIT composition rejected by database",
+        "evidence": {}
+      },
+      {
+        "id": "PG-017",
+        "status": "PASS",
+        "detail": "stale or duplicate source lease acquisition rejected",
+        "evidence": {}
+      },
+      {
+        "id": "PG-018",
+        "status": "PASS",
+        "detail": "lease expires only through guarded transition after expires_at",
+        "evidence": {}
+      },
+      {
+        "id": "PG-019",
+        "status": "PASS",
+        "detail": "33 valid event payloads and 1020 per-constrained-field negative mutations executed; every rejection rolled back",
+        "evidence": {
+          "valid_event_payloads": 33,
+          "negative_payload_mutations": 1020,
+          "mutation_kinds": {
+            "missing-required": 164,
+            "null-required": 164,
+            "wrong-type": 289,
+            "invalid-uuid": 143,
+            "enum": 58,
+            "minimum": 34,
+            "unknown-field": 33,
+            "conditional": 33,
+            "invalid-rfc3339-calendar": 35,
+            "invalid-rfc3339-day": 35,
+            "maxLength": 2,
+            "minLength": 1,
+            "pattern": 3,
+            "maximum": 13,
+            "const": 13
+          },
+          "rollback_absence_checks": 1020,
+          "independent_regression_probes": {
+            "invalid_calendar_timestamp": 1,
+            "identity_authority_version_below_minimum": 1,
+            "purpose_code_above_maxLength": 1,
+            "policy_version_below_minLength": 1
+          }
+        }
+      },
+      {
+        "id": "PG-020",
+        "status": "PASS",
+        "detail": "event outbox rejects non-pseudonymized classification",
+        "evidence": {}
+      },
+      {
+        "id": "PG-026",
+        "status": "PASS",
+        "detail": "versioned content DLP rejected 15 formatted/normalized identifiers across payload, trace and metadata with rollback and safe diagnostic",
+        "evidence": {
+          "classifier_version": "DLP_EVENT_CONTENT_V1",
+          "probes": 15,
+          "payload_probes": 9,
+          "trace_probes": 5,
+          "metadata_probes": 1,
+          "normalized_phone_probes": 6,
+          "normalized_passport_probes": 3,
+          "rollback_absence_checks": 15,
+          "unsafe_value_echoes": 0
+        }
+      },
+      {
+        "id": "PG-021",
+        "status": "PASS",
+        "detail": "rejected as required: 55000",
+        "evidence": {}
+      },
+      {
+        "id": "PG-022",
+        "status": "PASS",
+        "detail": "all 30 ordered cross-source SELECT and UPDATE pairs isolated",
+        "evidence": {}
+      },
+      {
+        "id": "PG-023",
+        "status": "PASS",
+        "detail": "all contract SECURITY DEFINER functions use pg_catalog search_path",
+        "evidence": {}
+      },
+      {
+        "id": "PG-024",
+        "status": "PASS",
+        "detail": "snapshot with five of six authoritative source leases rejected at deferred commit boundary",
+        "evidence": {}
+      },
+      {
+        "id": "PG-030",
+        "status": "PASS",
+        "detail": "one server-owned transaction creates immutable attempt, calculates result hash, redeems token and persists replay result; rollback, replay and two-connection race proven",
+        "evidence": {
+          "rollback_before_commit": {
+            "token_pending": 1,
+            "attempt_rows": 0
+          },
+          "same_key_same_request_same_attempt": 1,
+          "new_key_rejected": 1,
+          "same_key_different_request_rejected": 1,
+          "server_calculated_result_hash": 1,
+          "caller_supplied_result_fields": 0,
+          "immutable_attempt_created_atomically": 1,
+          "failure_injection_points": {
+            "before_attempt_insert": 1,
+            "after_token_update": 1
+          },
+          "failure_rollbacks_verified": 2,
+          "concurrent_connections": 2,
+          "concurrent_successes": 1,
+          "concurrent_used_rejections": 1,
+          "concurrent_attempt_rows": 1
+        }
+      },
+      {
+        "id": "PG-025",
+        "status": "PASS",
+        "detail": "rejected as required: 40001",
+        "evidence": {}
+      },
+      {
+        "id": "PG-027",
+        "status": "PASS",
+        "detail": "five independent Token to Attempt composite binding mismatches rejected and exact composite accepted",
+        "evidence": {
+          "mismatch_dimensions": [
+            "introduction_record_id",
+            "encounter_id",
+            "reveal_gate_snapshot_id",
+            "recipient_party_id",
+            "manifest_hash"
+          ],
+          "mismatch_rejections": 5,
+          "rollback_absence_checks": 5,
+          "exact_composite_acceptances": 1
+        }
+      },
+      {
+        "id": "PG-028",
+        "status": "PASS",
+        "detail": "UPDATE and DELETE rejected for each of six mandatory immutable artifact classes",
+        "evidence": {}
+      },
+      {
+        "id": "PG-029",
+        "status": "PASS",
+        "detail": "schema-qualified SECURITY DEFINER function ignored hostile public shadow object",
+        "evidence": {}
+      },
+      {
+        "id": "PG-012",
+        "status": "PASS",
+        "detail": "exact down migration executed",
+        "evidence": {}
+      },
+      {
+        "id": "PG-013",
+        "status": "PASS",
+        "detail": "post-down catalog is empty for all contract objects, types, schema and roles",
+        "evidence": {}
+      }
+    ],
+    "stderr_log_sha256": "f1b1cfa281bfec104b8a17c5cd7efa50791f0175c3d2f0996632a7e511c4ea27"
+  },
+  "source_manifest_sha256": "2b71e4baf16ce3b34bd492c463112bcd8f0c5e287bc8829af382841ec578c1f5"
+}

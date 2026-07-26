@@ -1,0 +1,693 @@
+openapi: 3.1.0
+info:
+  title: LeaseMind Matching Critical Chain Commands
+  version: 1.0.0
+  license:
+    name: LeaseMind Internal Proprietary
+    identifier: LicenseRef-LeaseMind-Internal
+servers:
+  - url: https://synthetic.invalid/internal/v1
+    description: Synthetic-only placeholder; production URL is prohibited
+security:
+  - serviceIdentity: []
+paths:
+  /payer-resolutions/{encounter_id}/assign:
+    post:
+      summary: Assign the single payer for an encounter
+      operationId: assignPayer
+      parameters:
+        - $ref: '#/components/parameters/EncounterId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ExpectedAggregateVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AssignPayerCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/PayerResolution'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /participation/acceptances:
+    post:
+      summary: Record an immutable participation acceptance
+      operationId: createParticipationAcceptance
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateAcceptanceCommand'}
+      responses:
+        '201': {$ref: '#/components/responses/Acceptance'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /payments/advance-intents:
+    post:
+      summary: Create the pre-reveal advance payment intent
+      operationId: createAdvanceIntent
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateAdvanceIntentCommand'}
+      responses:
+        '201': {$ref: '#/components/responses/AdvanceIntent'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /payments/authorizations/{payment_intent_id}/release:
+    post:
+      summary: Release a payment authorization
+      operationId: releaseAuthorization
+      parameters:
+        - $ref: '#/components/parameters/PaymentIntentId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ReleaseAuthorizationCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/FinancialOperation'}
+        '409': {$ref: '#/components/responses/Conflict'}
+
+  /reveal-gate/snapshots:
+    post:
+      summary: Commit an immutable reveal-gate snapshot
+      operationId: commitRevealSnapshot
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ExpectedAggregateVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CommitRevealSnapshotCommand'}
+      responses:
+        '201': {$ref: '#/components/responses/RevealSnapshot'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /reveal/tokens:
+    post:
+      summary: Create an opaque reveal credential
+      operationId: createRevealToken
+      parameters:
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ExpectedAggregateVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CreateRevealTokenCommand'}
+      responses:
+        '201': {$ref: '#/components/responses/RevealToken'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /reveal/tokens/redeem:
+    post:
+      summary: Redeem an opaque reveal credential
+      operationId: redeemRevealToken
+      parameters:
+        - $ref: '#/components/parameters/RevealTokenCredential'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      responses:
+        '200':
+          description: Delivery attempt accepted; recipient, snapshot, manifest, epoch and leases are resolved and validated server-side before protected bytes
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RevealAttemptResult'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '410':
+          description: Token or any source-owned lease expired
+          content:
+            application/problem+json:
+              schema: {$ref: '#/components/schemas/Problem'}
+
+  /introduction-records/{introduction_record_id}/delivery-evidence:
+    post:
+      summary: Submit evidence of reveal delivery
+      operationId: submitDeliveryEvidence
+      parameters:
+        - $ref: '#/components/parameters/IntroductionRecordId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+        - $ref: '#/components/parameters/ExpectedAggregateVersion'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/SubmitDeliveryEvidenceCommand'}
+      responses:
+        '200': {$ref: '#/components/responses/IntroductionRecord'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+  /disputes/{dispute_id}/decisions:
+    post:
+      summary: Record an immutable dispute decision
+      operationId: recordDisputeDecision
+      parameters:
+        - $ref: '#/components/parameters/DisputeId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/RecordDecisionCommand'}
+      responses:
+        '201': {$ref: '#/components/responses/Decision'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Rejected'}
+
+components:
+  securitySchemes:
+    serviceIdentity:
+      type: mutualTLS
+
+  parameters:
+    EncounterId:
+      name: encounter_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    PaymentIntentId:
+      name: payment_intent_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    RevealTokenCredential:
+      name: Reveal-Token
+      in: header
+      required: true
+      description: Opaque one-time bearer credential returned once at token creation; UUID metadata never authorizes redemption; gateway and application logs MUST redact this header
+      schema: {type: string, minLength: 32, maxLength: 512}
+    IntroductionRecordId:
+      name: introduction_record_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    DisputeId:
+      name: dispute_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema: {type: string, minLength: 16, maxLength: 128}
+    ExpectedAggregateVersion:
+      name: If-Match-Version
+      in: header
+      required: true
+      schema: {type: integer, format: int64, minimum: 0}
+
+  schemas:
+    AssignPayerCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - encounter_id
+        - match_pair_id
+        - payer_party_id
+        - payer_campaign_id
+        - assignment_rule_version
+        - accepted_event_id
+      properties:
+        encounter_id: {type: string, format: uuid}
+        match_pair_id: {type: string, format: uuid}
+        payer_party_id: {type: string, format: uuid}
+        payer_campaign_id: {type: string, format: uuid}
+        assignment_rule_version: {type: string, minLength: 1}
+        accepted_event_id: {type: string, format: uuid}
+
+    CreateAcceptanceCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - encounter_id
+        - match_id
+        - party_id
+        - party_role
+        - payer_party_id
+        - payer_campaign_id
+        - identity_version
+        - identity_method
+        - identity_evidence_ref
+        - authority_version
+        - authority_status
+        - authority_evidence_ref
+        - terms_version
+        - terms_hash
+        - consent_version
+        - consent_hash
+        - payer_notice_version
+        - confirmed_account_id
+        - signature_operation_id
+        - signed_action
+        - signature_verification_result
+        - signature_evidence_ref
+        - accepted_at
+      properties:
+        encounter_id: {type: string, format: uuid}
+        match_id: {type: string, format: uuid}
+        party_id: {type: string, format: uuid}
+        party_role: {type: string, enum: [PAYER, NON_PAYER]}
+        payer_party_id: {type: string, format: uuid}
+        payer_campaign_id: {type: string, format: uuid}
+        identity_version: {type: integer, format: int64, minimum: 1}
+        identity_method: {type: string, minLength: 1, maxLength: 64}
+        identity_evidence_ref: {type: string, format: uuid}
+        authority_version: {type: integer, format: int64, minimum: 1}
+        authority_status: {type: string, enum: [VERIFIED, NOT_REQUIRED]}
+        authority_evidence_ref: {type: string, format: uuid}
+        terms_version: {type: string, minLength: 1}
+        terms_hash: {$ref: '#/components/schemas/Sha256'}
+        consent_version: {type: string, minLength: 1}
+        consent_hash: {$ref: '#/components/schemas/Sha256'}
+        payer_notice_version: {type: string, minLength: 1}
+        confirmed_account_id: {type: string, format: uuid}
+        signature_operation_id: {type: string, format: uuid}
+        signed_action: {type: string, minLength: 1, maxLength: 128}
+        signature_verification_result: {const: VERIFIED}
+        signature_evidence_ref: {type: string, format: uuid}
+        accepted_at: {type: string, format: date-time}
+
+    CreateAdvanceIntentCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - encounter_id
+        - payer_party_id
+        - payer_assignment_version
+        - fencing_token
+        - payment_path
+        - total_amount_minor
+        - credit_amount_minor
+        - debit_amount_minor
+        - currency
+      properties:
+        encounter_id: {type: string, format: uuid}
+        payer_party_id: {type: string, format: uuid}
+        payer_assignment_version: {type: integer, format: int64, minimum: 1}
+        fencing_token: {type: integer, format: int64, minimum: 1}
+        payment_path: {$ref: '#/components/schemas/PaymentPath'}
+        total_amount_minor: {const: 1000000}
+        credit_amount_minor: {type: integer, format: int64, minimum: 0, maximum: 1000000}
+        debit_amount_minor: {type: integer, format: int64, minimum: 0, maximum: 1000000}
+        currency: {const: RUB}
+      allOf:
+        - description: credit_amount_minor + debit_amount_minor MUST equal total_amount_minor; enforced by service and DDL
+
+    ReleaseAuthorizationCommand:
+      type: object
+      additionalProperties: false
+      required: [encounter_id, party_id, reason_code, payer_assignment_version]
+      properties:
+        encounter_id: {type: string, format: uuid}
+        party_id: {type: string, format: uuid}
+        reason_code: {enum: [SECOND_PARTY_NOT_PAYER, PAYER_ASSIGNMENT_CHANGED, PRE_REVEAL_VOID]}
+        payer_assignment_version: {type: integer, format: int64, minimum: 1}
+
+    SourceLease:
+      type: object
+      additionalProperties: false
+      required:
+        - lease_id
+        - source_system
+        - aggregate_id
+        - source_version
+        - fencing_token
+        - issued_at
+        - expires_at
+        - lease_state
+      properties:
+        lease_id: {type: string, format: uuid}
+        source_system:
+          enum:
+            - PARTICIPATION_SERVICE
+            - PAYER_RESOLUTION
+            - PREVIOUS_CONTACT_DECISION
+            - PAYMENT_FISCAL_LEDGER
+            - IDENTITY_AUTHORITY_REGISTRY
+            - LAWFUL_BASIS_CONSENT_REGISTRY
+        aggregate_id: {type: string, format: uuid}
+        source_version: {type: integer, format: int64, minimum: 1}
+        fencing_token: {type: integer, format: int64, minimum: 1}
+        issued_at: {type: string, format: date-time}
+        expires_at: {type: string, format: date-time}
+        lease_state: {const: ACTIVE}
+
+    CommitRevealSnapshotCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - introduction_record_id
+        - encounter_id
+        - match_pair_id
+        - match_id
+        - campaign_ids
+        - campaign_versions
+        - payer_party_id
+        - payer_assignment_version
+        - parties
+        - previous_contact_decision_id
+        - previous_contact_decision_version
+        - previous_contact_policy_version
+        - previous_contact_policy_hash
+        - advance_ledger_version
+        - advance_receipt_id
+        - financial_exposure_version
+        - record_version
+        - reveal_guard_epoch
+        - source_leases
+        - manifest_hash
+        - delivery_policy_version
+        - delivery_policy_hash
+      properties:
+        introduction_record_id: {type: string, format: uuid}
+        encounter_id: {type: string, format: uuid}
+        match_pair_id: {type: string, format: uuid}
+        match_id: {type: string, format: uuid}
+        campaign_ids:
+          type: array
+          minItems: 1
+          maxItems: 2
+          uniqueItems: true
+          items: {type: string, format: uuid}
+        campaign_versions:
+          type: array
+          minItems: 1
+          maxItems: 2
+          items: {type: integer, format: int64, minimum: 1}
+        payer_party_id: {type: string, format: uuid}
+        payer_assignment_version: {type: integer, format: int64, minimum: 1}
+        parties:
+          type: array
+          minItems: 2
+          maxItems: 2
+          uniqueItems: true
+          items: {$ref: '#/components/schemas/SnapshotPartyBinding'}
+          description: Exactly one OWNER and one TENANT binding; the handler and deferred DDL constraints enforce exact role and party equality with the Introduction Record.
+        previous_contact_decision_id: {type: string, format: uuid}
+        previous_contact_decision_version: {type: integer, format: int64, minimum: 1}
+        previous_contact_policy_version: {type: string, minLength: 1}
+        previous_contact_policy_hash: {$ref: '#/components/schemas/Sha256'}
+        advance_ledger_version: {type: integer, format: int64, minimum: 1}
+        advance_receipt_id: {type: string, minLength: 1}
+        financial_exposure_version: {type: integer, format: int64, minimum: 1}
+        record_version: {type: integer, format: int64, minimum: 1}
+        reveal_guard_epoch: {type: integer, format: int64, minimum: 1}
+        source_leases:
+          type: array
+          minItems: 6
+          maxItems: 6
+          uniqueItems: true
+          items: {$ref: '#/components/schemas/SourceLease'}
+          description: Exactly one lease for each SourceLease.source_system enum value; enforced by handler and DDL normalized snapshot-source relation
+        manifest_hash: {$ref: '#/components/schemas/Sha256'}
+        delivery_policy_version: {type: string, minLength: 1}
+        delivery_policy_hash: {$ref: '#/components/schemas/Sha256'}
+
+    SnapshotPartyBinding:
+      type: object
+      additionalProperties: false
+      required:
+        - party_id
+        - party_role
+        - acceptance_record_id
+        - acceptance_version
+        - terms_hash
+        - identity_authority_version
+        - lawful_basis_id
+        - lawful_basis_version
+      properties:
+        party_id: {type: string, format: uuid}
+        party_role: {type: string, enum: [OWNER, TENANT]}
+        acceptance_record_id: {type: string, format: uuid}
+        acceptance_version: {type: integer, format: int64, minimum: 1}
+        terms_hash: {$ref: '#/components/schemas/Sha256'}
+        identity_authority_version: {type: integer, format: int64, minimum: 1}
+        lawful_basis_id: {type: string, format: uuid}
+        lawful_basis_version: {type: integer, format: int64, minimum: 1}
+
+    CreateRevealTokenCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - introduction_record_id
+        - recipient_party_id
+        - reveal_gate_snapshot_id
+        - manifest_hash
+        - expires_at
+      properties:
+        introduction_record_id: {type: string, format: uuid}
+        recipient_party_id: {type: string, format: uuid}
+        reveal_gate_snapshot_id: {type: string, format: uuid}
+        manifest_hash: {$ref: '#/components/schemas/Sha256'}
+        expires_at: {type: string, format: date-time}
+      description: Internal mTLS command. Reveal Service MUST resolve snapshot hash, guard epoch and six leases from its trusted projection and MUST verify recipient against Introduction Record. No caller-supplied lease is authoritative.
+
+    SubmitDeliveryEvidenceCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - reveal_attempt_id
+        - encounter_id
+        - recipient_party_id
+        - reveal_gate_snapshot_id
+        - manifest_hash
+        - evidence_manifest_hash
+        - delivery_policy_version
+        - delivery_policy_hash
+        - attempted_at
+        - evidence_classification
+      properties:
+        reveal_attempt_id: {type: string, format: uuid}
+        encounter_id: {type: string, format: uuid}
+        recipient_party_id: {type: string, format: uuid}
+        reveal_gate_snapshot_id: {type: string, format: uuid}
+        manifest_hash: {$ref: '#/components/schemas/Sha256'}
+        evidence_manifest_hash: {$ref: '#/components/schemas/Sha256'}
+        delivery_policy_version: {type: string}
+        delivery_policy_hash: {$ref: '#/components/schemas/Sha256'}
+        attempted_at: {type: string, format: date-time}
+        established_delivery_at:
+          type: string
+          format: date-time
+          description: First proven sufficient delivery instant; required only for SUFFICIENT evidence
+        evidence_classification: {enum: [SUFFICIENT, PARTIAL, CONTRADICTORY, ABSENT]}
+      allOf:
+        - if:
+            properties:
+              evidence_classification: {const: SUFFICIENT}
+            required: [evidence_classification]
+          then:
+            properties:
+              established_delivery_at:
+                type: string
+                format: date-time
+            required: [established_delivery_at]
+          else:
+            not:
+              required: [established_delivery_at]
+
+    RecordDecisionCommand:
+      type: object
+      additionalProperties: false
+      required:
+        - dispute_id
+        - introduction_record_id
+        - decision_type
+        - reviewer_id
+        - reviewer_role
+        - appointment_id
+        - conflict_check_id
+        - policy_version
+        - policy_hash
+        - evidence_bundle_hash
+        - decision_order
+        - decided_at
+      properties:
+        dispute_id: {type: string, format: uuid}
+        introduction_record_id: {type: string, format: uuid}
+        decision_type: {$ref: '#/components/schemas/DecisionType'}
+        reviewer_id: {type: string, format: uuid}
+        reviewer_role: {type: string}
+        appointment_id: {type: string, format: uuid}
+        conflict_check_id: {type: string, format: uuid}
+        policy_version: {type: string}
+        policy_hash: {$ref: '#/components/schemas/Sha256'}
+        evidence_bundle_hash: {$ref: '#/components/schemas/Sha256'}
+        established_delivery_at:
+          type: string
+          format: date-time
+          description: Required only for DELIVERY_CONFIRMED_BY_DECISION; the proven first sufficient delivery instant, not decision time
+        second_level_approver_id: {type: string, format: uuid}
+        financial_consequence_ref: {type: string, format: uuid}
+        appeal_status: {type: string, enum: [NOT_APPEALED, APPEALED, FINAL]}
+        decision_order: {type: integer, format: int64, minimum: 1}
+        decided_at: {type: string, format: date-time}
+      allOf:
+        - if:
+            properties:
+              decision_type: {const: DELIVERY_CONFIRMED_BY_DECISION}
+            required: [decision_type]
+          then:
+            properties:
+              established_delivery_at:
+                type: string
+                format: date-time
+            required: [established_delivery_at]
+
+    PaymentPath:
+      type: string
+      enum: [DEBIT, CREDIT, MIXED]
+    DecisionType:
+      type: string
+      enum:
+        - DELIVERY_CONFIRMED_BY_DECISION
+        - NO_DELIVERY_CONFIRMED_BY_DECISION
+        - DISPUTE_REJECTED
+        - DISPUTE_UPHELD
+    Sha256:
+      type: string
+      pattern: '^[a-f0-9]{64}$'
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, code, correlation_id, retryable]
+      properties:
+        type: {type: string, format: uri}
+        title: {type: string}
+        status: {type: integer}
+        code: {type: string}
+        correlation_id: {type: string, format: uuid}
+        retryable: {type: boolean}
+    RevealAttemptResult:
+      type: object
+      required: [reveal_attempt_id, operation_state, evidence_submission_required]
+      properties:
+        reveal_attempt_id: {type: string, format: uuid}
+        operation_state: {enum: [IN_PROGRESS, SUCCEEDED, UNKNOWN]}
+        evidence_submission_required: {const: true}
+
+  responses:
+    PayerResolution:
+      description: Current payer assignment and aggregate version
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [payer_resolution_aggregate_id, payer_party_id, payer_campaign_id, payer_assignment_version]
+            properties:
+              payer_resolution_aggregate_id: {type: string, format: uuid}
+              payer_party_id: {type: string, format: uuid}
+              payer_campaign_id: {type: string, format: uuid}
+              payer_assignment_version: {type: integer, format: int64}
+    Acceptance:
+      description: Immutable acceptance record
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [acceptance_record_id, aggregate_version]
+            properties:
+              acceptance_record_id: {type: string, format: uuid}
+              aggregate_version: {type: integer, format: int64}
+    AdvanceIntent:
+      description: Advance intent
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [payment_intent_id, payment_path, operation_state]
+            properties:
+              payment_intent_id: {type: string, format: uuid}
+              payment_path: {$ref: '#/components/schemas/PaymentPath'}
+              operation_state: {enum: [PENDING, IN_PROGRESS, SUCCEEDED, UNKNOWN]}
+    FinancialOperation:
+      description: Idempotent financial operation result
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [financial_event_id, event_type, operation_state]
+            properties:
+              financial_event_id: {type: string, format: uuid}
+              event_type: {type: string}
+              operation_state: {type: string}
+    RevealSnapshot:
+      description: Committed reveal snapshot
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [reveal_gate_snapshot_id, snapshot_hash, valid_until, fencing_token, aggregate_version]
+            properties:
+              reveal_gate_snapshot_id: {type: string, format: uuid}
+              snapshot_hash: {$ref: '#/components/schemas/Sha256'}
+              valid_until: {type: string, format: date-time}
+              fencing_token: {type: integer, format: int64}
+              aggregate_version: {type: integer, format: int64}
+    RevealToken:
+      description: One-time purpose-bound token metadata; the raw token is returned only once and is never stored
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            required: [reveal_token_id, reveal_token, reveal_gate_snapshot_id, recipient_party_id, expires_at]
+            properties:
+              reveal_token_id: {type: string, format: uuid}
+              reveal_token: {type: string, minLength: 32, maxLength: 512}
+              reveal_gate_snapshot_id: {type: string, format: uuid}
+              recipient_party_id: {type: string, format: uuid}
+              expires_at: {type: string, format: date-time}
+    IntroductionRecord:
+      description: Current record state
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [introduction_record_id, record_state, aggregate_version]
+            properties:
+              introduction_record_id: {type: string, format: uuid}
+              record_state:
+                enum:
+                  - REVEAL_COMMITTED
+                  - REVEALED_ACTIVE
+                  - DISCLOSURE_DISPUTED
+                  - DISPUTED
+                  - EXPIRED
+                  - VOID_PRE_REVEAL
+                  - INVALIDATED_BY_DECISION
+              aggregate_version: {type: integer, format: int64}
+    Decision:
+      description: Immutable decision record
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [decision_id, decision_type, created_at]
+            properties:
+              decision_id: {type: string, format: uuid}
+              decision_type: {$ref: '#/components/schemas/DecisionType'}
+              created_at: {type: string, format: date-time}
+    Conflict:
+      description: Version, lease, payer or state conflict
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}
+    Rejected:
+      description: Domain guard rejected
+      content:
+        application/problem+json:
+          schema: {$ref: '#/components/schemas/Problem'}

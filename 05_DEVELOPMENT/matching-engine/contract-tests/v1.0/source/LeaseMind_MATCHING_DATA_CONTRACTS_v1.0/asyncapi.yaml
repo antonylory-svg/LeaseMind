@@ -1,0 +1,503 @@
+asyncapi: 3.0.0
+info:
+  title: LeaseMind Matching Critical Chain Events
+  version: 1.0.0
+defaultContentType: application/json
+channels:
+  payerResolution:
+    address: payer-resolution.{encounter_id}
+    parameters:
+      encounter_id:
+        description: Canonical encounter UUID; value is resolved from the typed message payload
+        location: $message.payload#/payload/encounter_id
+    messages:
+      payerAssigned: {$ref: '#/components/messages/PayerAssigned'}
+  participation:
+    address: participation.{encounter_id}
+    parameters:
+      encounter_id:
+        description: Canonical encounter UUID
+        location: $message.payload#/payload/encounter_id
+    messages:
+      acceptanceChanged: {$ref: '#/components/messages/AcceptanceChanged'}
+  identityAuthority:
+    address: identity-authority.{party_id}
+    parameters:
+      party_id:
+        description: Pseudonymous party UUID
+        location: $message.payload#/payload/party_id
+    messages:
+      identityAuthorityChanged: {$ref: '#/components/messages/IdentityAuthorityChanged'}
+  lawfulBasis:
+    address: lawful-basis.{party_id}
+    parameters:
+      party_id:
+        description: Pseudonymous party UUID
+        location: $message.payload#/payload/party_id
+    messages:
+      lawfulBasisChanged: {$ref: '#/components/messages/LawfulBasisChanged'}
+  previousContact:
+    address: previous-contact.{encounter_id}
+    parameters:
+      encounter_id:
+        description: Canonical encounter UUID
+        location: $message.payload#/payload/encounter_id
+    messages:
+      previousContactChanged: {$ref: '#/components/messages/PreviousContactChanged'}
+  financial:
+    address: financial.{encounter_id}
+    parameters:
+      encounter_id:
+        description: Canonical encounter UUID
+        location: $message.payload#/payload/encounter_id
+    messages:
+      financialFact: {$ref: '#/components/messages/FinancialFact'}
+  introductionRecord:
+    address: introduction-record.{introduction_record_id}
+    parameters:
+      introduction_record_id:
+        description: Introduction Record UUID
+        location: $message.payload#/payload/introduction_record_id
+    messages:
+      recordTransitioned: {$ref: '#/components/messages/RecordTransitioned'}
+  revealEvidence:
+    address: reveal-evidence.{introduction_record_id}
+    parameters:
+      introduction_record_id:
+        description: Introduction Record UUID
+        location: $message.payload#/payload/introduction_record_id
+    messages:
+      evidenceSubmitted: {$ref: '#/components/messages/EvidenceSubmitted'}
+  decisions:
+    address: decisions.{introduction_record_id}
+    parameters:
+      introduction_record_id:
+        description: Introduction Record UUID
+        location: $message.payload#/payload/introduction_record_id
+    messages:
+      decisionRecorded: {$ref: '#/components/messages/DecisionRecorded'}
+operations:
+  consumePayerAssigned:
+    action: receive
+    channel: {$ref: '#/channels/payerResolution'}
+  consumeAcceptanceChanged:
+    action: receive
+    channel: {$ref: '#/channels/participation'}
+  consumeIdentityAuthorityChanged:
+    action: receive
+    channel: {$ref: '#/channels/identityAuthority'}
+  consumeLawfulBasisChanged:
+    action: receive
+    channel: {$ref: '#/channels/lawfulBasis'}
+  consumePreviousContactChanged:
+    action: receive
+    channel: {$ref: '#/channels/previousContact'}
+  consumeFinancialFact:
+    action: receive
+    channel: {$ref: '#/channels/financial'}
+  consumeRecordTransitioned:
+    action: receive
+    channel: {$ref: '#/channels/introductionRecord'}
+  consumeEvidenceSubmitted:
+    action: receive
+    channel: {$ref: '#/channels/revealEvidence'}
+  consumeDecisionRecorded:
+    action: receive
+    channel: {$ref: '#/channels/decisions'}
+x-leasemind-event-routing:
+  - {event_type: PAYER_ASSIGNED, owner_role: leasemind_payer_writer, producer: payer-resolution, consumer_operation: consumePayerAssigned}
+  - {event_type: PAYER_RESOLUTION_REQUIRED, owner_role: leasemind_payer_writer, producer: payer-resolution, consumer_operation: consumePayerAssigned}
+  - {event_type: PARTICIPATION_ACCEPTED, owner_role: leasemind_participation_writer, producer: participation, consumer_operation: consumeAcceptanceChanged}
+  - {event_type: PARTICIPATION_INVALIDATED, owner_role: leasemind_participation_writer, producer: participation, consumer_operation: consumeAcceptanceChanged}
+  - {event_type: IDENTITY_AUTHORITY_INVALIDATED, owner_role: leasemind_identity_authority_writer, producer: identity-authority-registry, consumer_operation: consumeIdentityAuthorityChanged}
+  - {event_type: LAWFUL_BASIS_INVALIDATED, owner_role: leasemind_lawful_basis_writer, producer: lawful-basis-consent-registry, consumer_operation: consumeLawfulBasisChanged}
+  - {event_type: LAWFUL_BASIS_REVOKED, owner_role: leasemind_lawful_basis_writer, producer: lawful-basis-consent-registry, consumer_operation: consumeLawfulBasisChanged}
+  - {event_type: PREVIOUS_CONTACT_DECISION_CHANGED, owner_role: leasemind_previous_contact_writer, producer: legal-decision, consumer_operation: consumePreviousContactChanged}
+  - {event_type: PAYMENT_AUTHORIZED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: PAYMENT_AUTHORIZATION_RELEASED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: ADVANCE_DEBIT_CONFIRMED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: CREDIT_APPLIED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: CREDIT_REVERSED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: ADVANCE_RECEIPT_FISCALIZED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: ADVANCE_SETTLED_AND_FISCALIZED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: REFUND_CONFIRMED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: FISCAL_CORRECTION_CONFIRMED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: FINANCIAL_READINESS_INVALIDATED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: FINAL_SETTLEMENT_FISCALIZED, owner_role: leasemind_financial_writer, producer: payment-fiscal-ledger, consumer_operation: consumeFinancialFact}
+  - {event_type: RECORD_PRE_REVEAL_LOCKED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: PRE_REVEAL_VOIDED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: REVEAL_COMMITTED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: REVEAL_DELIVERY_CONFIRMED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: REVEAL_DELIVERY_UNCERTAIN, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: DISCLOSURE_CHALLENGED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: PROTECTION_END_REACHED, owner_role: leasemind_introduction_writer, producer: introduction-record-service, consumer_operation: consumeRecordTransitioned}
+  - {event_type: REVEAL_DELIVERY_EVIDENCE_SUBMITTED, owner_role: leasemind_reveal_writer, producer: reveal-service, consumer_operation: consumeEvidenceSubmitted}
+  - {event_type: DELIVERY_CONFIRMED_BY_DECISION, owner_role: leasemind_previous_contact_writer, producer: legal-decision, consumer_operation: consumeDecisionRecorded}
+  - {event_type: NO_DELIVERY_CONFIRMED_BY_DECISION, owner_role: leasemind_previous_contact_writer, producer: legal-decision, consumer_operation: consumeDecisionRecorded}
+  - {event_type: DISPUTE_REJECTED, owner_role: leasemind_previous_contact_writer, producer: legal-decision, consumer_operation: consumeDecisionRecorded}
+  - {event_type: DISPUTE_UPHELD, owner_role: leasemind_previous_contact_writer, producer: legal-decision, consumer_operation: consumeDecisionRecorded}
+components:
+  messages:
+    PayerAssigned:
+      payload: {$ref: '#/components/schemas/PayerEventEnvelope'}
+    AcceptanceChanged:
+      payload: {$ref: '#/components/schemas/ParticipationEventEnvelope'}
+    IdentityAuthorityChanged:
+      payload: {$ref: '#/components/schemas/IdentityAuthorityEventEnvelope'}
+    LawfulBasisChanged:
+      payload: {$ref: '#/components/schemas/LawfulBasisEventEnvelope'}
+    PreviousContactChanged:
+      payload: {$ref: '#/components/schemas/PreviousContactEventEnvelope'}
+    FinancialFact:
+      payload: {$ref: '#/components/schemas/FinancialEventEnvelope'}
+    RecordTransitioned:
+      payload: {$ref: '#/components/schemas/RecordEventEnvelope'}
+    EvidenceSubmitted:
+      payload: {$ref: '#/components/schemas/EvidenceEventEnvelope'}
+    DecisionRecorded:
+      payload: {$ref: '#/components/schemas/DecisionEventEnvelope'}
+  schemas:
+    EventEnvelopeBase:
+      type: object
+      required:
+        - event_id
+        - schema_version
+        - aggregate_id
+        - aggregate_version
+        - occurred_at
+        - producer
+        - correlation_id
+        - causation_id
+        - trace_id
+        - idempotency_key
+        - payload_hash
+        - data_classification
+      properties:
+        event_id: {type: string, format: uuid}
+        schema_version: {type: string, pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'}
+        aggregate_id: {type: string, format: uuid}
+        aggregate_version: {type: integer, format: int64, minimum: 1}
+        occurred_at: {type: string, format: date-time}
+        producer: {type: string, minLength: 1}
+        correlation_id: {type: string, format: uuid}
+        causation_id: {type: string, format: uuid}
+        trace_id: {type: string, minLength: 16, maxLength: 64}
+        idempotency_key: {type: string, minLength: 16, maxLength: 128}
+        payload_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        data_classification:
+          const: PSEUDONYMIZED_PERSONAL_DATA_NO_DIRECT_IDENTIFIERS
+
+    RecordState:
+      type: string
+      enum: [DRAFT, PRE_REVEAL_LOCKED, REVEAL_COMMITTED, REVEALED_ACTIVE, DISCLOSURE_DISPUTED, DISPUTED, EXPIRED, VOID_PRE_REVEAL, INVALIDATED_BY_DECISION]
+
+    PayerEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum: [PAYER_ASSIGNED, PAYER_RESOLUTION_REQUIRED]
+            payload: {$ref: '#/components/schemas/PayerEventPayload'}
+    PayerEventPayload:
+      type: object
+      additionalProperties: false
+      required: [encounter_id, match_pair_id, resolution_state, payer_assignment_version]
+      properties:
+        encounter_id: {type: string, format: uuid}
+        match_pair_id: {type: string, format: uuid}
+        resolution_state: {enum: [ASSIGNED, PAYER_RESOLUTION_REQUIRED]}
+        payer_party_id: {type: string, format: uuid}
+        payer_campaign_id: {type: string, format: uuid}
+        payer_assignment_version: {type: integer, format: int64, minimum: 0}
+        reason_code: {enum: [FIRST_VERIFIED_ACCEPTANCE, PAYER_ASSIGNMENT_CHANGED, CONCURRENT_ORDER_UNPROVABLE]}
+
+    ParticipationEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum: [PARTICIPATION_ACCEPTED, PARTICIPATION_INVALIDATED]
+            payload: {$ref: '#/components/schemas/ParticipationEventPayload'}
+    ParticipationEventPayload:
+      type: object
+      additionalProperties: false
+      required: [encounter_id, match_id, acceptance_record_id, party_id, acceptance_aggregate_version, acceptance_status]
+      properties:
+        encounter_id: {type: string, format: uuid}
+        match_id: {type: string, format: uuid}
+        acceptance_record_id: {type: string, format: uuid}
+        party_id: {type: string, format: uuid}
+        acceptance_aggregate_version: {type: integer, format: int64, minimum: 1}
+        acceptance_status: {enum: [ACCEPTED, SUPERSEDED, INVALIDATED]}
+        reason_code:
+          enum: [USER_REVOKED, TERMS_VERSION_CHANGED, PAYER_REACCEPTANCE_REQUIRED, IDENTITY_AUTHORITY_CHANGED, ACCEPTANCE_SUPERSEDED]
+
+    IdentityAuthorityEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              const: IDENTITY_AUTHORITY_INVALIDATED
+            payload: {$ref: '#/components/schemas/IdentityAuthorityEventPayload'}
+    IdentityAuthorityEventPayload:
+      type: object
+      additionalProperties: false
+      required: [party_id, identity_authority_version, reason_code, effective_at]
+      properties:
+        party_id: {type: string, format: uuid}
+        identity_authority_version: {type: integer, format: int64, minimum: 1}
+        reason_code: {enum: [IDENTITY_INVALIDATED, AUTHORITY_INVALIDATED, AUTHORITY_EXPIRED]}
+        effective_at: {type: string, format: date-time}
+
+    LawfulBasisEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum: [LAWFUL_BASIS_INVALIDATED, LAWFUL_BASIS_REVOKED]
+            payload: {$ref: '#/components/schemas/LawfulBasisEventPayload'}
+    LawfulBasisEventPayload:
+      type: object
+      additionalProperties: false
+      required: [party_id, lawful_basis_id, purpose_code, lawful_basis_version, reason_code, effective_at]
+      properties:
+        party_id: {type: string, format: uuid}
+        lawful_basis_id: {type: string, format: uuid}
+        purpose_code: {type: string, maxLength: 64}
+        lawful_basis_version: {type: integer, format: int64, minimum: 1}
+        reason_code: {enum: [INVALIDATED, REVOKED, EXPIRED, PROCESSING_PURPOSE_CHANGED]}
+        effective_at: {type: string, format: date-time}
+
+    PreviousContactEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              const: PREVIOUS_CONTACT_DECISION_CHANGED
+            payload: {$ref: '#/components/schemas/PreviousContactEventPayload'}
+    PreviousContactEventPayload:
+      type: object
+      additionalProperties: false
+      required: [encounter_id, previous_contact_decision_id, previous_contact_decision_version, decision_status, reason_code, effective_at]
+      properties:
+        encounter_id: {type: string, format: uuid}
+        previous_contact_decision_id: {type: string, format: uuid}
+        previous_contact_decision_version: {type: integer, format: int64, minimum: 1}
+        decision_status: {enum: [NO_PREVIOUS_CONTACT_CONFIRMED, PREVIOUS_CONTACT_CONFIRMED, UNDER_REVIEW, INCONCLUSIVE]}
+        reason_code: {enum: [DECISION_CREATED, EVIDENCE_ADDED, DECISION_REOPENED, DECISION_INVALIDATED]}
+        policy_version: {type: string, minLength: 1}
+        policy_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        effective_at: {type: string, format: date-time}
+
+    FinancialEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum:
+                - PAYMENT_AUTHORIZED
+                - PAYMENT_AUTHORIZATION_RELEASED
+                - ADVANCE_DEBIT_CONFIRMED
+                - CREDIT_APPLIED
+                - CREDIT_REVERSED
+                - ADVANCE_RECEIPT_FISCALIZED
+                - ADVANCE_SETTLED_AND_FISCALIZED
+                - REFUND_CONFIRMED
+                - FISCAL_CORRECTION_CONFIRMED
+                - SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED
+                - SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED
+                - FINANCIAL_READINESS_INVALIDATED
+                - FINAL_SETTLEMENT_FISCALIZED
+            payload: {$ref: '#/components/schemas/FinancialEventPayload'}
+    FinancialEventPayload:
+      type: object
+      additionalProperties: false
+      required: [encounter_id, financial_event_id, payment_path, amount_minor, currency]
+      properties:
+        encounter_id: {type: string, format: uuid}
+        payment_intent_id: {type: string, format: uuid}
+        financial_event_id: {type: string, format: uuid}
+        payment_path: {enum: [DEBIT, CREDIT, MIXED]}
+        amount_minor: {type: integer, format: int64, minimum: 0, maximum: 1000000}
+        currency: {const: RUB}
+        provider_operation_ref: {type: string, format: uuid}
+        receipt_ref: {type: string, format: uuid}
+        credit_application_id: {type: string, format: uuid}
+        payer_assignment_version: {type: integer, format: int64, minimum: 1}
+        reason_code: {enum: [PROVIDER_RECONCILIATION_MISMATCH, KKT_OFD_RECONCILIATION_MISMATCH, CREDIT_REVERSED, SECOND_PARTY_EXPOSURE_CHANGED, REFUND_AND_CORRECTION_COMPLETED]}
+
+    RecordEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum: [RECORD_PRE_REVEAL_LOCKED, PRE_REVEAL_VOIDED, REVEAL_COMMITTED, REVEAL_DELIVERY_CONFIRMED, REVEAL_DELIVERY_UNCERTAIN, DISCLOSURE_CHALLENGED, PROTECTION_END_REACHED]
+            payload: {$ref: '#/components/schemas/RecordEventPayload'}
+          oneOf:
+            - properties:
+                event_type: {const: RECORD_PRE_REVEAL_LOCKED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {const: DRAFT}
+                        to_state: {const: PRE_REVEAL_LOCKED}
+            - properties:
+                event_type: {const: PRE_REVEAL_VOIDED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {enum: [DRAFT, PRE_REVEAL_LOCKED, DISCLOSURE_DISPUTED]}
+                        to_state: {const: VOID_PRE_REVEAL}
+            - properties:
+                event_type: {const: REVEAL_COMMITTED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {const: PRE_REVEAL_LOCKED}
+                        to_state: {const: REVEAL_COMMITTED}
+            - properties:
+                event_type: {const: REVEAL_DELIVERY_CONFIRMED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - required: [established_delivery_at, protection_starts_at, protection_ends_at]
+                      properties:
+                        from_state: {const: REVEAL_COMMITTED}
+                        to_state: {const: REVEALED_ACTIVE}
+            - properties:
+                event_type: {const: REVEAL_DELIVERY_UNCERTAIN}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {const: REVEAL_COMMITTED}
+                        to_state: {const: DISCLOSURE_DISPUTED}
+            - properties:
+                event_type: {const: DISCLOSURE_CHALLENGED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {const: REVEALED_ACTIVE}
+                        to_state: {const: DISPUTED}
+            - properties:
+                event_type: {const: PROTECTION_END_REACHED}
+                payload:
+                  allOf:
+                    - {$ref: '#/components/schemas/RecordEventPayload'}
+                    - properties:
+                        from_state: {const: REVEALED_ACTIVE}
+                        to_state: {const: EXPIRED}
+    RecordEventPayload:
+      type: object
+      additionalProperties: false
+      required: [introduction_record_id, encounter_id, from_state, to_state]
+      properties:
+        introduction_record_id: {type: string, format: uuid}
+        encounter_id: {type: string, format: uuid}
+        from_state: {$ref: '#/components/schemas/RecordState'}
+        to_state: {$ref: '#/components/schemas/RecordState'}
+        reveal_gate_snapshot_id: {type: string, format: uuid}
+        established_delivery_at: {type: string, format: date-time}
+        protection_starts_at: {type: string, format: date-time}
+        protection_ends_at: {type: string, format: date-time}
+
+    EvidenceEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              const: REVEAL_DELIVERY_EVIDENCE_SUBMITTED
+            payload: {$ref: '#/components/schemas/EvidenceEventPayload'}
+    EvidenceEventPayload:
+      type: object
+      additionalProperties: false
+      required: [reveal_attempt_id, introduction_record_id, encounter_id, recipient_party_id, reveal_gate_snapshot_id, manifest_hash, evidence_manifest_hash, evidence_classification, attempted_at]
+      properties:
+        reveal_attempt_id: {type: string, format: uuid}
+        introduction_record_id: {type: string, format: uuid}
+        encounter_id: {type: string, format: uuid}
+        recipient_party_id: {type: string, format: uuid}
+        reveal_gate_snapshot_id: {type: string, format: uuid}
+        manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        evidence_manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        evidence_classification: {enum: [SUFFICIENT, PARTIAL, CONTRADICTORY, ABSENT]}
+        attempted_at: {type: string, format: date-time}
+        established_delivery_at: {type: string, format: date-time}
+      allOf:
+        - if:
+            properties:
+              evidence_classification: {const: SUFFICIENT}
+            required: [evidence_classification]
+          then:
+            required: [established_delivery_at]
+          else:
+            not:
+              required: [established_delivery_at]
+
+    DecisionEventEnvelope:
+      unevaluatedProperties: false
+      allOf:
+        - {$ref: '#/components/schemas/EventEnvelopeBase'}
+        - type: object
+          required: [event_type, payload]
+          properties:
+            event_type:
+              enum: [DELIVERY_CONFIRMED_BY_DECISION, NO_DELIVERY_CONFIRMED_BY_DECISION, DISPUTE_REJECTED, DISPUTE_UPHELD]
+            payload: {$ref: '#/components/schemas/DecisionEventPayload'}
+    DecisionEventPayload:
+      type: object
+      additionalProperties: false
+      required: [decision_id, dispute_id, introduction_record_id, decision_type, decided_at]
+      properties:
+        decision_id: {type: string, format: uuid}
+        dispute_id: {type: string, format: uuid}
+        introduction_record_id: {type: string, format: uuid}
+        decision_type: {enum: [DELIVERY_CONFIRMED_BY_DECISION, NO_DELIVERY_CONFIRMED_BY_DECISION, DISPUTE_REJECTED, DISPUTE_UPHELD]}
+        established_delivery_at: {type: string, format: date-time}
+        decided_at: {type: string, format: date-time}
+        financial_consequence_ref: {type: string, format: uuid}
+      allOf:
+        - if:
+            properties:
+              decision_type: {const: DELIVERY_CONFIRMED_BY_DECISION}
+            required: [decision_type]
+          then:
+            required: [established_delivery_at]
+          else:
+            not:
+              required: [established_delivery_at]
+
+    EventPayloadClassification:
+      type: object
+      additionalProperties: false
+      description: Marker schema; event payloads may contain only pseudonymous IDs, enums, timestamps, versions, hashes and evidence references

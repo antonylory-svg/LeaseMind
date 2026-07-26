@@ -1,0 +1,40 @@
+{
+  "submission": "LeaseMind Matching Engine DEVELOPMENT sixth-review remediation",
+  "created_at": "2026-07-26T07:23:31.100Z",
+  "synthetic_data_only": true,
+  "canonical_filename_policy": "Exact four filenames only; reject suffix copies and any SHA-256 mismatch.",
+  "artifacts": [
+    {
+      "filename": "LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md",
+      "version": "1.1",
+      "status": "Proposal for cross-functional review and approval",
+      "sha256": "d5d3afe113ed01076ae9c4e54f5791b8b33477402838a3f5d3641a73dd286ffa"
+    },
+    {
+      "filename": "LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md",
+      "version": "1.0",
+      "status": "Proposal for DEVELOPMENT review",
+      "sha256": "e4c05c9e1eae08575bd5ba7763ca7abbec9f94d4ccc8e101c062a7aeef304cec"
+    },
+    {
+      "filename": "LeaseMind_MATCHING_DATA_CONTRACTS_v1.0_EXECUTABLE.zip",
+      "version": "1.0",
+      "status": "Synthetic verification package",
+      "sha256": "234f59be898f8e2e0e11ea05dd58bcaa3983b22c1d95785574e1476072c0faf1"
+    }
+  ],
+  "embedded_evidence": {
+    "source_manifest_sha256": "2b71e4baf16ce3b34bd492c463112bcd8f0c5e287bc8829af382841ec578c1f5",
+    "synthetic_verification_report_sha256": "e89e55c4f751f4eafe5feb9e14040ad90dc061d02b82c28f58fcaa554a19e52f",
+    "postgres_execution_log_sha256": "f1b1cfa281bfec104b8a17c5cd7efa50791f0175c3d2f0996632a7e511c4ea27",
+    "evidence_runner_self_tests": "EV-001–EV-007 PASS",
+    "contract_tests": "CT-001–CT-033 PASS with semantic evidence",
+    "postgres_tests": "PG-001–PG-030 applicable set PASS",
+    "event_payload_probes": "33 positive + 1020 schema-derived per-constrained-field negative mutations PASS",
+    "dlp_probes": "15 payload/trace/metadata probes including normalized phone and passport PASS",
+    "reveal_redemption": "atomic immutable Attempt + server-owned result/hash + two-connection race/failure injection PASS",
+    "postgres_lifecycle": "up → catalog/behavior/security assertions → down → empty post-down catalog",
+    "clean_zip_reproduction": "PASS"
+  },
+  "production_launch_gate": "BLOCKED"
+}

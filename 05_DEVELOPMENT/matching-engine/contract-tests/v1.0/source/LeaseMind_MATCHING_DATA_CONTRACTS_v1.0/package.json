@@ -1,0 +1,18 @@
+{
+  "name": "leasemind-matching-data-contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "verify": "node tests/run_full_suite.mjs"
+  },
+  "dependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
+    "@asyncapi/parser": "3.6.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "embedded-postgres": "18.4.0-beta.17",
+    "pg": "8.22.0",
+    "yaml": "2.9.0"
+  }
+}
