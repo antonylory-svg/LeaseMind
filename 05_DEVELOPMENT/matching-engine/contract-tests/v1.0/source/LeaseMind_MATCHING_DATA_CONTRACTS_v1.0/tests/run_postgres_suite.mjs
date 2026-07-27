@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile, rm} from 'node:fs/promises';
+import {writeSync} from 'node:fs';
 import EmbeddedPostgres from 'embedded-postgres';
 import pgModule from 'pg';
 import YAML from 'yaml';
@@ -11,6 +12,14 @@ const databaseDir = process.env.LM_PG_DATA_DIR ?? `/tmp/leasemind-postgres-${run
 const port = 55432 + (process.pid % 500);
 const password = 'synthetic-contract-test-only';
 const embedded = !process.env.DATABASE_URL;
+const rawDatabaseUrl = process.env.DATABASE_URL ?? '';
+const scrubSecrets = text => {
+  let scrubbed = String(text ?? '');
+  if (rawDatabaseUrl) {
+    scrubbed = scrubbed.split(rawDatabaseUrl).join('[DATABASE_URL redacted]');
+  }
+  return scrubbed.replace(/postgres(?:ql)?:\/\/[^\s"']+/gi, '[connection string redacted]');
+};
 const pg = embedded ? new EmbeddedPostgres({
   databaseDir,
   user: 'postgres',
@@ -1079,8 +1088,9 @@ try {
 }
 
 if (primaryError) {
-  process.stderr.write(`${primaryError.stack ?? primaryError}\n`);
+  writeSync(2, scrubSecrets(`${primaryError.stack ?? primaryError}\n`));
   process.exitCode = 1;
+  process.exit();
 } else {
   process.stdout.write(`${JSON.stringify({status:'PASS', results}, null, 2)}\n`);
 }

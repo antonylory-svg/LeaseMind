@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
+import {fileURLToPath} from 'node:url';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import {Parser, fromFile} from '@asyncapi/parser';
 import Ajv2020 from 'ajv/dist/2020.js';
@@ -35,7 +36,7 @@ eventAjv.addSchema(asyncRoot);
 const events = canonicalEventFixtures(asyncapi);
 
 await test('CT-001', '9 OpenAPI operations and every declared 4xx execute positive validation', 'validator_fixture', async () => {
-  await SwaggerParser.validate(new URL('../openapi.yaml', import.meta.url).pathname);
+  await SwaggerParser.validate(fileURLToPath(new URL('../openapi.yaml', import.meta.url)));
   const fixtures = openApiFixtures(openapi);
   const operations = fixtures.filter(item => item.kind === 'openapi-operation');
   const errors = fixtures.filter(item => item.kind === 'openapi-error');
@@ -64,7 +65,7 @@ await test('CT-001', '9 OpenAPI operations and every declared 4xx execute positi
 
 await test('CT-002', 'Every canonical event executes positive and malformed fixture validation', 'validator_fixture', async () => {
   const parser = new Parser();
-  const parsed = await fromFile(parser, new URL('../asyncapi.yaml', import.meta.url).pathname).parse();
+  const parsed = await fromFile(parser, fileURLToPath(new URL('../asyncapi.yaml', import.meta.url))).parse();
   assert.ok(parsed.document);
   assert.equal(parsed.diagnostics.filter(item => item.severity === 0).length, 0);
   assert.equal(events.length, 33);

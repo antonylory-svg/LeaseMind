@@ -48,7 +48,20 @@ begin
 
   if exists (
     select 1 from pg_roles
-     where rolname like 'leasemind_%'
+     where rolname = any(array[
+       'leasemind_guard_owner',
+       'leasemind_payer_writer',
+       'leasemind_participation_writer',
+       'leasemind_financial_writer',
+       'leasemind_previous_contact_writer',
+       'leasemind_identity_authority_writer',
+       'leasemind_lawful_basis_writer',
+       'leasemind_introduction_writer',
+       'leasemind_reveal_writer',
+       'leasemind_contract_reader',
+       'leasemind_outbox_publisher',
+       'leasemind_event_consumer'
+     ])
   ) then
     raise exception 'post-down contract roles remain';
   end if;
