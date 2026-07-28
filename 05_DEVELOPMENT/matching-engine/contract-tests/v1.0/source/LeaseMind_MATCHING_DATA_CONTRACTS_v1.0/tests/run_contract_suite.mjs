@@ -12,6 +12,9 @@ import {
   containsDirectIdentifier, cryptoUnlink, resolveTrustedRevealContext,
   transitionRecord, validateFinancialIntent, validateLeaseSet
 } from './synthetic_service_models.mjs';
+import {
+  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS, computeDlpMatrixCoverage
+} from './fixtures/dlp_golden_vectors.mjs';
 
 const loadYaml = async path => YAML.parse(await readFile(new URL(path, import.meta.url), 'utf8'));
 const openapi = await loadYaml('../openapi.yaml');
@@ -36,11 +39,10 @@ eventAjv.addSchema(asyncRoot);
 const events = canonicalEventFixtures(asyncapi);
 
 const FORBIDDEN_UUID_VERSIONS = ['1', '2', '3', '5', '6', '8'];
-let uuidSampleSeq = 0;
-const uuidVersionSample = version => {
-  const seq = (++uuidSampleSeq % 0x10000).toString(16).padStart(4, '0');
-  return `00000000-0000-${version}f00-8fff-abcdef${seq}ab`;
-};
+// Every character except the mandatory version nibble is a hex letter (a-f),
+// so this value is inert under any digit-based scan (SEVENTH-B02 DLP parity)
+// regardless of which field it is substituted into.
+const uuidVersionSample = version => `aaaaaaaa-aaaa-${version}aaa-aaaa-aaaaaaaaaaaa`;
 const resolveRef = (schema, root) => {
   if (!schema?.$ref) return schema ?? {};
   return schema.$ref.split('/').slice(1).reduce((value, segment) =>
@@ -368,7 +370,34 @@ await test('CT-023', 'Direct identifiers violate event DLP classifier', 'service
   ];
   for(const fixture of fixtures) assert.equal(containsDirectIdentifier(fixture),true);
   assert.equal(containsDirectIdentifier({trace_id:'trace-synthetic-0001',reason_code:'PAYER_REASSIGNED'}),false);
-  return {negative_patterns:fixtures.length,safe_control:1};
+
+  for(const vector of DLP_MALICIOUS_VECTORS){
+    const probeValue = vector.container ? vector.value : {reason_code: vector.value};
+    assert.equal(containsDirectIdentifier(probeValue), true,
+      `golden vector rejected-expected but accepted: ${vector.id} (${vector.class})`);
+  }
+  for(const vector of DLP_SAFE_CONTROL_VECTORS){
+    assert.equal(containsDirectIdentifier({reason_code: vector.value}), false,
+      `golden safe control accepted-expected but rejected: ${vector.id}`);
+  }
+
+  const coverage = computeDlpMatrixCoverage();
+  for(const klass of Object.keys(coverage.classCoverage)){
+    assert.equal(coverage.classCoverage[klass], coverage.expectedSeparators,
+      `DLP golden corpus incomplete for class ${klass}: ${coverage.classCoverage[klass]}/${coverage.expectedSeparators} separators`);
+    assert.equal(coverage.containerCoverage[klass], coverage.expectedContainers,
+      `DLP golden corpus incomplete for class ${klass}: ${coverage.containerCoverage[klass]}/${coverage.expectedContainers} container vectors`);
+  }
+  assert.ok(coverage.isComplete, 'DLP golden corpus matrix is not complete');
+
+  return {
+    negative_patterns:fixtures.length,
+    safe_control:1,
+    golden_malicious_vectors:DLP_MALICIOUS_VECTORS.length,
+    golden_safe_vectors:DLP_SAFE_CONTROL_VECTORS.length,
+    golden_matrix_coverage:coverage.classCoverage,
+    golden_container_coverage:coverage.containerCoverage
+  };
 });
 await test('CT-024', 'Crypto-unlink preserves immutable hashes and removes PII linkage', 'service_behavior', () => {
   const prohibited={

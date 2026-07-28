@@ -5,6 +5,10 @@ import EmbeddedPostgres from 'embedded-postgres';
 import pgModule from 'pg';
 import YAML from 'yaml';
 import {canonicalEventFixtures, UUID_V7} from '../fixtures/synthetic_fixtures.mjs';
+import {containsDirectIdentifier} from './synthetic_service_models.mjs';
+import {
+  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS, computeDlpMatrixCoverage
+} from './fixtures/dlp_golden_vectors.mjs';
 
 const root = new URL('../', import.meta.url);
 const runId = `${process.pid}-${Date.now()}`;
@@ -65,14 +69,13 @@ function eventUuid(counter, namespace = '5', version = '4') {
 }
 
 const FORBIDDEN_UUID_VERSIONS = ['1', '2', '3', '5', '6', '8'];
-let uuidSampleSeq = 0;
-const uuidVersionSample = version => {
-  // Letters are interleaved throughout the trailing group so no run of
-  // digits ever reaches the DLP classifier's 10-consecutive-digit phone
-  // pattern threshold, regardless of the counter's value.
-  const seq = (++uuidSampleSeq % 0x10000).toString(16).padStart(4, '0');
-  return `00000000-0000-${version}f00-8fff-abcdef${seq}ab`;
-};
+// Every character except the mandatory version nibble is a hex letter (a-f),
+// so the fully digit-stripped DLP normalization (SEVENTH-B02) always sees
+// exactly one digit for this value -- never 10, 11, or 16-19 -- regardless
+// of which field or event it is substituted into. No counter is needed:
+// the value only ever appears in a rejected mutation or an already-unique
+// row, never as a uniqueness key itself.
+const uuidVersionSample = version => `aaaaaaaa-aaaa-${version}aaa-aaaa-aaaaaaaaaaaa`;
 
 function conditionalMutation(eventType, payload) {
   const value = structuredClone(payload);
@@ -643,9 +646,69 @@ try {
       'select count(*)::int as count from event_outbox where event_id=$1',[dlpEventId]);
     assert.equal(absent.rows[0].count,0,`${probe}: DLP rejection committed`);
   }
+
+  const parityMismatchIds=[];
+  let goldenMaliciousRejected=0;
+  for(const vector of DLP_MALICIOUS_VECTORS){
+    const probePayload={...payloadByEvent.get('PAYER_ASSIGNED'),reason_code:vector.value};
+    const serviceVerdict=containsDirectIdentifier(probePayload);
+    const goldenEventId=eventUuid(dlpCounter++,'9');
+    let dbRejected=false;
+    let dbErrorMessage='';
+    try{
+      await client.query(dlpInsert,[goldenEventId,eventUuid(dlpCounter++,'a'),now,
+        ids.correlation,'trace-safe-value','dlp-golden-idempotency',
+        JSON.stringify(probePayload),hash]);
+    }catch(error){
+      dbRejected=true;
+      dbErrorMessage=String(error.message);
+    }
+    if(dbRejected){
+      assert.equal(dbErrorMessage,'LM-DATA-CLASSIFICATION-VIOLATION',`golden:${vector.id}`);
+      const goldenAbsent=await client.query(
+        'select count(*)::int as count from event_outbox where event_id=$1',[goldenEventId]);
+      assert.equal(goldenAbsent.rows[0].count,0,`golden:${vector.id} rejection committed`);
+      goldenMaliciousRejected+=1;
+    }
+    if(serviceVerdict!==true || !dbRejected){
+      parityMismatchIds.push(`${vector.id}(${vector.class}):service=${serviceVerdict},db_rejected=${dbRejected}`);
+    }
+  }
+
+  let goldenSafeAccepted=0;
+  for(const vector of DLP_SAFE_CONTROL_VECTORS){
+    const safePayload=payloadByEvent.get('PAYER_ASSIGNED');
+    const serviceVerdict=containsDirectIdentifier({trace_id:vector.value});
+    const safeEventId=eventUuid(dlpCounter++,'9');
+    await client.query(dlpInsert,[safeEventId,eventUuid(dlpCounter++,'a'),now,
+      ids.correlation,vector.value,`dlp-golden-safe-${vector.id}`,
+      JSON.stringify(safePayload),hash]);
+    const present=await client.query(
+      'select count(*)::int as count from event_outbox where event_id=$1',[safeEventId]);
+    assert.equal(present.rows[0].count,1,`golden safe:${vector.id} was not committed`);
+    goldenSafeAccepted+=1;
+    if(serviceVerdict!==false){
+      parityMismatchIds.push(`${vector.id}(safe):service=${serviceVerdict},db_rejected=false`);
+    }
+  }
+
+  assert.equal(parityMismatchIds.length,0,
+    `service/DB DLP parity mismatch on: ${parityMismatchIds.join(', ')}`);
+  assert.equal(goldenMaliciousRejected,DLP_MALICIOUS_VECTORS.length);
+  assert.equal(goldenSafeAccepted,DLP_SAFE_CONTROL_VECTORS.length);
+
+  const coverage=computeDlpMatrixCoverage();
+  for(const klass of Object.keys(coverage.classCoverage)){
+    assert.equal(coverage.classCoverage[klass],coverage.expectedSeparators,
+      `DLP golden corpus incomplete for class ${klass}: ${coverage.classCoverage[klass]}/${coverage.expectedSeparators} separators`);
+    assert.equal(coverage.containerCoverage[klass],coverage.expectedContainers,
+      `DLP golden corpus incomplete for class ${klass}: ${coverage.containerCoverage[klass]}/${coverage.expectedContainers} container vectors`);
+  }
+  assert.ok(coverage.isComplete,'DLP golden corpus matrix is not complete');
+
   pass(
     'PG-026',
-    `versioned content DLP rejected ${dlpProbes.length} formatted/normalized identifiers across payload, trace and metadata with rollback and safe diagnostic`,
+    `versioned content DLP rejected ${dlpProbes.length} formatted/normalized identifiers plus ${goldenMaliciousRejected} golden malicious vectors (full ${coverage.expectedSeparators}x${Object.keys(coverage.classCoverage).length} separator matrix + nested/array) across payload, trace and metadata; accepted ${goldenSafeAccepted} golden safe controls; service/DB parity mismatches: ${parityMismatchIds.length}`,
     {
       classifier_version:'DLP_EVENT_CONTENT_V1',
       probes:dlpProbes.length,
@@ -654,8 +717,15 @@ try {
       metadata_probes:1,
       normalized_phone_probes:6,
       normalized_passport_probes:3,
-      rollback_absence_checks:dlpProbes.length,
-      unsafe_value_echoes:0
+      rollback_absence_checks:dlpProbes.length+goldenMaliciousRejected,
+      unsafe_value_echoes:0,
+      golden_malicious_vectors:DLP_MALICIOUS_VECTORS.length,
+      golden_malicious_rejected:goldenMaliciousRejected,
+      golden_safe_vectors:DLP_SAFE_CONTROL_VECTORS.length,
+      golden_safe_accepted:goldenSafeAccepted,
+      golden_matrix_coverage:coverage.classCoverage,
+      golden_container_coverage:coverage.containerCoverage,
+      service_db_parity_mismatches:parityMismatchIds.length
     }
   );
 

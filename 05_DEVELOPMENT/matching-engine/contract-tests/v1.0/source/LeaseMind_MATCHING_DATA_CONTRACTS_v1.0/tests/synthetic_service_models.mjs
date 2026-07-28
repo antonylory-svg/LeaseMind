@@ -243,13 +243,24 @@ const DIRECT_IDENTIFIER_PATTERNS = [
 ];
 const FORBIDDEN_KEYS = /(?:email|phone|passport|bank|card|address|contact|full_name)/i;
 
+// Canonical DLP scalar normalization, shared in intent with
+// leasemind_security.normalize_dlp_scalar(text) in the PostgreSQL migration:
+// Unicode NFKC, then strip everything except ASCII digits 0-9. This fail-closed
+// \D-strip semantics must never be weakened — it is what makes every non-decimal
+// separator (dots, underscores, slashes, NBSP, zero-width characters, mixed
+// combinations) irrelevant to phone/passport/card detection.
+export function normalizeDlpScalar(value) {
+  return String(value).normalize('NFKC').replace(/\D/g, '');
+}
+
 export function containsDirectIdentifier(value) {
   const visit = current => {
-    if (typeof current === 'string') {
-      const compactDigits = current.replace(/\D/g,'');
+    if (typeof current === 'string' || typeof current === 'number') {
+      const asString = String(current);
+      const compactDigits = normalizeDlpScalar(asString);
       if (/^[78]\d{10}$/.test(compactDigits) || /^\d{10}$/.test(compactDigits)
           || /^\d{16,19}$/.test(compactDigits)) return true;
-      return DIRECT_IDENTIFIER_PATTERNS.some(pattern => pattern.test(current));
+      return DIRECT_IDENTIFIER_PATTERNS.some(pattern => pattern.test(asString));
     }
     if (Array.isArray(current)) return current.some(visit);
     if (current && typeof current === 'object') {

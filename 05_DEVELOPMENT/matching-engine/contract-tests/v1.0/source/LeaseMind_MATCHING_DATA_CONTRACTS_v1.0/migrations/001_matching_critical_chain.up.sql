@@ -1398,29 +1398,69 @@ create table event_outbox (
 alter table event_outbox enable row level security;
 alter table event_outbox force row level security;
 
+create function leasemind_security.normalize_dlp_scalar(p_value text)
+returns text
+language sql
+immutable
+set search_path = pg_catalog
+as $$
+  select regexp_replace(normalize(coalesce(p_value, ''), NFKC), '[^0-9]', '', 'g');
+$$;
+
+create function leasemind_security.scan_dlp_scalar(p_value jsonb)
+returns void
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+declare
+  as_text text;
+  digits text;
+begin
+  case jsonb_typeof(p_value)
+  when 'string', 'number' then
+    as_text := case jsonb_typeof(p_value)
+      when 'string' then p_value #>> '{}'
+      else p_value::text
+    end;
+    digits := leasemind_security.normalize_dlp_scalar(as_text);
+    if digits ~ '^[78][0-9]{10}$'
+       or digits ~ '^[0-9]{10}$'
+       or digits ~ '^[0-9]{16,19}$'
+       or as_text ~* '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
+       or as_text ~* '(^|[^[:alpha:]])(улица|ул\.|проспект|дом|квартира|street|address)([^[:alpha:]]|$)' then
+      raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
+      raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
+    end if;
+  when 'array' then
+    perform leasemind_security.scan_dlp_scalar(elem)
+      from jsonb_array_elements(p_value) as elem;
+  when 'object' then
+    if exists (
+      select 1 from jsonb_object_keys(p_value) as key
+       where lower(key) = any(array[
+         'email','phone','passport','bank','card','address','contact','full_name'
+       ])
+    ) then
+      raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
+      raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
+    end if;
+    perform leasemind_security.scan_dlp_scalar(kv.value)
+      from jsonb_each(p_value) as kv(key, value);
+  else
+    null;
+  end case;
+end;
+$$;
+
 create function leasemind_security.validate_no_direct_identifiers(p_document jsonb)
 returns boolean
 language plpgsql
 immutable
 set search_path = pg_catalog
 as $$
-declare
-  serialized text := p_document::text;
 begin
-  if serialized ~* '"(email|phone|passport|bank|card|address|contact|full_name)"[[:space:]]*:'
-     or serialized ~* '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
-     or serialized ~ '([+]7[[:space:]() -]*|8[[:space:](]+)[0-9]{3}[[:space:]() -]*[0-9]{3}[[:space:] -]*[0-9]{2}[[:space:] -]*[0-9]{2}'
-     or serialized ~ '(^|[^0-9])[78]([[:space:]()\\-]*[0-9]){10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[78][0-9]{10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{4}[[:space:]]+[0-9]{6}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])([0-9][[:space:]\\-]*){10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])([0-9]{4}[[:space:]\\-]){3}[0-9]{4}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{16,19}([^0-9]|$)'
-     or serialized ~* '(^|[^[:alpha:]])(улица|ул\.|проспект|дом|квартира|street|address)([^[:alpha:]]|$)' then
-    raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
-    raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
-  end if;
+  perform leasemind_security.scan_dlp_scalar(p_document);
   return true;
 end;
 $$;
@@ -1757,6 +1797,8 @@ $$;
 revoke all on function leasemind_security.validate_event_payload(text, text, jsonb) from public;
 revoke all on function leasemind_security.validate_no_direct_identifiers(jsonb) from public;
 revoke all on function leasemind_security.is_valid_rfc3339_timestamp(text) from public;
+revoke all on function leasemind_security.normalize_dlp_scalar(text) from public;
+revoke all on function leasemind_security.scan_dlp_scalar(jsonb) from public;
 
 create function validate_event_outbox_domain()
 returns trigger
@@ -2145,6 +2187,28 @@ grant execute on function leasemind_security.validate_no_direct_identifiers(json
   leasemind_reveal_writer;
 
 grant execute on function leasemind_security.is_valid_rfc3339_timestamp(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.normalize_dlp_scalar(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.scan_dlp_scalar(jsonb) to
   leasemind_guard_owner,
   leasemind_payer_writer,
   leasemind_participation_writer,

@@ -200,3 +200,79 @@ Matching Engine contract suite в `05_DEVELOPMENT/matching-engine/contract-tests
 - **Продуктовая, юридическая и платёжная логика не менялась.** Migration up/down не меняли структуру
   данных, только regex; controlled ZIP, submission manifest, Proposal-документы и DEVELOPMENT review
   — без изменений.
+
+## SEVENTH-B02 — DLP parity and separator normalization
+
+- **Root cause:** service (`containsDirectIdentifier`) и PostgreSQL (`validate_no_direct_identifiers`)
+  под одной версией `DLP_EVENT_CONTENT_V1` реализовывали РАЗНЫЕ алгоритмы: service — универсальный
+  `\D`-strip (принимает ЛЮБОЙ нецифровой разделитель); DB — 10 regex-альтернатив над сериализованным
+  документом целиком, каждая со своим явно перечисленным набором разделителей (только пробел/дефис/
+  скобки). Точка, `_`, `/`, NBSP, narrow NBSP, zero-width символы не входили ни в одну DB-альтернативу
+  — `7.999.123.45.67`, `7_999_123_45_67` и zero-width-вариант проходили DB, но отклонялись service.
+- **Fail-closed service semantics сохранены без ослабления.** `tests/synthetic_service_models.mjs` —
+  выделен именованный `normalizeDlpScalar(value)` (`String(value).normalize('NFKC').replace(/\D/g,'')`)
+  — та же `\D`-strip логика, что и раньше, только вынесена в переиспользуемую функцию; дополнительно
+  `containsDirectIdentifier` теперь также проверяет `number`-скаляры (ранее пропускались), что строго
+  усиливает, а не ослабляет, покрытие.
+- **PostgreSQL приведён к universal non-digit stripping.** `migrations/001_matching_critical_chain.up.sql`
+  — добавлена `leasemind_security.normalize_dlp_scalar(text)`: `regexp_replace(normalize(p_value, NFKC),
+  '[^0-9]', '', 'g')` — Unicode NFKC, затем удаление всего, кроме ASCII-цифр — зеркально service.
+- **Per-scalar рекурсия вместо сериализации всего документа.** Добавлена
+  `leasemind_security.scan_dlp_scalar(jsonb)` — рекурсивно обходит `object` (проверка forbidden keys
+  на каждом уровне + рекурсия в значения через `jsonb_each`), `array` (рекурсия в элементы через
+  `jsonb_array_elements`), `string`/`number` (нормализация через `normalize_dlp_scalar` + проверка
+  10/11/16-19-значных форм, плюс email/address regex на исходном тексте). Цифры разных JSON scalar
+  values никогда не объединяются — каждый scalar нормализуется независимо.
+  `validate_no_direct_identifiers(jsonb)` теперь — тонкая обёртка над `scan_dlp_scalar`; имя и
+  версия (`comment on function ... is 'DLP_EVENT_CONTENT_V1'`) не менялись. Добавлены `revoke`/`grant`
+  для двух новых функций, зеркально существующим (те же 9 ролей).
+- **Forbidden keys, email, address, другие DLP-классы не менялись.** Email/address regex —
+  побайтово те же паттерны. Forbidden-keys: сохранена ИСХОДНАЯ DB-семантика точного совпадения ключа
+  (`lower(key) = any(array['email',...])`, зеркально прежнему `"(email|...)"[[:space:]]*:` на
+  сериализованном документе) — а не substring-семантика JS `FORBIDDEN_KEYS`. Это осознанный выбор:
+  контрактные поля `previous_contact_decision_id`/`previous_contact_decision_version` содержат
+  подстроку «contact», и переход DB на substring-match (для «полной параллели» с JS) при первом же
+  прогоне против реальных 33 event payloads (впервые проверено сквозным прогоном, а не точечными
+  фикстурами) ложно блокировал бы весь тип события `PREVIOUS_CONTACT_DECISION_CHANGED`. Это
+  единственное осознанное расхождение service/DB, вне периметра SEVENTH-B02 (который про нормализацию
+  разделителей чисел, а не про стратегию сопоставления ключей) и существовавшее до этого патча;
+  golden corpus его не затрагивает (ни один вектор не использует «contact»-подобные ключи).
+- **Дополнительно обнаружено и исправлено при верификации:** `uuidVersionSample` (SEVENTH-B01,
+  `tests/run_postgres_suite.mjs` и `tests/run_contract_suite.mjs`) генерировал значения вида
+  `00000000-0000-Xf00-8fff-abcdef<seq>ab`, которые при ПОЛНОМ (не только по разделителям) удалении
+  нецифровых символов чаще всего давали 16-19 «выживших» цифр — ровно запрещённый диапазон новой
+  строгой DLP-проверки. Заменено на `aaaaaaaa-aaaa-Xaaa-aaaa-aaaaaaaaaaaa` — единственная цифра во
+  всей строке — version nibble; digit-strip даёт длину 1 независимо от версии, счётчик больше не
+  нужен (значение не используется как ключ уникальности).
+- **Единый golden DLP corpus — программно генерируемый cross-product**, новый файл
+  `contract-tests/v1.0/source/LeaseMind_MATCHING_DATA_CONTRACTS_v1.0/tests/fixtures/dlp_golden_vectors.mjs`,
+  импортируется и `tests/run_contract_suite.mjs` (CT-023), и `tests/run_postgres_suite.mjs` (PG-026).
+  Corpus строится через `Object.entries(CLASS_DIGITS).flatMap(...)` по 15 `SEPARATOR_VARIANTS` —
+  не отдельными несогласованными массивами на класс:
+  - **45 scalar vectors** = 3 класса (phone/passport/card) × 15 разделителей (без разделителя,
+    пробел, дефис, скобки, точка, `_`, `/`, NBSP, narrow NBSP, zero-width space/non-joiner/joiner,
+    смешанные разделители, буквы между цифрами, прочие символы между цифрами) — полная матрица
+    **15/15/15**, без единого пропуска;
+  - **+6 контейнерных vectors** = 3 класса × {nested-object, array} — **2/2/2**;
+  - **итого 51 malicious vector** (было 32 на предыдущей итерации — добавлены все ранее
+    отсутствовавшие 19 клеток для passport и card);
+  - **5 safe control vectors** (без изменений) — после нормализации дают 3, 4, 7, 8 или 9 цифр
+    (не 10/11/16-19), длина 16+ символов (совместимо с ограничением `trace_id`).
+  Экспортирована `computeDlpMatrixCoverage()` — чистая функция без побочных эффектов, возвращающая
+  `classCoverage`/`containerCoverage`/`isComplete`; вызывается явным `assert`-блоком и в CT-023, и в
+  PG-026 — при исчезновении любой клетки матрицы соответствующий suite падает тестовой ошибкой
+  (не необработанным исключением при импорте), с точным указанием, какого класса/скольки
+  разделителей/контейнеров не хватает.
+- **Service/DB parity проверяется явно в PG-026** для всех 51 malicious + 5 safe vectors: для
+  каждого сравнивается вердикт `containsDirectIdentifier` (JS) с фактическим результатом INSERT в
+  PostgreSQL; любое расхождение падает как `assert.equal(parityMismatchIds.length, 0, ...)` — test
+  failure, а не тихий пропуск. Фактический результат прогона: **51/51 malicious rejected, 5/5 safe
+  accepted, 0 parity mismatches** (оба слоя, полная матрица).
+- **Синтетические идентификаторы не печатаются** — в assertion-сообщениях используются только
+  `vector.id`/`vector.class`; DB-ошибка возвращает фиксированную строку `LM-DATA-CLASSIFICATION-VIOLATION`
+  без интерполяции значения (не изменено).
+- **CT/EV/PG идентификаторы не менялись** — правки добавляют ассерты внутри существующих CT-023 и
+  PG-026, ничего не переименовано и не удалено.
+- **Продуктовая, юридическая и платёжная логика не менялась.** Down-migration не трогалась (новые
+  функции живут в `leasemind_security` и удаляются существующим `drop schema ... cascade`). Controlled
+  ZIP, submission manifest, Proposal-документы и DEVELOPMENT review — без изменений.
