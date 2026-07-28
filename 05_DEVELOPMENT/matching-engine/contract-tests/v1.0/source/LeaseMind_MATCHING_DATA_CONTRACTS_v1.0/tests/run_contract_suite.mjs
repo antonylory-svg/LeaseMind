@@ -6,7 +6,7 @@ import {Parser, fromFile} from '@asyncapi/parser';
 import Ajv2020 from 'ajv/dist/2020.js';
 import addFormats from 'ajv-formats';
 import YAML from 'yaml';
-import {canonicalEventFixtures, openApiFixtures} from '../fixtures/synthetic_fixtures.mjs';
+import {canonicalEventFixtures, openApiFixtures, UUID_V7} from '../fixtures/synthetic_fixtures.mjs';
 import {
   IdempotencyStore, RevealGuardModel, RevealTokenStore, classifySchemaChange,
   containsDirectIdentifier, cryptoUnlink, resolveTrustedRevealContext,
@@ -35,6 +35,50 @@ addFormats(eventAjv);
 eventAjv.addSchema(asyncRoot);
 const events = canonicalEventFixtures(asyncapi);
 
+const FORBIDDEN_UUID_VERSIONS = ['1', '2', '3', '5', '6', '8'];
+let uuidSampleSeq = 0;
+const uuidVersionSample = version => {
+  const seq = (++uuidSampleSeq % 0x10000).toString(16).padStart(4, '0');
+  return `00000000-0000-${version}f00-8fff-abcdef${seq}ab`;
+};
+const resolveRef = (schema, root) => {
+  if (!schema?.$ref) return schema ?? {};
+  return schema.$ref.split('/').slice(1).reduce((value, segment) =>
+    value[segment.replaceAll('~1', '/').replaceAll('~0', '~')], root);
+};
+const mergeSchema = (schema, root) => {
+  if (!schema) return {};
+  if (schema.$ref) return mergeSchema(resolveRef(schema, root), root);
+  if (schema.allOf) {
+    const own = {...schema};
+    delete own.allOf;
+    return schema.allOf.reduce((acc, part) => {
+      const merged = mergeSchema(part, root);
+      return {...acc, ...merged, properties: {...acc.properties, ...merged.properties}};
+    }, own);
+  }
+  return schema;
+};
+const collectUuidPaths = (schema, value, root, path = []) => {
+  const resolved = mergeSchema(schema, root);
+  if (resolved.format === 'uuid' && typeof value === 'string') return [path];
+  if (resolved.type === 'array' && Array.isArray(value)) {
+    return value.flatMap((item, index) => collectUuidPaths(resolved.items, item, root, [...path, index]));
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(resolved.properties ?? {}).flatMap(([key, propSchema]) =>
+      key in value ? collectUuidPaths(propSchema, value[key], root, [...path, key]) : []);
+  }
+  return [];
+};
+const setAtPath = (obj, path, value) => {
+  const clone = structuredClone(obj);
+  let cursor = clone;
+  for (let i = 0; i < path.length - 1; i++) cursor = cursor[path[i]];
+  cursor[path[path.length - 1]] = value;
+  return clone;
+};
+
 await test('CT-001', '9 OpenAPI operations and every declared 4xx execute positive validation', 'validator_fixture', async () => {
   await SwaggerParser.validate(fileURLToPath(new URL('../openapi.yaml', import.meta.url)));
   const fixtures = openApiFixtures(openapi);
@@ -58,7 +102,7 @@ await test('CT-001', '9 OpenAPI operations and every declared 4xx execute positi
     const validate = localAjv.compile(schema);
     assert.equal(validate(fixture.body), true, `${fixture.id}: ${localAjv.errorsText(validate.errors)}`);
   }
-  const validateProblem = localAjv.compile(openapi.components.schemas.Problem);
+  const validateProblem = localAjv.compile({$ref: 'https://synthetic.invalid/openapi-root#/components/schemas/Problem'});
   for (const fixture of errors) assert.equal(validateProblem(fixture.body), true, fixture.id);
   return {operations: operations.length, declared_4xx: declared4xx};
 });
@@ -69,6 +113,9 @@ await test('CT-002', 'Every canonical event executes positive and malformed fixt
   assert.ok(parsed.document);
   assert.equal(parsed.diagnostics.filter(item => item.severity === 0).length, 0);
   assert.equal(events.length, 33);
+  let uuidFieldsChecked = 0;
+  let forbiddenVersionRejections = 0;
+  let v7Acceptances = 0;
   for (const fixture of events) {
     const validate = eventAjv.compile({$ref:
       `https://synthetic.invalid/asyncapi-root#/components/schemas/${fixture.schemaName}`});
@@ -77,8 +124,31 @@ await test('CT-002', 'Every canonical event executes positive and malformed fixt
     const malformed = structuredClone(fixture.envelope);
     delete malformed.payload;
     assert.equal(validate(malformed), false, `${fixture.id}: missing payload accepted`);
+
+    const uuidPaths = collectUuidPaths(asyncapi.components.schemas[fixture.schemaName], fixture.envelope, asyncapi);
+    for (const path of uuidPaths) {
+      const pathKey = path.join('.');
+      for (const version of FORBIDDEN_UUID_VERSIONS) {
+        const mutated = setAtPath(fixture.envelope, path, uuidVersionSample(version));
+        assert.equal(validate(mutated), false,
+          `${fixture.id}:${pathKey} accepted forbidden UUID v${version}`);
+        forbiddenVersionRejections++;
+      }
+      const v7Value = pathKey === 'event_id' && fixture.id === events[0].id
+        ? UUID_V7 : uuidVersionSample('7');
+      const v7Mutated = setAtPath(fixture.envelope, path, v7Value);
+      assert.equal(validate(v7Mutated), true,
+        `${fixture.id}:${pathKey} rejected valid UUID v7`);
+      v7Acceptances++;
+      uuidFieldsChecked++;
+    }
   }
-  return {typed_events: events.length, positive: 33, malformed_rejected: 33};
+  return {
+    typed_events: events.length, positive: 33, malformed_rejected: 33,
+    uuid_fields_checked: uuidFieldsChecked,
+    forbidden_uuid_version_rejections: forbiddenVersionRejections,
+    uuid_v7_acceptances: v7Acceptances
+  };
 });
 
 await test('CT-003', 'Unknown fields are rejected for every command schema', 'validator_fixture', async () => {
@@ -87,14 +157,37 @@ await test('CT-003', 'Unknown fields are rejected for every command schema', 'va
   root.$id = 'https://synthetic.invalid/openapi-negative';
   const localAjv = new Ajv2020({strict: false, allErrors: true, validateFormats: true});
   addFormats(localAjv); localAjv.addSchema(root);
+  let uuidFieldsChecked = 0;
+  let forbiddenVersionRejections = 0;
+  let v7Acceptances = 0;
   for (const fixture of fixtures) {
     const schema = fixture.requestSchema.$ref
       ? {$ref: `https://synthetic.invalid/openapi-negative${fixture.requestSchema.$ref}`}
       : fixture.requestSchema;
     const validate = localAjv.compile(schema);
     assert.equal(validate({...fixture.body, injected_unknown_field: true}), false, fixture.id);
+
+    const uuidPaths = collectUuidPaths(fixture.requestSchema, fixture.body, openapi);
+    for (const path of uuidPaths) {
+      const pathKey = path.join('.');
+      for (const version of FORBIDDEN_UUID_VERSIONS) {
+        const mutatedBody = setAtPath(fixture.body, path, uuidVersionSample(version));
+        assert.equal(validate(mutatedBody), false,
+          `${fixture.id}:${pathKey} accepted forbidden UUID v${version}`);
+        forbiddenVersionRejections++;
+      }
+      const v7Body = setAtPath(fixture.body, path, uuidVersionSample('7'));
+      assert.equal(validate(v7Body), true, `${fixture.id}:${pathKey} rejected valid UUID v7`);
+      v7Acceptances++;
+      uuidFieldsChecked++;
+    }
   }
-  return {negative_fixtures: fixtures.length};
+  return {
+    negative_fixtures: fixtures.length,
+    uuid_fields_checked: uuidFieldsChecked,
+    forbidden_uuid_version_rejections: forbiddenVersionRejections,
+    uuid_v7_acceptances: v7Acceptances
+  };
 });
 
 await test('CT-004', 'Minor compatibility accepts only additive optional fields', 'service_behavior', () => {

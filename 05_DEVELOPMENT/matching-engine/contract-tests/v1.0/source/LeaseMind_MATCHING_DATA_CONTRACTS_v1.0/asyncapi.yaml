@@ -159,6 +159,10 @@ components:
     DecisionRecorded:
       payload: {$ref: '#/components/schemas/DecisionEventEnvelope'}
   schemas:
+    UuidV4OrV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
     EventEnvelopeBase:
       type: object
       required:
@@ -175,14 +179,14 @@ components:
         - payload_hash
         - data_classification
       properties:
-        event_id: {type: string, format: uuid}
+        event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         schema_version: {type: string, pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'}
-        aggregate_id: {type: string, format: uuid}
+        aggregate_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         aggregate_version: {type: integer, format: int64, minimum: 1}
         occurred_at: {type: string, format: date-time}
         producer: {type: string, minLength: 1}
-        correlation_id: {type: string, format: uuid}
-        causation_id: {type: string, format: uuid}
+        correlation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        causation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         trace_id: {type: string, minLength: 16, maxLength: 64}
         idempotency_key: {type: string, minLength: 16, maxLength: 128}
         payload_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
@@ -208,11 +212,11 @@ components:
       additionalProperties: false
       required: [encounter_id, match_pair_id, resolution_state, payer_assignment_version]
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_pair_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_pair_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         resolution_state: {enum: [ASSIGNED, PAYER_RESOLUTION_REQUIRED]}
-        payer_party_id: {type: string, format: uuid}
-        payer_campaign_id: {type: string, format: uuid}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_campaign_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 0}
         reason_code: {enum: [FIRST_VERIFIED_ACCEPTANCE, PAYER_ASSIGNMENT_CHANGED, CONCURRENT_ORDER_UNPROVABLE]}
 
@@ -231,10 +235,10 @@ components:
       additionalProperties: false
       required: [encounter_id, match_id, acceptance_record_id, party_id, acceptance_aggregate_version, acceptance_status]
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_id: {type: string, format: uuid}
-        acceptance_record_id: {type: string, format: uuid}
-        party_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        acceptance_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         acceptance_aggregate_version: {type: integer, format: int64, minimum: 1}
         acceptance_status: {enum: [ACCEPTED, SUPERSEDED, INVALIDATED]}
         reason_code:
@@ -255,7 +259,7 @@ components:
       additionalProperties: false
       required: [party_id, identity_authority_version, reason_code, effective_at]
       properties:
-        party_id: {type: string, format: uuid}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         identity_authority_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [IDENTITY_INVALIDATED, AUTHORITY_INVALIDATED, AUTHORITY_EXPIRED]}
         effective_at: {type: string, format: date-time}
@@ -275,8 +279,8 @@ components:
       additionalProperties: false
       required: [party_id, lawful_basis_id, purpose_code, lawful_basis_version, reason_code, effective_at]
       properties:
-        party_id: {type: string, format: uuid}
-        lawful_basis_id: {type: string, format: uuid}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        lawful_basis_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         purpose_code: {type: string, maxLength: 64}
         lawful_basis_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [INVALIDATED, REVOKED, EXPIRED, PROCESSING_PURPOSE_CHANGED]}
@@ -297,8 +301,8 @@ components:
       additionalProperties: false
       required: [encounter_id, previous_contact_decision_id, previous_contact_decision_version, decision_status, reason_code, effective_at]
       properties:
-        encounter_id: {type: string, format: uuid}
-        previous_contact_decision_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        previous_contact_decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         previous_contact_decision_version: {type: integer, format: int64, minimum: 1}
         decision_status: {enum: [NO_PREVIOUS_CONTACT_CONFIRMED, PREVIOUS_CONTACT_CONFIRMED, UNDER_REVIEW, INCONCLUSIVE]}
         reason_code: {enum: [DECISION_CREATED, EVIDENCE_ADDED, DECISION_REOPENED, DECISION_INVALIDATED]}
@@ -334,15 +338,15 @@ components:
       additionalProperties: false
       required: [encounter_id, financial_event_id, payment_path, amount_minor, currency]
       properties:
-        encounter_id: {type: string, format: uuid}
-        payment_intent_id: {type: string, format: uuid}
-        financial_event_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payment_intent_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        financial_event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payment_path: {enum: [DEBIT, CREDIT, MIXED]}
         amount_minor: {type: integer, format: int64, minimum: 0, maximum: 1000000}
         currency: {const: RUB}
-        provider_operation_ref: {type: string, format: uuid}
-        receipt_ref: {type: string, format: uuid}
-        credit_application_id: {type: string, format: uuid}
+        provider_operation_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
+        receipt_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
+        credit_application_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [PROVIDER_RECONCILIATION_MISMATCH, KKT_OFD_RECONCILIATION_MISMATCH, CREDIT_REVERSED, SECOND_PARTY_EXPOSURE_CHANGED, REFUND_AND_CORRECTION_COMPLETED]}
 
@@ -419,11 +423,11 @@ components:
       additionalProperties: false
       required: [introduction_record_id, encounter_id, from_state, to_state]
       properties:
-        introduction_record_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         from_state: {$ref: '#/components/schemas/RecordState'}
         to_state: {$ref: '#/components/schemas/RecordState'}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         established_delivery_at: {type: string, format: date-time}
         protection_starts_at: {type: string, format: date-time}
         protection_ends_at: {type: string, format: date-time}
@@ -443,11 +447,11 @@ components:
       additionalProperties: false
       required: [reveal_attempt_id, introduction_record_id, encounter_id, recipient_party_id, reveal_gate_snapshot_id, manifest_hash, evidence_manifest_hash, evidence_classification, attempted_at]
       properties:
-        reveal_attempt_id: {type: string, format: uuid}
-        introduction_record_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
-        recipient_party_id: {type: string, format: uuid}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        reveal_attempt_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        recipient_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
         evidence_manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
         evidence_classification: {enum: [SUFFICIENT, PARTIAL, CONTRADICTORY, ABSENT]}
@@ -479,13 +483,13 @@ components:
       additionalProperties: false
       required: [decision_id, dispute_id, introduction_record_id, decision_type, decided_at]
       properties:
-        decision_id: {type: string, format: uuid}
-        dispute_id: {type: string, format: uuid}
-        introduction_record_id: {type: string, format: uuid}
+        decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        dispute_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         decision_type: {enum: [DELIVERY_CONFIRMED_BY_DECISION, NO_DELIVERY_CONFIRMED_BY_DECISION, DISPUTE_REJECTED, DISPUTE_UPHELD]}
         established_delivery_at: {type: string, format: date-time}
         decided_at: {type: string, format: date-time}
-        financial_consequence_ref: {type: string, format: uuid}
+        financial_consequence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
       allOf:
         - if:
             properties:

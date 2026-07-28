@@ -1567,7 +1567,7 @@ begin
       if jsonb_typeof(p_payload -> field_name) <> 'string' then
         raise exception using errcode = '22023', message = 'LM-OUTBOX-PAYLOAD-TYPE';
       end if;
-      if p_payload ->> field_name !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' then
+      if p_payload ->> field_name !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' then
         raise exception using errcode = '22023', message = 'LM-OUTBOX-PAYLOAD-FORMAT';
       end if;
     elsif field_name = any(integer_fields) then

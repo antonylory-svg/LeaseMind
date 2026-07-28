@@ -146,3 +146,57 @@ Matching Engine contract suite в `05_DEVELOPMENT/matching-engine/contract-tests
   передачу кода возврата, санитизацию логов и обработку JSON, не сами проверки и не их ID.
 - **Продуктовая, юридическая и платёжная логика не менялась.** Controlled ZIP, submission manifest,
   Proposal-документы и DEVELOPMENT review — без изменений.
+
+## SEVENTH-B01 — UUID version enforcement (только UUID v4/v7)
+
+- **Root cause:** три независимых слоя валидации UUID (OpenAPI `format: uuid`, AsyncAPI
+  `format: uuid`, PostgreSQL regex в `validate_event_payload`) не были синхронизированы. Схемы не
+  ограничивали версию вообще; DB regex ограничивал версию nibble диапазоном `[1-8]` вместо `[47]`.
+  Независимый probe с UUID v1 `6ba7b810-9dad-11d1-80b4-00c04fd430c8` проходил все три слоя. Штатная
+  mutation-матрица PG-019 проверяла только строку `not-a-uuid`, поэтому неверную версию (при
+  корректном синтаксисе UUID) не обнаруживала.
+- **Изменённые файлы:**
+  - `openapi.yaml` — добавлен переиспользуемый компонент `UuidV4OrV7` (`format: uuid` +
+    `pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'`);
+    все 63 инлайновых `{type: string, format: uuid}` заменены на `{$ref: '#/components/schemas/UuidV4OrV7'}`.
+  - `asyncapi.yaml` — тот же компонент `UuidV4OrV7` с идентичным pattern; все 35 инлайновых
+    `{type: string, format: uuid}` заменены на `$ref`.
+  - `migrations/001_matching_critical_chain.up.sql:1570` (`validate_event_payload`) — version nibble
+    `[1-8]` заменён на `[47]`; RFC variant `[89ab]` и case-insensitive оператор `!~*` не менялись.
+  - `fixtures/synthetic_fixtures.mjs` — добавлена и экспортирована детерминированная константа
+    `UUID_V7 = '00000000-0000-7000-8000-000000000001'`.
+  - `tests/run_postgres_suite.mjs` — `eventUuid()` параметризован версией (по умолчанию `'4'`, все
+    существующие вызовы без изменений); добавлены `FORBIDDEN_UUID_VERSIONS = ['1','2','3','5','6','8']`
+    и `uuidVersionSample(version, seed)`; `payloadMutations()` теперь генерирует по 6
+    version-мутаций (`invalid-uuid-v1`…`invalid-uuid-v8`) на каждое uuid-поле payload в дополнение к
+    прежней `invalid-uuid`; в основной цикл PG-019 добавлена positive-вставка с UUID v7 для каждого
+    из 33 событий (первое использует именно `UUID_V7` из fixtures); required-kind список и evidence
+    расширены (`positive_uuid_v7_probes`, `forbidden_uuid_version_mutations`), сохранив все прежние
+    проверки без ослабления.
+  - `tests/run_contract_suite.mjs` — добавлены `resolveRef`/`mergeSchema`/`collectUuidPaths`/
+    `setAtPath`/`uuidVersionSample` (корректно разворачивают `$ref` и `allOf`-композицию); CT-002
+    расширен negative/positive UUID-version проверками по всем uuid-полям envelope+payload всех 33
+    AsyncAPI-событий; CT-003 расширен тем же механизмом для всех uuid-полей (включая вложенные
+    `parties[]`/`source_leases[]`) во всех 9 OpenAPI-команд.
+- **Разрешены только UUID v4 и v7** — на всех трёх слоях (OpenAPI ajv, AsyncAPI ajv, PostgreSQL regex)
+  одновременно; версии 1, 2, 3, 5, 6, 8 отклоняются везде.
+- **Количество probes:** CT-002 — 33 события × все обнаруженные uuid-поля envelope+payload × (6
+  negative + 1 positive-v7); CT-003 — 9 команд × все обнаруженные uuid-поля (включая элементы
+  массивов) × (6 negative + 1 positive-v7); PG-019 — 33 positive-v4 вставки (сохранены) + 33
+  positive-v7 вставки (новые) + по 6 version-мутаций на каждое uuid-поле payload каждого события
+  (rollback-absence проверяется существующим механизмом `assertRejected`+`select count(*)`).
+  Точные числа фиксируются в `synthetic_verification_report.json` каждого прогона (поля
+  `uuid_fields_checked`, `forbidden_uuid_version_rejections`, `uuid_v7_acceptances` в CT-002/CT-003;
+  `positive_uuid_v7_probes`, `forbidden_uuid_version_mutations` в PG-019).
+- **Известное ограничение (раскрыто, не скрыто):** автоматическая negative/positive проверка uuid-
+  полей охватывает поля, достижимые через существующие request/event fixtures (request body и event
+  envelope+payload). Uuid-поля, встречающиеся только в success-response схемах (не покрытых
+  fixture-механизмом ни до, ни после этого патча), получили ту же схемную `UuidV4OrV7` ссылку
+  (статически защищены), но не имеют отдельного runtime negative-probe в CT — это не регрессия, а
+  тот же охват, что и у остальной части test suite.
+- **Не ослаблены существующие проверки; идентификаторы CT/EV/PG не менялись** — все правки добавляют
+  новые ассерты внутри существующих тестов (CT-002, CT-003, PG-019), не переименовывая и не удаляя
+  ни одной проверки.
+- **Продуктовая, юридическая и платёжная логика не менялась.** Migration up/down не меняли структуру
+  данных, только regex; controlled ZIP, submission manifest, Proposal-документы и DEVELOPMENT review
+  — без изменений.

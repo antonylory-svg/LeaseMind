@@ -4,7 +4,7 @@ import {writeSync} from 'node:fs';
 import EmbeddedPostgres from 'embedded-postgres';
 import pgModule from 'pg';
 import YAML from 'yaml';
-import {canonicalEventFixtures} from '../fixtures/synthetic_fixtures.mjs';
+import {canonicalEventFixtures, UUID_V7} from '../fixtures/synthetic_fixtures.mjs';
 
 const root = new URL('../', import.meta.url);
 const runId = `${process.pid}-${Date.now()}`;
@@ -59,10 +59,20 @@ async function assertRejected(client, sql, params, pattern) {
   }
 }
 
-function eventUuid(counter, namespace = '5') {
+function eventUuid(counter, namespace = '5', version = '4') {
   const hex = counter.toString(16).padStart(4, '0');
-  return `00000000-${hex}-4${namespace}00-8000-${String(counter).padStart(12, '0')}`;
+  return `00000000-${hex}-${version}${namespace}00-8000-${String(counter).padStart(12, '0')}`;
 }
+
+const FORBIDDEN_UUID_VERSIONS = ['1', '2', '3', '5', '6', '8'];
+let uuidSampleSeq = 0;
+const uuidVersionSample = version => {
+  // Letters are interleaved throughout the trailing group so no run of
+  // digits ever reaches the DLP classifier's 10-consecutive-digit phone
+  // pattern threshold, regardless of the counter's value.
+  const seq = (++uuidSampleSeq % 0x10000).toString(16).padStart(4, '0');
+  return `00000000-0000-${version}f00-8fff-abcdef${seq}ab`;
+};
 
 function conditionalMutation(eventType, payload) {
   const value = structuredClone(payload);
@@ -118,7 +128,12 @@ function payloadMutations(eventType, payload, rawSchema, asyncapi) {
   for(const [field,rawFieldSchema] of Object.entries(schema.properties ?? {})){
     const fieldSchema=resolveSchema(rawFieldSchema,asyncapi);
     add('wrong-type',field,invalidTypeValue(fieldSchema));
-    if(fieldSchema.format==='uuid') add('invalid-uuid',field,'not-a-uuid');
+    if(fieldSchema.format==='uuid') {
+      add('invalid-uuid',field,'not-a-uuid');
+      for (const version of FORBIDDEN_UUID_VERSIONS) {
+        add(`invalid-uuid-v${version}`,field,uuidVersionSample(version));
+      }
+    }
     if(fieldSchema.format==='date-time') {
       add('invalid-rfc3339-calendar',field,'2026-99-99T99:99:99Z');
       add('invalid-rfc3339-day',field,'2026-02-30T10:00:00Z');
@@ -473,6 +488,7 @@ try {
   ]) eventDomains.set(type,['leasemind_previous_contact_writer','legal-decision']);
 
   let payloadProbes=0;
+  let positiveV7Probes=0;
   const mutationEvidence=[];
   let mutationCounter=1000;
   for (let index=0; index<eventFixtures.length; index++) {
@@ -492,6 +508,21 @@ try {
     const payloadSchemaName=fixture.schemaName.replace('Envelope','Payload');
     const payloadSchema=asyncapi.components.schemas[payloadSchemaName];
     assert.ok(payloadSchema,`${fixture.eventType}: payload schema missing`);
+
+    const resolvedPayloadSchema=resolveSchema(payloadSchema,asyncapi);
+    const uuidPayloadFields=Object.entries(resolvedPayloadSchema.properties ?? {})
+      .filter(([,rawFieldSchema])=>resolveSchema(rawFieldSchema,asyncapi).format==='uuid')
+      .map(([field])=>field);
+    const v7Payload=structuredClone(fixture.envelope.payload);
+    for (const field of uuidPayloadFields) {
+      v7Payload[field]=index===0 ? UUID_V7 : uuidVersionSample('7');
+    }
+    const v7EventId=index===0 ? UUID_V7 : eventUuid(mutationCounter++, '5', '7');
+    await client.query(insert,[v7EventId,role,fixture.eventType,
+      eventUuid(mutationCounter++, '6', '7'),now,producer,ids.correlation,
+      `event-positive-v7-${index}`,JSON.stringify(v7Payload),hash]);
+    positiveV7Probes += 1;
+
     for (const [mutationName, mutatedPayload] of payloadMutations(
       fixture.eventType,
       fixture.envelope.payload,
@@ -519,9 +550,15 @@ try {
   }
   for(const requiredKind of [
     'missing-required','null-required','wrong-type','invalid-uuid',
+    'invalid-uuid-v1','invalid-uuid-v2','invalid-uuid-v3',
+    'invalid-uuid-v5','invalid-uuid-v6','invalid-uuid-v8',
     'invalid-rfc3339-calendar','invalid-rfc3339-day','pattern','enum','const',
     'minimum','maximum','minLength','maxLength','unknown-field','conditional'
   ]) assert.ok((mutationKinds.get(requiredKind)??0)>0,`mutation kind not executed: ${requiredKind}`);
+  const forbiddenUuidVersionMutations=mutationEvidence.filter(item=>
+    item.mutation.startsWith('invalid-uuid-v')).length;
+  assert.ok(forbiddenUuidVersionMutations>0);
+  assert.ok(positiveV7Probes>=33);
   assert.equal(mutationEvidence.some(item=>
     item.event_type==='IDENTITY_AUTHORITY_INVALIDATED'
     && item.mutation==='minimum:identity_authority_version'),true);
@@ -534,10 +571,12 @@ try {
   assert.ok(mutationEvidence.length>231);
   pass(
     'PG-019',
-    `33 valid event payloads and ${mutationEvidence.length} per-constrained-field negative mutations executed; every rejection rolled back`,
+    `33 valid event payloads (plus ${positiveV7Probes} UUID v7 positive probes) and ${mutationEvidence.length} per-constrained-field negative mutations executed; every rejection rolled back`,
     {
       valid_event_payloads:33,
+      positive_uuid_v7_probes:positiveV7Probes,
       negative_payload_mutations:mutationEvidence.length,
+      forbidden_uuid_version_mutations:forbiddenUuidVersionMutations,
       mutation_kinds:Object.fromEntries(mutationKinds),
       rollback_absence_checks:mutationEvidence.length,
       independent_regression_probes:{
