@@ -200,6 +200,14 @@ try {
   const now = '2026-07-24T10:00:00Z';
   const later = '2026-07-24T10:05:00Z';
   const hash = 'a'.repeat(64);
+  // SEVENTH-B03: redeem_reveal_token now uses real clock_timestamp(), which
+  // is not the fixed 2026-07-24 literals used elsewhere in this file -- any
+  // value actually compared against server time inside that function must
+  // be anchored to the live database clock instead.
+  const dbNowRow = await client.query('select clock_timestamp() as now');
+  const dbNow = dbNowRow.rows[0].now;
+  const dbPlusMinutes = minutes => new Date(dbNow.getTime() + minutes * 60000).toISOString();
+  const dbMinusMinutes = minutes => new Date(dbNow.getTime() - minutes * 60000).toISOString();
   const payerInvalidationPayload = {
     encounter_id: ids.encounter,
     match_pair_id: ids.matchPair,
@@ -756,9 +764,9 @@ try {
     await client.query(`insert into source_reveal_lease(
       lease_id,source_system,source_owner_role,aggregate_id,encounter_id,source_version,
       fencing_token,issued_at,expires_at,lease_state
-    ) values($1,$2,$3,$4,$5,1,1,$6,'2026-07-24T11:00:00Z','ACTIVE')`,[
+    ) values($1,$2,$3,$4,$5,1,1,$6,$7,'ACTIVE')`,[
       `00000000-0000-4000-e${String(index).padStart(3,'0')}-${String(index+400).padStart(12,'0')}`,
-      source,role,aggregate,ids.encounter,now
+      source,role,aggregate,ids.encounter,now,dbPlusMinutes(180)
     ]);
   }
   let rlsProbes=0;
@@ -923,17 +931,16 @@ try {
     reveal_token_id,token_hash,introduction_record_id,encounter_id,
     reveal_gate_snapshot_id,recipient_party_id,manifest_hash,issued_at,expires_at,
     operation_state
-  ) values($1,$2,$3,$4,$5,$6,$7,$8,'2026-07-24T10:20:00Z','PENDING')`;
+  ) values($1,$2,$3,$4,$5,$6,$7,$8,$9,'PENDING')`;
   await client.query(insertToken,[
     critical.token,'b'.repeat(64),critical.record,ids.encounter,critical.snapshot,
-    acceptedParty,hash,now
+    acceptedParty,hash,now,dbPlusMinutes(20)
   ]);
   const redeemSql=`select leasemind_security.redeem_reveal_token(
-    $1,$2,$3,$4,$5
+    $1,$2,$3,$4
   ) as result`;
   const redeemParams=[
-    critical.token,'b'.repeat(64),'redeem-key-primary-0001','e'.repeat(64),
-    '2026-07-24T10:05:00Z'
+    critical.token,'b'.repeat(64),'redeem-key-primary-0001','e'.repeat(64)
   ];
   await client.query('begin');
   await client.query(redeemSql,redeemParams);
@@ -949,14 +956,8 @@ try {
   const raceB=embedded ? pg.getPgClient() : new pgModule.Client({connectionString:process.env.DATABASE_URL});
   await Promise.all([raceA.connect(),raceB.connect()]);
   const raceParams=[
-    [
-      critical.token,'b'.repeat(64),'concurrent-redeem-key-a','e'.repeat(64),
-      '2026-07-24T10:05:00Z'
-    ],
-    [
-      critical.token,'b'.repeat(64),'concurrent-redeem-key-b','e'.repeat(64),
-      '2026-07-24T10:05:00Z'
-    ]
+    [critical.token,'b'.repeat(64),'concurrent-redeem-key-a','e'.repeat(64)],
+    [critical.token,'b'.repeat(64),'concurrent-redeem-key-b','e'.repeat(64)]
   ];
   let raceResults;
   try{
@@ -990,18 +991,16 @@ try {
   assert.equal(atomicState.rows[0].redeem_result_hash.trim(),atomicState.rows[0].calculated_hash);
 
   await assertRejected(client,redeemSql,[
-    critical.token,'b'.repeat(64),'redeem-key-secondary-0002','e'.repeat(64),
-    '2026-07-24T10:05:01Z'
+    critical.token,'b'.repeat(64),'redeem-key-secondary-0002','e'.repeat(64)
   ],/LM-REVEAL-TOKEN-USED/);
   await assertRejected(client,redeemSql,[
-    critical.token,'b'.repeat(64),winnerParams[2],'0'.repeat(64),
-    '2026-07-24T10:05:01Z'
+    critical.token,'b'.repeat(64),winnerParams[2],'0'.repeat(64)
   ],/LM-IDEMPOTENCY-PAYLOAD-CONFLICT/);
 
   const failureBeforeToken=eventUuid(3030,'a');
   await client.query(insertToken,[
     failureBeforeToken,'c'.repeat(64),critical.record,ids.encounter,critical.snapshot,
-    acceptedParty,hash,now
+    acceptedParty,hash,now,dbPlusMinutes(20)
   ]);
   await client.query(`create function public.synthetic_fail_attempt_before()
     returns trigger language plpgsql as $$
@@ -1010,8 +1009,7 @@ try {
     before insert on reveal_attempt for each row
     execute function public.synthetic_fail_attempt_before()`);
   await assertRejected(client,redeemSql,[
-    failureBeforeToken,'c'.repeat(64),'failure-before-attempt-01','1'.repeat(64),
-    '2026-07-24T10:05:02Z'
+    failureBeforeToken,'c'.repeat(64),'failure-before-attempt-01','1'.repeat(64)
   ],/SYNTHETIC-FAIL-BEFORE-ATTEMPT/);
   await client.query('drop trigger synthetic_fail_attempt_before on reveal_attempt');
   await client.query('drop function public.synthetic_fail_attempt_before()');
@@ -1024,7 +1022,7 @@ try {
   const failureAfterToken=eventUuid(3031,'a');
   await client.query(insertToken,[
     failureAfterToken,'d'.repeat(64),critical.record,ids.encounter,critical.snapshot,
-    critical.secondParty,hash,now
+    critical.secondParty,hash,now,dbPlusMinutes(20)
   ]);
   await client.query(`create function public.synthetic_fail_token_after()
     returns trigger language plpgsql as $$
@@ -1033,8 +1031,7 @@ try {
     after update on reveal_token for each row
     execute function public.synthetic_fail_token_after()`);
   await assertRejected(client,redeemSql,[
-    failureAfterToken,'d'.repeat(64),'failure-after-token-0002','2'.repeat(64),
-    '2026-07-24T10:05:03Z'
+    failureAfterToken,'d'.repeat(64),'failure-after-token-0002','2'.repeat(64)
   ],/SYNTHETIC-FAIL-AFTER-TOKEN-UPDATE/);
   await client.query('drop trigger synthetic_fail_token_after on reveal_token');
   await client.query('drop function public.synthetic_fail_token_after()');
@@ -1048,9 +1045,315 @@ try {
     'select count(*)::int as count from reveal_attempt where reveal_token_id=$1',[critical.token]);
   assert.equal(raceAttempts.rows[0].count,1);
 
+  // SEVENTH-B03: the old 5-argument call must no longer exist at all -- this
+  // is also the "caller cannot pass a backdated time" proof, since there is
+  // no time parameter left to backdate.
+  await assertRejected(client,
+    `select leasemind_security.redeem_reveal_token($1,$2,$3,$4,$5) as result`,
+    [critical.token,'b'.repeat(64),'backdate-attempt-key-001','7'.repeat(64),dbMinusMinutes(600)],
+    /does not exist/i);
+
+  const redeemSignature=await client.query(`select count(*)::int as count,
+      array_agg(pg_get_function_identity_arguments(p.oid)) as signatures
+     from pg_proc p join pg_namespace n on n.oid=p.pronamespace
+    where n.nspname='leasemind_security' and p.proname='redeem_reveal_token'`);
+  assert.equal(redeemSignature.rows[0].count,1);
+  assert.equal(redeemSignature.rows[0].signatures[0],
+    'p_reveal_token_id uuid, p_token_hash character, p_idempotency_key text, p_request_hash character');
+
+  const expiredToken=eventUuid(3092,'a');
+  await client.query(insertToken,[
+    expiredToken,'5'.repeat(64),critical.record,ids.encounter,critical.snapshot,
+    acceptedParty,hash,now,dbMinusMinutes(5)
+  ]);
+  await assertRejected(client,redeemSql,[
+    expiredToken,'5'.repeat(64),'expired-token-key-0000001','6'.repeat(64)
+  ],/LM-REVEAL-TOKEN-EXPIRED/);
+
+  // source_reveal_lease rows can back at most one snapshot each (source_lease_id
+  // is globally unique in reveal_gate_snapshot_source), so this dedicated
+  // snapshot needs its own fresh lease set rather than reusing activeLeases.
+  for(let index=0;index<sourceRoles.length;index++){
+    const [role,source]=sourceRoles[index];
+    await client.query(`insert into source_reveal_lease(
+      lease_id,source_system,source_owner_role,aggregate_id,encounter_id,source_version,
+      fencing_token,issued_at,expires_at,lease_state
+    ) values($1,$2,$3,$4,$5,1,1,$6,$7,'ACTIVE')`,[
+      eventUuid(3095+index,'a'),source,role,eventUuid(3101+index,'a'),ids.encounter,
+      now,dbPlusMinutes(180)
+    ]);
+  }
+  const futureIssuedLeases=(await client.query(`select lease_id,source_system,source_version,fencing_token
+    from source_reveal_lease
+   where encounter_id=$1 and lease_state='ACTIVE' and lease_id=any($2::uuid[])
+   order by source_system`,
+    [ids.encounter,Array.from({length:6},(_,index)=>eventUuid(3095+index,'a'))])).rows;
+  assert.equal(futureIssuedLeases.length,6);
+
+  const futureIssuedSnapshot=eventUuid(3090,'a');
+  await client.query('begin');
+  try{
+    await client.query(`insert into reveal_gate_snapshot(
+        reveal_gate_snapshot_id,introduction_record_id,encounter_id,match_pair_id,match_id,
+        campaign_ids,campaign_versions,payer_party_id,payer_assignment_version,
+        previous_contact_decision_id,previous_contact_decision_version,
+        previous_contact_policy_version,previous_contact_policy_hash,advance_ledger_version,
+        advance_receipt_id,financial_exposure_version,delivery_policy_version,
+        delivery_policy_hash,manifest_hash,record_version,snapshot_hash,fencing_token,
+        reveal_guard_epoch,valid_until,created_at
+      ) values($1,$2,$3,$4,$5,array[$6]::uuid[],array[1]::bigint[],$7,1,$8,1,
+        'synthetic-v1',$9,1,'advance-synthetic',1,'synthetic-v1',$9,$9,1,$9,2,2,
+        $10,$11)`,
+      [...snapshotParams(futureIssuedSnapshot).slice(0,9),dbPlusMinutes(120),now]);
+    await insertSnapshotParties(futureIssuedSnapshot);
+    await insertSnapshotSources(futureIssuedSnapshot,futureIssuedLeases);
+    await client.query('commit');
+  }catch(error){
+    await client.query('rollback');
+    throw error;
+  }
+  const futureIssuedToken=eventUuid(3091,'a');
+  await client.query(insertToken,[
+    futureIssuedToken,'3'.repeat(64),critical.record,ids.encounter,futureIssuedSnapshot,
+    acceptedParty,hash,dbPlusMinutes(30),dbPlusMinutes(60)
+  ]);
+  await assertRejected(client,redeemSql,[
+    futureIssuedToken,'3'.repeat(64),'future-issued-key-0000001','4'.repeat(64)
+  ],/LM-REVEAL-TOKEN-NOT-YET-VALID/);
+
+  // SEVENTH-B04: fully isolated encounter/lease/snapshot/token fixtures so
+  // the two race probes below cannot disturb the shared ids.encounter guard
+  // epoch history (already at 2, about to be bumped to exactly 3 for PG-025).
+  const buildRaceFixture=async(seedBase,tokenHash)=>{
+    const encounterId=eventUuid(seedBase,'a');
+    const payerAggId=eventUuid(seedBase+1,'a');
+    const matchPairId=eventUuid(seedBase+2,'a');
+    const matchId=eventUuid(seedBase+3,'a');
+    const recordId=eventUuid(seedBase+4,'a');
+    const objectId=eventUuid(seedBase+5,'a');
+    const previousContactId=eventUuid(seedBase+6,'a');
+    const ownerParty=eventUuid(seedBase+7,'a');
+    const tenantParty=eventUuid(seedBase+8,'a');
+    const ownerAcceptance=eventUuid(seedBase+9,'a');
+    const tenantAcceptance=eventUuid(seedBase+10,'a');
+    const ownerLawfulBasis=eventUuid(seedBase+11,'a');
+    const tenantLawfulBasis=eventUuid(seedBase+12,'a');
+    const snapshotId=eventUuid(seedBase+13,'a');
+    const tokenId=eventUuid(seedBase+14,'a');
+
+    await client.query(`insert into payer_resolution_aggregate(
+      payer_resolution_aggregate_id,encounter_id,match_pair_id,
+      payer_party_id,payer_campaign_id,payer_assignment_version,
+      resolution_state,aggregate_version,updated_at
+    ) values($1,$2,$3,$4,$5,1,'ASSIGNED',1,$6)`,
+    [payerAggId,encounterId,matchPairId,ids.payer,ids.campaign,now]);
+
+    const leaseAggregateIds={};
+    for(let i=0;i<sourceRoles.length;i++){
+      const [role,source]=sourceRoles[i];
+      const leaseId=eventUuid(seedBase+20+i,'a');
+      const aggId=eventUuid(seedBase+30+i,'a');
+      leaseAggregateIds[source]=aggId;
+      await client.query(`insert into source_reveal_lease(
+        lease_id,source_system,source_owner_role,aggregate_id,encounter_id,source_version,
+        fencing_token,issued_at,expires_at,lease_state
+      ) values($1,$2,$3,$4,$5,1,1,$6,$7,'ACTIVE')`,
+      [leaseId,source,role,aggId,encounterId,now,dbPlusMinutes(180)]);
+    }
+    const leases=(await client.query(`select lease_id,source_system,source_version,fencing_token
+      from source_reveal_lease where encounter_id=$1 and lease_state='ACTIVE' order by source_system`,
+      [encounterId])).rows;
+    assert.equal(leases.length,6);
+
+    const acceptanceColumns=`acceptance_record_id,encounter_id,match_id,party_id,party_role,
+        payer_party_id,payer_campaign_id,aggregate_version,identity_version,identity_method,
+        identity_evidence_ref,authority_version,authority_status,authority_evidence_ref,
+        terms_version,terms_hash,consent_version,consent_hash,payer_notice_version,
+        confirmed_account_id,signature_operation_id,signed_action,
+        signature_verification_result,signature_evidence_ref,accepted_at`;
+    await client.query(`insert into participation_acceptance(${acceptanceColumns})
+      values($1,$2,$3,$4,'PAYER',$5,$6,1,1,'SYNTHETIC',$7,1,'VERIFIED',$7,
+        '1.0',$8,'1.0',$8,'1.0',$7,$7,'SYNTHETIC_ACCEPT','VERIFIED',$7,$9)`,
+      [ownerAcceptance,encounterId,matchId,ownerParty,ids.payer,ids.campaign,ids.correlation,hash,now]);
+    await client.query(`insert into participation_acceptance(${acceptanceColumns})
+      values($1,$2,$3,$4,'NON_PAYER',$5,$6,1,1,'SYNTHETIC',$7,1,'VERIFIED',$7,
+        '1.0',$8,'1.0',$8,'1.0',$7,$7,'SYNTHETIC_ACCEPT','VERIFIED',$7,$9)`,
+      [tenantAcceptance,encounterId,matchId,tenantParty,ids.payer,ids.campaign,ids.correlation,hash,now]);
+
+    await client.query('begin');
+    try{
+      await client.query(`insert into introduction_record(
+        introduction_record_id,encounter_id,match_pair_id,match_id,campaign_ids,
+        object_id,record_state,aggregate_version,match_rule_version,
+        previous_contact_decision_id,previous_contact_policy_version,
+        previous_contact_policy_hash,created_at,updated_at
+      ) values($1,$2,$3,$4,array[$5]::uuid[],$6,'DRAFT',1,'synthetic-v1',$7,
+        'synthetic-v1',$8,$9,$9)`,
+      [recordId,encounterId,matchPairId,matchId,ids.campaign,objectId,previousContactId,hash,now]);
+      await client.query(`insert into introduction_record_party(
+        introduction_record_id,encounter_id,party_id,party_role,acceptance_record_id,
+        acceptance_aggregate_version,terms_hash,lawful_basis_id,identity_authority_version
+      ) values
+        ($1,$2,$3,'OWNER_SIDE',$4,1,$5,$6,1),
+        ($1,$2,$7,'TENANT_SIDE',$8,1,$5,$9,1)`,
+      [recordId,encounterId,ownerParty,ownerAcceptance,hash,
+        ownerLawfulBasis,tenantParty,tenantAcceptance,tenantLawfulBasis]);
+      await client.query('commit');
+    }catch(error){
+      await client.query('rollback');
+      throw error;
+    }
+
+    await client.query('begin');
+    try{
+      await client.query(`insert into reveal_gate_snapshot(
+          reveal_gate_snapshot_id,introduction_record_id,encounter_id,match_pair_id,match_id,
+          campaign_ids,campaign_versions,payer_party_id,payer_assignment_version,
+          previous_contact_decision_id,previous_contact_decision_version,
+          previous_contact_policy_version,previous_contact_policy_hash,advance_ledger_version,
+          advance_receipt_id,financial_exposure_version,delivery_policy_version,
+          delivery_policy_hash,manifest_hash,record_version,snapshot_hash,fencing_token,
+          reveal_guard_epoch,valid_until,created_at
+        ) values($1,$2,$3,$4,$5,array[$6]::uuid[],array[1]::bigint[],$7,1,$8,1,
+          'synthetic-v1',$9,1,'advance-synthetic',1,'synthetic-v1',$9,$9,1,$9,1,1,
+          $10,$11)`,
+        [snapshotId,recordId,encounterId,matchPairId,matchId,ids.campaign,
+          ids.payer,previousContactId,hash,dbPlusMinutes(120),now]);
+      await client.query(`insert into reveal_gate_snapshot_party(
+          reveal_gate_snapshot_id,introduction_record_id,encounter_id,party_id,party_role,
+          acceptance_record_id,acceptance_aggregate_version,terms_hash,lawful_basis_id,
+          lawful_basis_version,identity_authority_version
+        ) values
+          ($1,$2,$3,$4,'OWNER_SIDE',$5,1,$6,$7,1,1),
+          ($1,$2,$3,$8,'TENANT_SIDE',$9,1,$6,$10,1,1)`,
+        [snapshotId,recordId,encounterId,ownerParty,ownerAcceptance,hash,
+          ownerLawfulBasis,tenantParty,tenantAcceptance,tenantLawfulBasis]);
+      for(const lease of leases){
+        await client.query(`insert into reveal_gate_snapshot_source(
+            reveal_gate_snapshot_id,encounter_id,source_system,source_lease_id,
+            source_version,fencing_token
+          ) values($1,$2,$3,$4,$5,$6)`,
+          [snapshotId,encounterId,lease.source_system,lease.lease_id,
+            lease.source_version,lease.fencing_token]);
+      }
+      await client.query('commit');
+    }catch(error){
+      await client.query('rollback');
+      throw error;
+    }
+
+    await client.query(insertToken,[
+      tokenId,tokenHash,recordId,encounterId,snapshotId,ownerParty,hash,now,dbPlusMinutes(20)
+    ]);
+
+    return {encounterId,snapshotId,tokenId,leaseAggregateIds};
+  };
+
+  // pid must be fetched from the target connection BEFORE it starts running
+  // the blocking query -- pg serializes queries per connection, so fetching
+  // it afterward would queue behind the very query we are waiting to block.
+  const waitUntilBlocked=async(observerClient,pid,timeoutMs=5000)=>{
+    const deadline=Date.now()+timeoutMs;
+    while(Date.now()<deadline){
+      const waiting=await observerClient.query(
+        'select wait_event_type from pg_stat_activity where pid=$1',[pid]);
+      if(waiting.rows[0]?.wait_event_type==='Lock') return true;
+      await new Promise(resolve=>setTimeout(resolve,20));
+    }
+    throw new Error('LM-TEST-LOCK-WAIT-TIMEOUT: expected connection to be blocked on a row lock');
+  };
+
+  const invalidationPayload=encounterId=>JSON.stringify({
+    encounter_id:encounterId,match_pair_id:ids.matchPair,
+    resolution_state:'PAYER_RESOLUTION_REQUIRED',payer_assignment_version:2,
+    reason_code:'PAYER_ASSIGNMENT_CHANGED'
+  });
+
+  // Invalidation-first: invalidation acquires lease+guard locks first and
+  // holds them uncommitted; redemption must block, then be rejected once
+  // invalidation commits (stale epoch or incomplete lease set).
+  const fixtureInv=await buildRaceFixture(3800,'8'.repeat(64));
+  const connInvalidation=embedded?pg.getPgClient():new pgModule.Client({connectionString:process.env.DATABASE_URL});
+  const connRedemption=embedded?pg.getPgClient():new pgModule.Client({connectionString:process.env.DATABASE_URL});
+  await Promise.all([connInvalidation.connect(),connRedemption.connect()]);
+  try{
+    const redemptionPid=(await connRedemption.query('select pg_backend_pid() as pid')).rows[0].pid;
+    await connInvalidation.query('begin');
+    await connInvalidation.query(
+      `select leasemind_security.apply_safety_critical_invalidation(
+        'PAYER_RESOLUTION',$1,$2,1,2,$3,'PAYER_REASSIGNED',$4,
+        'PAYER_RESOLUTION_REQUIRED','payer-resolution',$5,$5,'trace-race-invalidation-first',
+        'idem-race-invalidation-first',$6::jsonb,$7
+      ) as epoch`,
+      [fixtureInv.leaseAggregateIds.PAYER_RESOLUTION,fixtureInv.encounterId,now,
+        eventUuid(3840,'a'),ids.correlation,invalidationPayload(fixtureInv.encounterId),hash]);
+
+    const redemptionPromise=connRedemption.query(redeemSql,[
+      fixtureInv.tokenId,'8'.repeat(64),'race-invalidation-first-key01','f'.repeat(64)
+    ]);
+    await waitUntilBlocked(client,redemptionPid);
+    await connInvalidation.query('commit');
+    await assert.rejects(redemptionPromise,/LM-GATE-GUARD-EPOCH-STALE|LM-GATE-LEASE-SET-INCOMPLETE/);
+    const invRaceState=await client.query(
+      'select redeemed_at from reveal_token where reveal_token_id=$1',[fixtureInv.tokenId]);
+    assert.equal(invRaceState.rows[0].redeemed_at,null);
+  }finally{
+    await connInvalidation.end();
+    await connRedemption.end();
+  }
+
+  // Redemption-first: redemption acquires the same locks first (within its
+  // own transaction) and holds them; concurrent invalidation must block,
+  // then may proceed after redemption commits, without undoing the result.
+  const fixtureRed=await buildRaceFixture(3900,'9'.repeat(64));
+  const connRedemptionFirst=embedded?pg.getPgClient():new pgModule.Client({connectionString:process.env.DATABASE_URL});
+  const connInvalidationSecond=embedded?pg.getPgClient():new pgModule.Client({connectionString:process.env.DATABASE_URL});
+  await Promise.all([connRedemptionFirst.connect(),connInvalidationSecond.connect()]);
+  try{
+    const invalidationPid=(await connInvalidationSecond.query('select pg_backend_pid() as pid')).rows[0].pid;
+    await connRedemptionFirst.query('begin');
+    await connRedemptionFirst.query(
+      `select 1 from public.reveal_gate_snapshot_source snapshot_source
+         join public.source_reveal_lease lease
+           on lease.lease_id=snapshot_source.source_lease_id
+        where snapshot_source.reveal_gate_snapshot_id=$1
+        order by lease.lease_id
+          for update of lease`,
+      [fixtureRed.snapshotId]);
+    await connRedemptionFirst.query(
+      `select guard_epoch from leasemind_security.reveal_guard where encounter_id=$1 for update`,
+      [fixtureRed.encounterId]);
+
+    const invalidationPromise=connInvalidationSecond.query(
+      `select leasemind_security.apply_safety_critical_invalidation(
+        'PAYER_RESOLUTION',$1,$2,1,2,$3,'PAYER_REASSIGNED',$4,
+        'PAYER_RESOLUTION_REQUIRED','payer-resolution',$5,$5,'trace-race-redemption-first',
+        'idem-race-redemption-first',$6::jsonb,$7
+      ) as epoch`,
+      [fixtureRed.leaseAggregateIds.PAYER_RESOLUTION,fixtureRed.encounterId,now,
+        eventUuid(3940,'a'),ids.correlation,invalidationPayload(fixtureRed.encounterId),hash]);
+    await waitUntilBlocked(client,invalidationPid);
+
+    const redemptionResult=await connRedemptionFirst.query(redeemSql,[
+      fixtureRed.tokenId,'9'.repeat(64),'race-redemption-first-key01','f'.repeat(64)
+    ]);
+    assert.equal(redemptionResult.rows[0].result.status,'REDEEMED');
+    await connRedemptionFirst.query('commit');
+
+    const invalidationOutcome=await invalidationPromise;
+    assert.equal(invalidationOutcome.rows[0].epoch,'2');
+    const redRaceState=await client.query(
+      'select redeemed_at,redeem_result from reveal_token where reveal_token_id=$1',[fixtureRed.tokenId]);
+    assert.ok(redRaceState.rows[0].redeemed_at!==null);
+    assert.deepEqual(redRaceState.rows[0].redeem_result,redemptionResult.rows[0].result);
+  }finally{
+    await connRedemptionFirst.end();
+    await connInvalidationSecond.end();
+  }
+
   pass(
     'PG-030',
-    'one server-owned transaction creates immutable attempt, calculates result hash, redeems token and persists replay result; rollback, replay and two-connection race proven',
+    'one server-owned transaction creates immutable attempt, calculates result hash, redeems token and persists replay result; rollback, replay, two-connection race, expired/future-issued/backdated rejection and invalidation/redemption lock-order races proven',
     {
       rollback_before_commit:{token_pending:1,attempt_rows:0},
       same_key_same_request_same_attempt:1,
@@ -1058,6 +1361,11 @@ try {
       same_key_different_request_rejected:1,
       server_calculated_result_hash:1,
       caller_supplied_result_fields:0,
+      server_owned_time:1,
+      old_five_arg_signature_present:0,
+      backdated_call_rejected:1,
+      expired_token_rejected:1,
+      future_issued_token_rejected:1,
       immutable_attempt_created_atomically:1,
       failure_injection_points:{
         before_attempt_insert:1,
@@ -1067,13 +1375,15 @@ try {
       concurrent_connections:2,
       concurrent_successes:1,
       concurrent_used_rejections:1,
-      concurrent_attempt_rows:1
+      concurrent_attempt_rows:1,
+      invalidation_first_race_rejected:1,
+      redemption_first_race_completed:1
     }
   );
 
   await client.query(insertToken,[
     critical.compositeToken,'f'.repeat(64),critical.record,ids.encounter,critical.snapshot,
-    critical.secondParty,hash,now
+    critical.secondParty,hash,now,dbPlusMinutes(20)
   ]);
 
   const bumped=await client.query(
@@ -1083,7 +1393,7 @@ try {
   assert.equal(bumped.rows[0].epoch,'3');
   await expectRejected(client,'PG-025',insertToken,[
     eventUuid(3014,'a'),'c'.repeat(64),critical.record,ids.encounter,critical.snapshot,
-    acceptedParty,hash,'2026-07-24T10:07:00Z'
+    acceptedParty,hash,'2026-07-24T10:07:00Z',dbPlusMinutes(20)
   ],/LM-GATE-GUARD-EPOCH-STALE/);
 
   const insertAttempt=`insert into reveal_attempt(

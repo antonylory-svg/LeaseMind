@@ -1,7 +1,7 @@
 begin;
 
 drop function if exists leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 );
 
 alter table if exists introduction_record

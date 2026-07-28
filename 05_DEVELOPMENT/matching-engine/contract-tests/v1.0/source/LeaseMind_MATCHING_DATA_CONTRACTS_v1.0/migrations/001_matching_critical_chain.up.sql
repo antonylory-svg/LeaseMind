@@ -1169,8 +1169,7 @@ create function leasemind_security.redeem_reveal_token(
   p_reveal_token_id uuid,
   p_token_hash char(64),
   p_idempotency_key text,
-  p_request_hash char(64),
-  p_redeemed_at timestamptz
+  p_request_hash char(64)
 )
 returns jsonb
 language plpgsql
@@ -1186,6 +1185,7 @@ declare
   v_reveal_attempt_id uuid;
   v_result jsonb;
   v_result_hash char(64);
+  v_redeemed_at timestamptz;
 begin
   if char_length(p_idempotency_key) not between 16 and 128
      or p_request_hash !~ '^[a-f0-9]{64}$' then
@@ -1225,15 +1225,38 @@ begin
     end if;
   end if;
 
-  if p_redeemed_at >= token_row.expires_at then
+  -- Lock order matches apply_safety_critical_invalidation exactly:
+  -- reveal_token (above) -> source_reveal_lease (ordered) -> reveal_guard.
+  -- No aggregate inside the locking statement; rows are locked first,
+  -- counted separately below.
+  perform 1
+    from public.reveal_gate_snapshot_source snapshot_source
+    join public.source_reveal_lease lease
+      on lease.lease_id = snapshot_source.source_lease_id
+   where snapshot_source.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id
+   order by lease.lease_id
+     for update of lease;
+
+  select guard.guard_epoch into current_epoch
+    from leasemind_security.reveal_guard guard
+   where guard.encounter_id = token_row.encounter_id
+   for update;
+
+  -- Server-owned time, computed once, after all locks are held, so a token
+  -- that expires while waiting on a lock cannot be redeemed.
+  v_redeemed_at := clock_timestamp();
+
+  if token_row.issued_at > v_redeemed_at then
+    raise exception using errcode = '22023', message = 'LM-REVEAL-TOKEN-NOT-YET-VALID';
+  end if;
+
+  if v_redeemed_at >= token_row.expires_at then
     raise exception using errcode = '22023', message = 'LM-REVEAL-TOKEN-EXPIRED';
   end if;
 
-  select snapshot.reveal_guard_epoch, guard.guard_epoch
-    into snapshot_epoch, current_epoch
+  select snapshot.reveal_guard_epoch
+    into snapshot_epoch
     from public.reveal_gate_snapshot snapshot
-    join leasemind_security.reveal_guard guard
-      on guard.encounter_id = snapshot.encounter_id
    where snapshot.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id;
   if snapshot_epoch <> current_epoch then
     raise exception using errcode = '40001', message = 'LM-GATE-GUARD-EPOCH-STALE';
@@ -1245,7 +1268,7 @@ begin
       on lease.lease_id = snapshot_source.source_lease_id
    where snapshot_source.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id
      and lease.lease_state = 'ACTIVE'
-     and lease.expires_at > p_redeemed_at;
+     and lease.expires_at > v_redeemed_at;
   if active_source_count <> 6 then
     raise exception using errcode = '23514', message = 'LM-GATE-LEASE-SET-INCOMPLETE';
   end if;
@@ -1270,12 +1293,12 @@ begin
     token_row.recipient_party_id,
     token_row.manifest_hash,
     'SUCCEEDED',
-    p_redeemed_at
+    v_redeemed_at
   );
 
   v_result := jsonb_build_object(
     'status', 'REDEEMED',
-    'redeemed_at', p_redeemed_at,
+    'redeemed_at', v_redeemed_at,
     'reveal_attempt_id', v_reveal_attempt_id
   );
   v_result_hash := encode(
@@ -1284,7 +1307,7 @@ begin
   );
 
   update public.reveal_token
-     set redeemed_at = p_redeemed_at,
+     set redeemed_at = v_redeemed_at,
          redeem_idempotency_key = p_idempotency_key,
          redeem_request_hash = p_request_hash,
          redeem_result = v_result,
@@ -1301,10 +1324,10 @@ end;
 $$;
 
 alter function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) owner to leasemind_guard_owner;
 revoke all on function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) from public;
 
 create table reveal_attempt (
@@ -2140,7 +2163,7 @@ grant select, insert on reveal_token to leasemind_reveal_writer;
 grant select on reveal_attempt to leasemind_reveal_writer;
 grant select, insert on reveal_delivery_evidence to leasemind_reveal_writer;
 grant execute on function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) to leasemind_reveal_writer;
 grant select, insert on decision_record to leasemind_previous_contact_writer;
 

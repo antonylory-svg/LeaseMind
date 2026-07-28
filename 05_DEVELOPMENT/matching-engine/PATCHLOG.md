@@ -276,3 +276,113 @@ Matching Engine contract suite в `05_DEVELOPMENT/matching-engine/contract-tests
 - **Продуктовая, юридическая и платёжная логика не менялась.** Down-migration не трогалась (новые
   функции живут в `leasemind_security` и удаляются существующим `drop schema ... cascade`). Controlled
   ZIP, submission manifest, Proposal-документы и DEVELOPMENT review — без изменений.
+
+## SEVENTH-B03 — server-owned время в redeem_reveal_token
+
+- **Root cause:** `leasemind_security.redeem_reveal_token` принимал `p_redeemed_at timestamptz` от
+  caller и использовал это значение как единственный источник времени для TTL-проверки токена,
+  проверки актуальности lease (`expires_at > p_redeemed_at`), `attempted_at`, `redeemed_at` и
+  `result.redeemed_at`. Caller мог передать произвольное (в т.ч. задним числом) значение — время
+  редемпшна не было server-owned, что противоречит инварианту неизменяемого Attempt и
+  server-calculated result.
+- **Затронутый файл:** `migrations/001_matching_critical_chain.up.sql` (строки ~1168–1330,
+  `redeem_reveal_token`), синхронно `migrations/001_matching_critical_chain.down.sql` (`drop function`).
+  OpenAPI уже не принимал время от caller (`/reveal/tokens/redeem` не имеет request body и
+  time-параметра) — правка приводит SQL-сигнатуру в соответствие уже корректному API-контракту;
+  `openapi.yaml`/`asyncapi.yaml` не менялись.
+- **Техническое исправление:**
+  - параметр `p_redeemed_at` удалён из публичной сигнатуры целиком; новая сигнатура —
+    `(p_reveal_token_id uuid, p_token_hash char(64), p_idempotency_key text, p_request_hash char(64))`
+    (4 аргумента); старая 5-аргументная сигнатура после `up` не существует (проверено через
+    `pg_proc`/`pg_get_function_identity_arguments`, `count = 1`);
+  - после получения всех необходимых locks (см. SEVENTH-B04 ниже) время вычисляется один раз —
+    `v_redeemed_at := clock_timestamp();` — и переиспользуется для: проверки `issued_at` (новая
+    проверка `LM-REVEAL-TOKEN-NOT-YET-VALID` для токенов с будущим `issued_at`), проверки
+    `expires_at` (`LM-REVEAL-TOKEN-EXPIRED`), проверки актуальности lease
+    (`lease.expires_at > v_redeemed_at`), `reveal_attempt.attempted_at`, `reveal_token.redeemed_at`
+    и `result.redeemed_at`/`result`-hash;
+  - время вычисляется ПОСЛЕ ожидания всех locks — токен, срок действия которого истекает во время
+    ожидания lock, не может быть погашен (проверка TTL видит уже актуальное время);
+  - правила same-idempotency-key replay, new-key-after-use, immutable Attempt, server-owned
+    result/hash — не изменены (идентичны предыдущей версии функции, оперируют теми же полями).
+- **`alter function owner to` / `revoke` / `grant execute`** — обновлены на новую 4-аргументную
+  сигнатуру во всех трёх местах (владелец `leasemind_guard_owner`, execute — `leasemind_reveal_writer`).
+- **`tests/run_postgres_suite.mjs`** — все вызовы `redeem_reveal_token` (redeemSql, redeemParams,
+  raceParams, все `assertRejected`) приведены к 4 аргументам; добавлены probes: старая 5-аргументная
+  форма отклоняется PostgreSQL как несуществующая функция (`does not exist`) — это же служит
+  доказательством, что caller не может передать время задним числом (параметра для этого больше
+  нет); отдельный `pg_proc`-assert подтверждает единственную 4-аргументную сигнатуру после `up`;
+  добавлены выделенные токены для expired (`expires_at` в прошлом относительно `clock_timestamp()`)
+  и future-issued (`issued_at` в будущем, на отдельном dedicated snapshot с future `valid_until`,
+  т.к. существующий `critical.snapshot` использует устаревший фиксированный `valid_until`) сценариев.
+- **DB-relative время вместо фиксированных литералов там, где это необходимо.** Поскольку
+  `redeem_reveal_token` теперь сверяется с реальным `clock_timestamp()`, а большая часть существующих
+  fixtures в файле датирована фиксированным `2026-07-24` (в прошлом на момент реального прогона),
+  добавлены `dbNow`/`dbPlusMinutes`/`dbMinusMinutes` (на основе одного `select clock_timestamp()` в
+  начале прогона) и применены точечно к полям, которые реально сравниваются с текущим временем внутри
+  функции: `source_reveal_lease.expires_at`, `reveal_token.expires_at`. `issued_at` существующих
+  токенов и `valid_until`/`reveal_guard_epoch` существующих snapshot не менялись — они остаются
+  корректными под новой server-time проверкой без изменения (старый `issued_at` всегда в прошлом
+  относительно реального времени прогона).
+- **Продуктовая, юридическая и платёжная логика не менялась.** Изменение ограничено источником
+  времени редемпшна и синхронизацией сигнатуры функции; правила состояний Reveal/Attempt не менялись.
+
+## SEVENTH-B04 — согласованный lock order redeem_reveal_token / invalidation
+
+- **Root cause:** `redeem_reveal_token` не блокировал `source_reveal_lease`/`reveal_guard` явно —
+  проверки epoch/lease-count читались обычным (не `FOR UPDATE`) `SELECT` после блокировки только
+  `reveal_token`. Конкурентная `apply_safety_critical_invalidation` (которая блокирует
+  `source_reveal_lease`, затем `leasemind_security.reveal_guard`) могла закоммититься между чтением
+  и записью редемпшна, оставляя окно гонки: редемпшн мог завершиться успешно на основании уже
+  устаревших epoch/lease-state.
+- **Затронутый файл:** `migrations/001_matching_critical_chain.up.sql`, та же функция
+  `redeem_reveal_token`, что и в SEVENTH-B03 (правки объединены в одном прогоне миграции).
+- **Техническое исправление — единый lock order, зеркальный `apply_safety_critical_invalidation`:**
+  1. `reveal_token` — `FOR UPDATE` по `reveal_token_id` (как и раньше, первым);
+  2. требуемые `source_reveal_lease` — блокируются через `PERFORM 1 ... FOR UPDATE OF lease`,
+     JOIN `reveal_gate_snapshot_source` → `source_reveal_lease` по `reveal_gate_snapshot_id`, со
+     стабильным `ORDER BY lease.lease_id` (детерминированный порядок блокировки строк —
+     предотвращает deadlock при пересекающемся наборе строк с любой другой транзакцией,
+     блокирующей те же lease в том же порядке); агрегат (`count`) в эту блокирующую выборку не
+     включён — строки сначала блокируются, количество активных считается отдельным `SELECT count(*)`
+     после блокировки;
+  3. `leasemind_security.reveal_guard` — `SELECT guard_epoch ... FOR UPDATE` по `encounter_id`;
+  4. после этого — вычисление `v_redeemed_at` (SEVENTH-B03) и повторная проверка issued_at/expires_at/
+     epoch/lease-count поверх уже заблокированных данных;
+  5. только затем — мутация `reveal_attempt`/`reveal_token`.
+  Порядок блокировки инвалидации (`source_reveal_lease` → `reveal_guard`, см.
+  `apply_safety_critical_invalidation`) не менялся — редемпшн приведён к тому же порядку, а не
+  наоборот.
+- **Два детерминированных two-session probe без произвольного sleep**, добавлены в
+  `tests/run_postgres_suite.mjs` на полностью изолированных encounter/lease/snapshot/token fixtures
+  (`buildRaceFixture`, seed-диапазоны 3800–3839 и 3900–3939) — существующая история epoch для
+  `ids.encounter` (используется в PG-025/compositeToken) не затронута:
+  - **invalidation-first:** соединение A открывает транзакцию, вызывает
+    `apply_safety_critical_invalidation` (блокирует lease+guard), не коммитит; соединение B
+    одновременно вызывает `redeem_reveal_token` на том же encounter — блокировка подтверждается
+    через `pg_stat_activity.wait_event_type = 'Lock'` (детерминированный барьер, не `sleep`); после
+    commit A редемпшн B гарантированно отклоняется (`LM-GATE-GUARD-EPOCH-STALE` или
+    `LM-GATE-LEASE-SET-INCOMPLETE`), токен остаётся непогашенным;
+  - **redemption-first:** соединение A предварительно блокирует те же lease+guard строки в своей
+    транзакции (`FOR UPDATE`/`FOR UPDATE OF lease`, тот же запрос, что использует сама функция —
+    повторная блокировка тех же строк той же транзакцией не блокирует саму себя), затем вызывает
+    `redeem_reveal_token` (успешно, locks уже удерживаются) и коммитит; соединение B (конкурентная
+    инвалидация) блокируется на тех же строках (подтверждено тем же `pg_stat_activity`-барьером) и
+    может продолжиться только после commit A — результат редемпшна остаётся неизменным и не
+    откатывается последующей инвалидацией.
+  - **Обнаруженная и исправленная ошибка теста при верификации:** PID целевого соединения для
+    `pg_stat_activity`-проверки должен быть получен ДО отправки блокирующего запроса на этом же
+    соединении — `pg` сериализует запросы по соединению, поэтому попытка получить `pg_backend_pid()`
+    на уже занятом блокирующимся запросом соединении сама встаёт в очередь и никогда не выполняется.
+    Исправлено: PID обеих сторон каждой гонки фиксируется сразу после `connect()`, до старта
+    блокирующего запроса.
+- **Не изменён порядок блокировки внутри `apply_safety_critical_invalidation`/`bump_reveal_guard`/
+  `transition_source_reveal_lease`** — эти функции не редактировались.
+- **Продуктовая, юридическая и платёжная логика не менялась.**
+- **Controlled artifacts не изменены.** ZIP (`LeaseMind_MATCHING_DATA_CONTRACTS_v1.0_EXECUTABLE.zip`),
+  submission manifest, `openapi.yaml`, `asyncapi.yaml`, `docs/`, Proposal-документы и review — без
+  изменений (подтверждено `git status`/сверкой SHA-256 до и после правки).
+- **Верификация:** offline CT (28/28 PASS) и EV (7/7 PASS) в чистой временной копии; полный
+  PostgreSQL 18.4 lifecycle (up → 30 PG-проверок, включая обновлённый PG-030 и оба новых race-probe,
+  → down → post-down catalog empty) на disposable-контейнере (`lmtest_admin`, синтетический пароль,
+  `127.0.0.1` + случайный порт, `tmpfs`, без persistent volume, контейнер удалён после прогона).
