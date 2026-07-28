@@ -386,3 +386,75 @@ Matching Engine contract suite в `05_DEVELOPMENT/matching-engine/contract-tests
   PostgreSQL 18.4 lifecycle (up → 30 PG-проверок, включая обновлённый PG-030 и оба новых race-probe,
   → down → post-down catalog empty) на disposable-контейнере (`lmtest_admin`, синтетический пароль,
   `127.0.0.1` + случайный порт, `tmpfs`, без persistent volume, контейнер удалён после прогона).
+
+## SEVENTH-B05 — доказанная привязка event_type к consumer payload schema
+
+- **Root cause:** `CT-028` проверял только существование `consumer_operation`, `operation.action==='receive'`
+  и truthy `operation.channel?.$ref` — но никогда не резолвил `operation.channel → channel.messages →
+  message.payload → schema.properties.event_type.enum/const` и не сверял с этим множеством фактический
+  `route.event_type`. Routing table (`x-leasemind-event-routing`, `asyncapi.yaml`) и schema graph
+  (9 envelope-схем с собственным `event_type` discriminator) — две независимые системы истины; тест
+  проверял только первую и не сверял её со второй. Независимая mutation (swap `consumer_operation`
+  для `PAYER_RESOLUTION_REQUIRED` на `consumeDecisionRecorded`) проходила все существующие assertions.
+  Read-only анализ (предыдущий turn) показал: 33 event_type, 9 payload-схем, 0 структурно
+  неразличимых пар required-fields — существующий discriminator уже достаточен, привязку нужно было
+  только начать проверять.
+- **Затронутый файл:** `tests/run_contract_suite.mjs`, тест `CT-028`. Никаких изменений в
+  `asyncapi.yaml`/`openapi.yaml`/migrations/fixtures/бизнес-событиях — discriminator уже существовал
+  корректно в схемах, отсутствовала только проверка со стороны теста.
+- **Техническое исправление:**
+  - добавлен `resolveConsumerBinding(consumerOperationName)` — резолвит **только** от
+    `consumer_operation` (никогда от `fixture.schemaName` или любого другого отдельно переданного
+    значения): `asyncapi.operations[name] → channel (resolveRef) → channel.messages (resolveRef на
+    каждое message) → message.payload (mergeSchema, разворачивает allOf) →
+    schema.properties.event_type.enum ?? [schema.properties.event_type.const]`; переиспользованы
+    существующие `resolveRef`/`mergeSchema` (SEVENTH-B01) — вторая независимая resolution-логика не
+    создавалась;
+  - для каждой из 33 routing rows: `route.event_type` должен входить в разрешённое множество, иначе
+    `assert.ok` бросает с точным именем события и operation;
+  - сохранены все существующие проверки: `route.producer === fixture.envelope.producer`,
+    `route.owner_role === ownerRoleByProducer.get(route.producer)` (source-owner/domain binding),
+    `operation.action==='receive'`, truthy `channel.$ref` — ни одна не ослаблена и не удалена;
+  - построена полная ordered mismatch matrix: 33 rows × 8 «чужих» из 9 `consumer_operation`
+    (корректная диагональ исключена) = **264** отдельных probe; каждый выполняет собственный
+    `assert.equal(Boolean(foreignMatch), false, ...)` — ни один swap не пропускается после первого
+    успешного (**"проверка только одного swap недостаточна"** выполнено буквально: 264 отдельных
+    assertion-вызовов, не один общий);
+  - добавлен structural-indistinguishability guard: required-fields всех 9 payload-схем (резолвятся
+    от `binding.payloadSchemaName`, полученного той же цепочкой) сравниваются попарно;
+    `structurally_indistinguishable_pairs` должен быть `0` — фиксирует инвариант из read-only анализа
+    как исполняемую проверку, а не только вывод отчёта;
+  - добавлен явный негативный self-test: swap `PAYER_RESOLUTION_REQUIRED` → `consumeDecisionRecorded`,
+    `assert.equal(acceptsEventType(...), undefined, ...)` — независимая, отдельно поддерживаемая
+    проверка сверх 264 ordered mismatches.
+  - evidence CT-028 расширен: `valid_exact_bindings:33`, `ordered_mismatch_probes:264`,
+    `accepted_mismatches:0`, `structurally_indistinguishable_pairs:0`, `swap_self_test_blocked:1`,
+    `bindings:[...]` — массив из 33 immutable tuples `{event_type, consumer_operation, channel,
+    message, payload_schema}`, отсортированный детерминированно (`a.event_type < b.event_type`,
+    обычное сравнение строк по code point, без `localeCompare` — исключает зависимость от locale/ICU
+    между машинами). Старые count-поля (`explicit_routing_rows`, `owner_consumer_bindings`,
+    `consumer_operations_checked`) сохранены без изменений.
+- **`tests/evidence_matrix.mjs`:** `CT_EVIDENCE_REQUIREMENTS['CT-028']` дополнен пятью scalar-проверками
+  (`equals: 33/264/0/0/1`) и одной проверкой массива `bindings` через `equals` с точным hardcoded
+  литералом всех 33 tuples в каноническом порядке. Поскольку `sameValue` сравнивает через
+  `JSON.stringify`, один этот `equals` одновременно проверяет: отсутствие дубликатов (иначе длина/
+  состав массива не совпадёт), полное совпадение с routing table (отсутствие лишних/пропущенных
+  event_type), и стабильность sort (порядок должен побайтово совпасть с литералом). Литерал
+  сгенерирован программно из живого `asyncapi.yaml` (не написан вручную) и независимо проверен
+  сравнением с фактическим выводом CT-028 перед фиксацией в файле.
+- **CT-028 корректно ловит настоящую порчу:** проверено end-to-end (вне репозитория, во временной
+  копии) — реальная подмена `consumer_operation` для `PAYER_ASSIGNED` в `asyncapi.yaml` на
+  `consumeDecisionRecorded` даёт `CT-028 FAIL` с сообщением `PAYER_ASSIGNED: consumer_operation
+  consumeDecisionRecorded payload schema does not declare this event_type`; исходный (не изменённый)
+  `asyncapi.yaml` снова даёт `CT-028 PASS`.
+- **Продуктовая, юридическая и платёжная логика не менялась.** Runtime-схемы (AsyncAPI/OpenAPI),
+  migrations и состав бизнес-событий не изменены — исправление целиком в тестовом слое, доказывающем
+  уже существующий контракт.
+- **Controlled artifacts не изменены.** ZIP, submission manifest, `openapi.yaml`, `asyncapi.yaml`,
+  `docs/`, Proposal-документы и review — без изменений (подтверждено `git status` и SHA-256 до/после).
+- **Верификация:** offline CT (28/28 PASS, включая `CT-028` с 33/33 exact bindings, 264/264 ordered
+  mismatches blocked, 0 accepted mismatches, 0 structurally indistinguishable pairs) и EV (7/7 PASS) в
+  чистой временной копии; полный PostgreSQL 18.4 lifecycle (30/30 PG-проверок, up → down → empty
+  catalog) как regression на новом disposable-контейнере (`lmtest_admin`, синтетический пароль,
+  `127.0.0.1` + случайный порт, `tmpfs`, без persistent volume, контейнер удалён после прогона) —
+  без изменений в PostgreSQL-слое, результат идентичен предыдущему прогону.

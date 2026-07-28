@@ -86,7 +86,54 @@ export const CT_EVIDENCE_REQUIREMENTS = Object.freeze({
   'CT-028': [
     {dependency:'CT-028',path:'explicit_routing_rows',equals:33},
     {dependency:'CT-028',path:'owner_consumer_bindings',equals:33},
-    {dependency:'CT-028',path:'consumer_operations_checked',equals:33}
+    {dependency:'CT-028',path:'consumer_operations_checked',equals:33},
+    {dependency:'CT-028',path:'valid_exact_bindings',equals:33},
+    {dependency:'CT-028',path:'ordered_mismatch_probes',equals:264},
+    {dependency:'CT-028',path:'accepted_mismatches',equals:0},
+    {dependency:'CT-028',path:'structurally_indistinguishable_pairs',equals:0},
+    {dependency:'CT-028',path:'swap_self_test_blocked',equals:1},
+    // SEVENTH-B05: the 33 immutable (event_type, consumer_operation, channel,
+    // message, payload_schema) tuples CT-028 resolves from the routing table
+    // must equal this exact, hand-verified-against-asyncapi.yaml canonical
+    // list -- sorted deterministically by event_type. A deep JSON equality
+    // check against this fixed literal is, in one assertion, a duplicate
+    // check (a duplicate or missing/extra event_type changes the array),
+    // an exact-match-with-routing-table check, and a sort-stability check.
+    {dependency:'CT-028',path:'bindings',equals:[
+      {event_type:'ADVANCE_DEBIT_CONFIRMED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'ADVANCE_RECEIPT_FISCALIZED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'ADVANCE_SETTLED_AND_FISCALIZED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'CREDIT_APPLIED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'CREDIT_REVERSED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'DELIVERY_CONFIRMED_BY_DECISION',consumer_operation:'consumeDecisionRecorded',channel:'decisions',message:'decisionRecorded',payload_schema:'DecisionEventEnvelope'},
+      {event_type:'DISCLOSURE_CHALLENGED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'DISPUTE_REJECTED',consumer_operation:'consumeDecisionRecorded',channel:'decisions',message:'decisionRecorded',payload_schema:'DecisionEventEnvelope'},
+      {event_type:'DISPUTE_UPHELD',consumer_operation:'consumeDecisionRecorded',channel:'decisions',message:'decisionRecorded',payload_schema:'DecisionEventEnvelope'},
+      {event_type:'FINAL_SETTLEMENT_FISCALIZED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'FINANCIAL_READINESS_INVALIDATED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'FISCAL_CORRECTION_CONFIRMED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'IDENTITY_AUTHORITY_INVALIDATED',consumer_operation:'consumeIdentityAuthorityChanged',channel:'identityAuthority',message:'identityAuthorityChanged',payload_schema:'IdentityAuthorityEventEnvelope'},
+      {event_type:'LAWFUL_BASIS_INVALIDATED',consumer_operation:'consumeLawfulBasisChanged',channel:'lawfulBasis',message:'lawfulBasisChanged',payload_schema:'LawfulBasisEventEnvelope'},
+      {event_type:'LAWFUL_BASIS_REVOKED',consumer_operation:'consumeLawfulBasisChanged',channel:'lawfulBasis',message:'lawfulBasisChanged',payload_schema:'LawfulBasisEventEnvelope'},
+      {event_type:'NO_DELIVERY_CONFIRMED_BY_DECISION',consumer_operation:'consumeDecisionRecorded',channel:'decisions',message:'decisionRecorded',payload_schema:'DecisionEventEnvelope'},
+      {event_type:'PARTICIPATION_ACCEPTED',consumer_operation:'consumeAcceptanceChanged',channel:'participation',message:'acceptanceChanged',payload_schema:'ParticipationEventEnvelope'},
+      {event_type:'PARTICIPATION_INVALIDATED',consumer_operation:'consumeAcceptanceChanged',channel:'participation',message:'acceptanceChanged',payload_schema:'ParticipationEventEnvelope'},
+      {event_type:'PAYER_ASSIGNED',consumer_operation:'consumePayerAssigned',channel:'payerResolution',message:'payerAssigned',payload_schema:'PayerEventEnvelope'},
+      {event_type:'PAYER_RESOLUTION_REQUIRED',consumer_operation:'consumePayerAssigned',channel:'payerResolution',message:'payerAssigned',payload_schema:'PayerEventEnvelope'},
+      {event_type:'PAYMENT_AUTHORIZATION_RELEASED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'PAYMENT_AUTHORIZED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'PREVIOUS_CONTACT_DECISION_CHANGED',consumer_operation:'consumePreviousContactChanged',channel:'previousContact',message:'previousContactChanged',payload_schema:'PreviousContactEventEnvelope'},
+      {event_type:'PRE_REVEAL_VOIDED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'PROTECTION_END_REACHED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'RECORD_PRE_REVEAL_LOCKED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'REFUND_CONFIRMED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'REVEAL_COMMITTED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'REVEAL_DELIVERY_CONFIRMED',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'REVEAL_DELIVERY_EVIDENCE_SUBMITTED',consumer_operation:'consumeEvidenceSubmitted',channel:'revealEvidence',message:'evidenceSubmitted',payload_schema:'EvidenceEventEnvelope'},
+      {event_type:'REVEAL_DELIVERY_UNCERTAIN',consumer_operation:'consumeRecordTransitioned',channel:'introductionRecord',message:'recordTransitioned',payload_schema:'RecordEventEnvelope'},
+      {event_type:'SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'},
+      {event_type:'SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED',consumer_operation:'consumeFinancialFact',channel:'financial',message:'financialFact',payload_schema:'FinancialEventEnvelope'}
+    ]}
   ],
   'CT-030': [
     {dependency:'PG-027',path:'mismatch_rejections',equals:5},

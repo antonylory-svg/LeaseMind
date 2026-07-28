@@ -543,16 +543,117 @@ await test('CT-028', 'Canonical invalidation event/reason namespace validates', 
     ['introduction-record-service','leasemind_introduction_writer'],
     ['reveal-service','leasemind_reveal_writer']
   ]);
+  // SEVENTH-B05: resolve consumer_operation -> operation -> channel -> message
+  // -> payload schema -> event_type discriminator using ONLY the operation
+  // name carried by the routing row itself. Never accept a schema, channel or
+  // message supplied independently of consumer_operation (e.g. fixture.schemaName
+  // is deliberately not consulted here -- it is a different, fixture-owned
+  // source of truth, checked separately below for reason_code namespaces only).
+  const resolveConsumerBinding=consumerOperationName=>{
+    const operation=asyncapi.operations[consumerOperationName];
+    assert.ok(operation,consumerOperationName);
+    assert.equal(operation.action,'receive',consumerOperationName);
+    const channelRef=operation.channel?.$ref;
+    assert.ok(channelRef,consumerOperationName);
+    const channel=resolveRef(operation.channel,asyncapi);
+    const channelName=channelRef.split('/').pop();
+    const messageEntries=Object.entries(channel.messages??{});
+    assert.ok(messageEntries.length>0,consumerOperationName);
+    const bindings=messageEntries.map(([messageKey,messageRef])=>{
+      const message=resolveRef(messageRef,asyncapi);
+      const payloadSchemaRef=message.payload?.$ref;
+      const payloadSchemaName=payloadSchemaRef?.split('/').pop();
+      const schema=mergeSchema(message.payload,asyncapi);
+      const discriminator=schema.properties?.event_type;
+      const allowedEventTypes=discriminator?.enum
+        ?? (discriminator?.const!==undefined ? [discriminator.const] : []);
+      return {messageKey,payloadSchemaName,allowedEventTypes};
+    });
+    return {channelName,bindings};
+  };
+  const acceptsEventType=(consumerOperationName,eventType)=>{
+    const {bindings}=resolveConsumerBinding(consumerOperationName);
+    return bindings.find(binding=>binding.allowedEventTypes.includes(eventType));
+  };
+
+  const allOperations=[...new Set(routing.map(route=>route.consumer_operation))];
+  assert.equal(allOperations.length,9);
+
+  let validExactBindings=0;
+  let orderedMismatchProbes=0;
+  let acceptedMismatches=0;
+  const exactBindings=[];
+
   for(const fixture of events){
     const route=routeByEvent.get(fixture.eventType);
     assert.ok(route,fixture.eventType);
     assert.equal(route.producer,fixture.envelope.producer,fixture.eventType);
     assert.equal(route.owner_role,ownerRoleByProducer.get(route.producer),fixture.eventType);
-    const operation=asyncapi.operations[route.consumer_operation];
-    assert.ok(operation,fixture.eventType);
-    assert.equal(operation.action,'receive',fixture.eventType);
-    assert.ok(operation.channel?.$ref,fixture.eventType);
+
+    const match=acceptsEventType(route.consumer_operation,route.event_type);
+    assert.ok(match,
+      `${fixture.eventType}: consumer_operation ${route.consumer_operation} payload schema does not declare this event_type`);
+    const {channelName}=resolveConsumerBinding(route.consumer_operation);
+    validExactBindings++;
+    exactBindings.push({
+      event_type:route.event_type,
+      consumer_operation:route.consumer_operation,
+      channel:channelName,
+      message:match.messageKey,
+      payload_schema:match.payloadSchemaName
+    });
+
+    for(const foreignOperation of allOperations){
+      if(foreignOperation===route.consumer_operation) continue;
+      orderedMismatchProbes++;
+      const foreignMatch=acceptsEventType(foreignOperation,route.event_type);
+      if(foreignMatch) acceptedMismatches++;
+      assert.equal(Boolean(foreignMatch),false,
+        `${fixture.eventType}: unexpectedly accepted by foreign consumer_operation ${foreignOperation}`);
+    }
   }
+  assert.equal(validExactBindings,33);
+  assert.equal(orderedMismatchProbes,264);
+  assert.equal(acceptedMismatches,0);
+
+  exactBindings.sort((a,b)=>a.event_type<b.event_type ? -1 : a.event_type>b.event_type ? 1 : 0);
+
+  // Structural-indistinguishability guard: if two different payload schemas
+  // ever declared identical required-field sets, event_type would be the ONLY
+  // signal separating them and this binding proof would rest on a narrower
+  // margin. Prove that is not the case for the current 9 payload schemas.
+  const payloadRequiredBySchema=new Map();
+  for(const operationName of allOperations){
+    const {bindings}=resolveConsumerBinding(operationName);
+    for(const binding of bindings){
+      if(payloadRequiredBySchema.has(binding.payloadSchemaName)) continue;
+      const envelopeSchema=asyncapi.components.schemas[binding.payloadSchemaName];
+      const mergedEnvelope=mergeSchema(envelopeSchema,asyncapi);
+      const payloadSchema=mergeSchema(mergedEnvelope.properties.payload,asyncapi);
+      payloadRequiredBySchema.set(binding.payloadSchemaName,new Set(payloadSchema.required??[]));
+    }
+  }
+  const schemaNames=[...payloadRequiredBySchema.keys()];
+  let structurallyIndistinguishablePairs=0;
+  for(let i=0;i<schemaNames.length;i++){
+    for(let j=i+1;j<schemaNames.length;j++){
+      const left=payloadRequiredBySchema.get(schemaNames[i]);
+      const right=payloadRequiredBySchema.get(schemaNames[j]);
+      if(left.size===right.size && [...left].every(field=>right.has(field))){
+        structurallyIndistinguishablePairs++;
+      }
+    }
+  }
+  assert.equal(structurallyIndistinguishablePairs,0);
+
+  // Negative self-test required by SEVENTH-B05: an explicit swap to another
+  // existing receive-operation must be rejected by this same binding check.
+  const swapProbeEventType='PAYER_RESOLUTION_REQUIRED';
+  const swapProbeForeignOperation='consumeDecisionRecorded';
+  assert.notEqual(routeByEvent.get(swapProbeEventType).consumer_operation,swapProbeForeignOperation);
+  assert.equal(acceptsEventType(swapProbeForeignOperation,swapProbeEventType),undefined,
+    'SEVENTH-B05 self-test: swapped consumer_operation must be rejected');
+
   for(const [eventType,reasons] of expected){
     assert.equal(ownerByEvent.get(eventType),expectedOwner.get(eventType),eventType);
     const route=routeByEvent.get(eventType);
@@ -569,7 +670,13 @@ await test('CT-028', 'Canonical invalidation event/reason namespace validates', 
     reason_codes:[...expected.values()].flat().length,
     explicit_routing_rows:routeByEvent.size,
     owner_consumer_bindings:routeByEvent.size,
-    consumer_operations_checked:routeByEvent.size
+    consumer_operations_checked:routeByEvent.size,
+    valid_exact_bindings:validExactBindings,
+    ordered_mismatch_probes:orderedMismatchProbes,
+    accepted_mismatches:acceptedMismatches,
+    structurally_indistinguishable_pairs:structurallyIndistinguishablePairs,
+    swap_self_test_blocked:1,
+    bindings:exactBindings
   };
 });
 await test('CT-029', 'Human delivery decision is forbidden directly from REVEAL_COMMITTED', 'service_behavior', () => {
