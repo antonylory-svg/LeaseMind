@@ -196,13 +196,29 @@ export class RevealTokenStore {
   }
 }
 
+// SEVENTH-B06: fixed domain separator for the deletion-act hash preimage.
+// A trusted constant, never caller input, so the hash cannot collide with a
+// hash computed under any other domain (event, result, another deletion act).
+export const DELETION_ACT_DOMAIN_TAG = 'LEASEMIND_DELETION_ACT_V1';
+
 export function cryptoUnlink(record) {
+  const unlink_operation_id = randomUUID();
+  const deletion_category = record.deletion_category;
+  const policy_version = record.policy_version;
+  const deleted_at = record.now;
+  // record.deletion_act_hash is intentionally never read: the hash is always
+  // derived server-side from server-owned/already-disclosed fields only.
+  const deletion_act_hash = sha256(
+    `${DELETION_ACT_DOMAIN_TAG}\0${canonicalJson({
+      unlink_operation_id, deletion_category, policy_version, deleted_at
+    })}`
+  );
   return {
-    unlink_operation_id: randomUUID(),
-    deletion_category: record.deletion_category,
-    policy_version: record.policy_version,
-    deleted_at: record.now,
-    deletion_act_hash: record.deletion_act_hash
+    unlink_operation_id,
+    deletion_category,
+    policy_version,
+    deleted_at,
+    deletion_act_hash
   };
 }
 

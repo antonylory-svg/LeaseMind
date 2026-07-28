@@ -458,3 +458,81 @@ Matching Engine contract suite в `05_DEVELOPMENT/matching-engine/contract-tests
   catalog) как regression на новом disposable-контейнере (`lmtest_admin`, синтетический пароль,
   `127.0.0.1` + случайный порт, `tmpfs`, без persistent volume, контейнер удалён после прогона) —
   без изменений в PostgreSQL-слое, результат идентичен предыдущему прогону.
+
+## SEVENTH-B06 — server-derived domain-separated deletion_act_hash
+
+- **Root cause:** `cryptoUnlink(record)` не вычислял `deletion_act_hash` — функция просто копировала
+  `record.deletion_act_hash` в output без единой проверки. Caller (или любой upstream-контекст) мог
+  передать в это поле исходный `event_hash`, `correlation_id`, любой другой stable source hash или
+  hash другого deletion act — retention tombstone сохранял это значение под разрешённым именем поля и
+  проходил существовавшую exact-key проверку `CT-024` (которая проверяла только СОСТАВ ключей output,
+  никогда — независимость ЗНАЧЕНИЯ `deletion_act_hash` от каких-либо source hash). Ни в
+  `openapi.yaml`, ни в `asyncapi.yaml`, ни в `migrations/001_matching_critical_chain.up.sql`
+  `cryptoUnlink`/`deletion_act`/`tombstone` не упоминаются вообще — дефект целиком в service reference
+  model и её test contract.
+- **Затронутые файлы:** `tests/synthetic_service_models.mjs` (`cryptoUnlink`), `tests/run_contract_suite.mjs`
+  (`CT-024`), `tests/evidence_matrix.mjs` (`CT_EVIDENCE_REQUIREMENTS['CT-024']`).
+- **Canonical preimage и domain separator:** `deletion_act_hash` теперь вычисляется внутри
+  `cryptoUnlink` через уже существующие `canonicalJson`/`sha256` (использовались ранее только в
+  `IdempotencyStore`/`RevealTokenStore` — вторая независимая hashing-логика не создавалась):
+  ```
+  sha256(`${DELETION_ACT_DOMAIN_TAG}\0${canonicalJson({
+    unlink_operation_id, deletion_category, policy_version, deleted_at
+  })}`)
+  ```
+  `DELETION_ACT_DOMAIN_TAG = 'LEASEMIND_DELETION_ACT_V1'` — экспортированная строковая константа
+  внутри доверенной реализации (`tests/synthetic_service_models.mjs`), не caller input; NUL-байт
+  (`\0`) между domain tag и canonical JSON — однозначный разделитель, исключающий неоднозначную
+  конкатенацию (в отличие от простого `tag + json` без разделителя, где границу тэга/JSON можно было
+  бы сдвинуть подбором значений полей).
+- **`record.deletion_act_hash` больше не читается вообще** — переменная убрана из функции полностью
+  (не читается, не копируется, не сохраняется); это не "игнорируется после чтения", это физическое
+  отсутствие обращения к этому полю входного `record` в теле функции.
+- **Preimage построен только из уже разрешённых/раскрываемых полей** (`unlink_operation_id`,
+  `deletion_category`, `policy_version`, `deleted_at`) — без добавления новой бизнес-информации;
+  `unlink_operation_id` генерируется внутри `cryptoUnlink` через `randomUUID()` (как и раньше,
+  server-owned, свежий на каждый вызов) и обеспечивает uniqueness/non-reuse hash между разными
+  deletion acts даже при идентичных остальных трёх полях.
+- **Состав output не изменён:** `unlink_operation_id`, `deletion_category`, `policy_version`,
+  `deleted_at`, `deletion_act_hash` — те же 5 ключей, тот же порядок вычисления
+  `Object.keys(out).sort()` в `CT-024`, юридический состав deletion act и правила удаления (Data
+  Contracts п.24) не менялись.
+- **`CT-024` acceptance probes добавлены:**
+  - **caller-controlled hash probes (6):** отдельные вызовы `cryptoUnlink`, где `deletion_act_hash`
+    равен по очереди `event_hash`, `correlation_id`, `payload_hash`, `result_hash`, hash другого
+    deletion act и произвольному валидному SHA-256 (`sha256('attacker-chosen-arbitrary-preimage')`);
+    для каждого: `assert.notEqual(out.deletion_act_hash, candidate)` и независимая server-side
+    recomputation совпадает с `out.deletion_act_hash` — переданное значение не влияет на результат;
+  - **derivation recompute:** `recomputeDeletionActHash(result)` берёт `unlink_operation_id` из
+    РЕЗУЛЬТАТА, пересобирает точный domain-separated canonical preimage и вычисляет `sha256`;
+    применяется к базовому вызову, ко всем 6 caller-controlled probes и к hash-reuse probe;
+  - **hash-reuse probe:** два вызова с идентичными `deletion_category`/`policy_version`/`deleted_at`
+    дают разные `unlink_operation_id` и разные `deletion_act_hash` — hash одного deletion act нельзя
+    получить повторно для другого;
+  - **hash format:** `deletion_act_hash` — lowercase hex, ровно 64 символа (`/^[0-9a-f]{64}$/`);
+  - существующие проверки сохранены без изменений: `allowed_tombstone_fields` (key-set),
+    `prohibited_source_fields_absent` (8), `stable_source_hashes_absent` (2), string-search по 7
+    сырым значениям, формат `unlink_operation_id`.
+  - **Проверено end-to-end (вне репозитория, во временной копии):** временный откат `cryptoUnlink` к
+    старому passthrough (`deletion_act_hash: record.deletion_act_hash`) даёт немедленный `CT-024 FAIL`
+    на первой же проверке (`out.deletion_act_hash` равен переданному `'d'.repeat(64)`), подтверждая,
+    что новые probes реально ловят регресс, а не проходят вхолостую; после восстановления исправленной
+    версии `CT-024` снова `PASS`.
+- **`tests/evidence_matrix.mjs`:** `deletion_act_hash_preserved` (семантически неверное имя после
+  фикса — hash больше не «preserved» от caller) заменён на четыре реально вычисляемые метрики:
+  `caller_controlled_hash_probes` (equals 6, счётчик цикла), `derivation_recompute_matches` (equals 1),
+  `hash_reuse_prevented` (equals 1), `hash_format_valid` (equals 1). `allowed_tombstone_fields`,
+  `prohibited_source_fields_absent`, `stable_source_hashes_absent` не изменены.
+- **Продуктовая, юридическая и платёжная логика не менялась.** Правила удаления и обязательный audit
+  evidence (Data Contracts п.24) не менялись — только способ вычисления `deletion_act_hash` внутри
+  доверенной операции.
+- **Controlled artifacts не изменены.** ZIP, submission manifest, `openapi.yaml`, `asyncapi.yaml`,
+  migrations, fixtures, `docs/`, Proposal-документы и review — без изменений (подтверждено
+  `git status` и SHA-256 до/после).
+- **Верификация:** offline CT (28/28 PASS, включая `CT-024` с 6/6 caller-controlled hash probes
+  blocked, derivation recompute PASS, hash-reuse prevention PASS, hash format PASS) и EV (7/7 PASS) в
+  чистой временной копии; полный PostgreSQL 18.4 lifecycle (30/30 PG-проверок, up → down → empty
+  catalog) как regression на новом disposable-контейнере (`lmtest_admin`, синтетический пароль,
+  `127.0.0.1` + случайный порт, `tmpfs`, без persistent volume, контейнер удалён после прогона) — без
+  изменений в PostgreSQL-слое (`cryptoUnlink` не затрагивает миграции), результат идентичен
+  предыдущему прогону.

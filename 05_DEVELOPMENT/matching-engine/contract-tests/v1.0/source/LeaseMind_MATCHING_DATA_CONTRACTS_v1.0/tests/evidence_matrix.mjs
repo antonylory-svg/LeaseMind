@@ -71,7 +71,13 @@ export const CT_EVIDENCE_REQUIREMENTS = Object.freeze({
       equals:['deleted_at','deletion_act_hash','deletion_category','policy_version','unlink_operation_id']},
     {dependency:'CT-024',path:'prohibited_source_fields_absent',minimum:8},
     {dependency:'CT-024',path:'stable_source_hashes_absent',minimum:2},
-    {dependency:'CT-024',path:'deletion_act_hash_preserved',equals:1}
+    // SEVENTH-B06: deletion_act_hash is server-derived, not caller-preserved.
+    // These four are genuinely computed counters (a loop count and three
+    // post-assertion flags), not decorative literals.
+    {dependency:'CT-024',path:'caller_controlled_hash_probes',equals:6},
+    {dependency:'CT-024',path:'derivation_recompute_matches',equals:1},
+    {dependency:'CT-024',path:'hash_reuse_prevented',equals:1},
+    {dependency:'CT-024',path:'hash_format_valid',equals:1}
   ],
   'CT-026': [
     {dependency:'CT-026',path:'persisted_attempt',equals:1},

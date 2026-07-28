@@ -10,7 +10,8 @@ import {canonicalEventFixtures, openApiFixtures, UUID_V7} from '../fixtures/synt
 import {
   IdempotencyStore, RevealGuardModel, RevealTokenStore, classifySchemaChange,
   containsDirectIdentifier, cryptoUnlink, resolveTrustedRevealContext,
-  transitionRecord, validateFinancialIntent, validateLeaseSet
+  transitionRecord, validateFinancialIntent, validateLeaseSet,
+  canonicalJson, sha256, DELETION_ACT_DOMAIN_TAG
 } from './synthetic_service_models.mjs';
 import {
   DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS, computeDlpMatrixCoverage
@@ -427,12 +428,75 @@ await test('CT-024', 'Crypto-unlink preserves immutable hashes and removes PII l
     'policy_version','unlink_operation_id'
   ]);
   assert.match(out.unlink_operation_id,/^[0-9a-f-]{36}$/);
-  assert.equal(out.deletion_act_hash,'d'.repeat(64));
+
+  // SEVENTH-B06: deletion_act_hash is now server-derived. The caller-supplied
+  // value above ('d'.repeat(64)) must never surface in the output.
+  assert.notEqual(out.deletion_act_hash,'d'.repeat(64));
+  assert.match(out.deletion_act_hash,/^[0-9a-f]{64}$/);
+
+  const recomputeDeletionActHash=result=>sha256(
+    `${DELETION_ACT_DOMAIN_TAG}\0${canonicalJson({
+      unlink_operation_id:result.unlink_operation_id,
+      deletion_category:result.deletion_category,
+      policy_version:result.policy_version,
+      deleted_at:result.deleted_at
+    })}`
+  );
+  assert.equal(out.deletion_act_hash,recomputeDeletionActHash(out));
+
+  // Caller-controlled hash candidates: each must be fully ignored by
+  // cryptoUnlink -- the output hash must differ from the candidate and must
+  // still match the independent server-side recomputation, proving the
+  // candidate had no influence on the result at all.
+  const callerControlledCandidates=[
+    ['event_hash','a'.repeat(64)],
+    ['correlation_id','b'.repeat(64)],
+    ['payload_hash','c'.repeat(64)],
+    ['result_hash','e'.repeat(64)],
+    ['other_deletion_act_hash','f'.repeat(64)],
+    ['arbitrary_valid_sha256',sha256('attacker-chosen-arbitrary-preimage')]
+  ];
+  let callerControlledHashProbesPassed=0;
+  for(const [label,candidate] of callerControlledCandidates){
+    const probeOut=cryptoUnlink({
+      deletion_category:'RETENTION_EXPIRED',
+      policy_version:'retention-v1',
+      now:'2026-07-26T00:00:00Z',
+      event_hash:callerControlledCandidates[0][1],
+      correlation_id:callerControlledCandidates[1][1],
+      payload_hash:callerControlledCandidates[2][1],
+      result_hash:callerControlledCandidates[3][1],
+      deletion_act_hash:candidate
+    });
+    assert.notEqual(probeOut.deletion_act_hash,candidate,label);
+    assert.equal(probeOut.deletion_act_hash,recomputeDeletionActHash(probeOut),label);
+    assert.match(probeOut.deletion_act_hash,/^[0-9a-f]{64}$/,label);
+    callerControlledHashProbesPassed++;
+  }
+  assert.equal(callerControlledHashProbesPassed,6);
+
+  // Hash-reuse probe: identical deletion_category/policy_version/deleted_at
+  // must still produce a fresh unlink_operation_id and therefore a different
+  // deletion_act_hash -- a deletion act hash can never be replayed.
+  const reuseFirst=cryptoUnlink({
+    deletion_category:'RETENTION_EXPIRED',policy_version:'retention-v1',now:'2026-07-26T00:00:00Z'
+  });
+  const reuseSecond=cryptoUnlink({
+    deletion_category:'RETENTION_EXPIRED',policy_version:'retention-v1',now:'2026-07-26T00:00:00Z'
+  });
+  assert.notEqual(reuseFirst.unlink_operation_id,reuseSecond.unlink_operation_id);
+  assert.notEqual(reuseFirst.deletion_act_hash,reuseSecond.deletion_act_hash);
+  assert.equal(reuseFirst.deletion_act_hash,recomputeDeletionActHash(reuseFirst));
+  assert.equal(reuseSecond.deletion_act_hash,recomputeDeletionActHash(reuseSecond));
+
   return {
     allowed_tombstone_fields:Object.keys(out).sort(),
     prohibited_source_fields_absent:8,
     stable_source_hashes_absent:2,
-    deletion_act_hash_preserved:1
+    caller_controlled_hash_probes:callerControlledHashProbesPassed,
+    derivation_recompute_matches:1,
+    hash_reuse_prevented:1,
+    hash_format_valid:1
   };
 });
 await test('CT-025', 'Token ID without opaque secret and binding mismatches are rejected', 'service_behavior', () => {
