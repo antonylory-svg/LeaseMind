@@ -70,4 +70,11 @@ jobs:
 
       - name: Verify suite left tracked files unchanged
         working-directory: .
-        run: git diff --exit-code
+        # synthetic_verification_report.json and postgres_execution.log are
+        # non-deterministic runtime evidence (fresh timestamp/log hash on
+        # every run) and are not part of the source manifest.sha256 -- they
+        # are the only two paths excluded from this check.
+        run: >-
+          git diff --exit-code -- .
+          ':!05_DEVELOPMENT/matching-engine/contract-tests/v1.0/source/LeaseMind_MATCHING_DATA_CONTRACTS_v1.0/synthetic_verification_report.json'
+          ':!05_DEVELOPMENT/matching-engine/contract-tests/v1.0/source/LeaseMind_MATCHING_DATA_CONTRACTS_v1.0/postgres_execution.log'
