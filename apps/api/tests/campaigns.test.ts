@@ -7,10 +7,30 @@ import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
+import {
+  appendCampaignStatusEvent,
+  computeEventHash,
+  rebuildAllCampaignProjections,
+  rebuildCampaignProjection,
+  GENESIS_EVENT_HASH,
+  CAMPAIGN_EVENT_TYPE,
+  CAMPAIGN_EVENT_SCHEMA_VERSION
+} from '../src/db/campaignEvents.js';
 
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 const hasDatabase = Boolean(process.env.DATABASE_URL);
-const MIGRATION_FILE = '001_campaign_current_state_projection.up.sql';
+const MIGRATION_FILE_001 = '001_campaign_current_state_projection.up.sql';
+const MIGRATION_FILE_002 = '002_campaign_event_log.up.sql';
+
+// Scratch campaign_ids used only by the event-log behavior tests below. They
+// are never part of the 11 synthetic seed campaigns and their derived
+// projection/stream-head rows are deleted once those tests finish, so the
+// read-API tests further down see exactly the 11 seeded campaigns. Their
+// campaign_event_log rows cannot be deleted (immutable by design) and are
+// harmless leftovers.
+const SCRATCH_CAMPAIGN_A = '00000000-0000-4000-9000-000000000001';
+const SCRATCH_CAMPAIGN_B = '00000000-0000-4000-9000-000000000002';
+const SCRATCH_CAMPAIGN_C = '00000000-0000-4000-9000-000000000003';
 
 // Everything in this file that touches real Postgres catalog/data requires a
 // live, disposable, synthetic-only database (DATABASE_URL). The DB-unavailable
@@ -19,7 +39,8 @@ test('migration up creates the exact catalog: schema, enum, table, constraints',
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   try {
     const result = await migrateUp(pool);
-    assert.ok(result.applied.includes(MIGRATION_FILE));
+    assert.ok(result.applied.includes(MIGRATION_FILE_001));
+    assert.ok(result.applied.includes(MIGRATION_FILE_002));
 
     const schemaExists = await pool.query(
       "SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists"
@@ -94,12 +115,144 @@ test('migration up creates the exact catalog: schema, enum, table, constraints',
   }
 });
 
+test('migration up (002) creates the Campaign Event Log catalog and constraints', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const eventLogExists = await pool.query(
+      "SELECT to_regclass('leasemind_app.campaign_event_log') IS NOT NULL AS exists"
+    );
+    assert.equal(eventLogExists.rows[0].exists, true);
+
+    const streamHeadExists = await pool.query(
+      "SELECT to_regclass('leasemind_app.campaign_stream_head') IS NOT NULL AS exists"
+    );
+    assert.equal(streamHeadExists.rows[0].exists, true);
+
+    const uniqueConstraints = await pool.query(`
+      SELECT conname FROM pg_constraint
+       WHERE conrelid = 'leasemind_app.campaign_event_log'::regclass
+         AND contype = 'u'
+    `);
+    assert.deepEqual(
+      uniqueConstraints.rows.map(row => row.conname).sort(),
+      ['campaign_event_log_idempotency_unique', 'campaign_event_log_sequence_unique']
+    );
+
+    const triggers = await pool.query(`
+      SELECT tgname FROM pg_trigger
+       WHERE tgrelid = 'leasemind_app.campaign_event_log'::regclass
+         AND NOT tgisinternal
+    `);
+    assert.deepEqual(
+      triggers.rows.map(row => row.tgname).sort(),
+      ['campaign_event_log_reject_delete', 'campaign_event_log_reject_update']
+    );
+
+    const validPayload = JSON.stringify({ status: 'Created' });
+    const validRow = {
+      eventId: '11111111-1111-4111-8111-111111111111',
+      campaignId: '00000000-0000-4000-8000-000000000fff',
+      eventSequence: 1,
+      eventType: 'campaign.status_recorded.v1',
+      schemaVersion: 1,
+      payload: validPayload,
+      idempotencyKey: 'catalog-test-key',
+      commandHash: 'a'.repeat(64),
+      previousEventHash: GENESIS_EVENT_HASH,
+      eventHash: 'b'.repeat(64)
+    };
+    const insertEventLogRow = (overrides: Partial<typeof validRow>) => {
+      const row = { ...validRow, ...overrides };
+      return pool.query(
+        `INSERT INTO leasemind_app.campaign_event_log
+           (event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+            idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now())`,
+        [
+          row.eventId,
+          row.campaignId,
+          row.eventSequence,
+          row.eventType,
+          row.schemaVersion,
+          row.payload,
+          row.idempotencyKey,
+          row.commandHash,
+          row.previousEventHash,
+          row.eventHash
+        ]
+      );
+    };
+
+    await assert.rejects(
+      insertEventLogRow({ eventId: '11111111-1111-1111-8111-111111111111' }),
+      /violates check constraint/,
+      'event_id must be UUID v4'
+    );
+    await assert.rejects(
+      insertEventLogRow({ campaignId: '11111111-1111-1111-1111-111111111111' }),
+      /violates check constraint/,
+      'campaign_id must be UUID v4/v7'
+    );
+    await assert.rejects(
+      insertEventLogRow({ eventSequence: 0 }),
+      /violates check constraint/,
+      'event_sequence must be >= 1'
+    );
+    await assert.rejects(
+      insertEventLogRow({ eventType: 'campaign.other_event.v1' }),
+      /violates check constraint/,
+      'event_type must be exactly campaign.status_recorded.v1'
+    );
+    await assert.rejects(
+      insertEventLogRow({ schemaVersion: 2 }),
+      /violates check constraint/,
+      'schema_version must be exactly 1'
+    );
+    await assert.rejects(
+      insertEventLogRow({ payload: '{"status":"Created","extra":1}' }),
+      /violates check constraint/,
+      'payload must not contain additional keys'
+    );
+    await assert.rejects(
+      insertEventLogRow({ payload: '{"status":{"nested":true}}' }),
+      /violates check constraint/,
+      'payload.status must not be a nested object'
+    );
+    await assert.rejects(
+      insertEventLogRow({ payload: '{"status":"NotAStatus"}' }),
+      /violates check constraint/,
+      'payload.status must be one of the 11 approved statuses'
+    );
+    await assert.rejects(
+      insertEventLogRow({ commandHash: 'not-a-sha256' }),
+      /violates check constraint/,
+      'command_hash must be 64 lowercase hex characters'
+    );
+
+    const streamHeadInvalid = await pool.query(
+      "SELECT to_regclass('leasemind_app.campaign_stream_head') IS NOT NULL AS exists"
+    );
+    assert.equal(streamHeadInvalid.rows[0].exists, true);
+    await assert.rejects(
+      pool.query(
+        "INSERT INTO leasemind_app.campaign_stream_head (campaign_id, current_sequence, current_event_hash) VALUES ('00000000-0000-4000-8000-000000000ffc', -1, $1)",
+        [GENESIS_EVENT_HASH]
+      ),
+      /violates check constraint/,
+      'current_sequence must be >= 0'
+    );
+  } finally {
+    await pool.end();
+  }
+});
+
 test('re-running migration up is idempotent (no error, migration skipped)', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   try {
     const result = await migrateUp(pool);
     assert.deepEqual(result.applied, []);
-    assert.ok(result.skipped.includes(MIGRATION_FILE));
+    assert.ok(result.skipped.includes(MIGRATION_FILE_001));
+    assert.ok(result.skipped.includes(MIGRATION_FILE_002));
   } finally {
     await pool.end();
   }
@@ -114,7 +267,7 @@ test('a checksum mismatch on an already-applied migration is rejected', { skip: 
 
     await pool.query(
       "UPDATE leasemind_app.schema_migrations SET checksum = repeat('0', 64) WHERE filename = $1",
-      [MIGRATION_FILE]
+      [MIGRATION_FILE_001]
     );
 
     await assert.rejects(migrateUp(pool), /MIGRATION_CHECKSUM_MISMATCH/);
@@ -125,18 +278,335 @@ test('a checksum mismatch on an already-applied migration is rejected', { skip: 
     // already-existing type/table (CREATE TYPE/CREATE TABLE, no IF NOT EXISTS).
     await pool.query('UPDATE leasemind_app.schema_migrations SET checksum = $1 WHERE filename = $2', [
       realChecksum,
-      MIGRATION_FILE
+      MIGRATION_FILE_001
     ]);
 
     const result = await migrateUp(pool);
     assert.deepEqual(result.applied, []);
-    assert.ok(result.skipped.includes(MIGRATION_FILE));
+    assert.ok(result.skipped.includes(MIGRATION_FILE_001));
   } finally {
     await pool.end();
   }
 });
 
-test('synthetic seed inserts exactly 11 campaigns, one per approved status', { skip: !hasDatabase }, async () => {
+test('first append creates event, stream head and projection atomically', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const result = await appendCampaignStatusEvent(pool, {
+      campaignId: SCRATCH_CAMPAIGN_A,
+      status: 'Created',
+      idempotencyKey: 'scratch-a:first'
+    });
+
+    assert.equal(result.isReplay, false);
+    assert.equal(result.eventSequence, '1');
+    assert.equal(result.previousEventHash, GENESIS_EVENT_HASH);
+    assert.equal(result.eventType, CAMPAIGN_EVENT_TYPE);
+    assert.equal(result.schemaVersion, CAMPAIGN_EVENT_SCHEMA_VERSION);
+    assert.match(result.eventId, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+    assert.match(result.eventHash, /^[0-9a-f]{64}$/);
+    assert.ok(Date.now() - new Date(result.occurredAt).getTime() < 60_000, 'occurred_at should be recent');
+
+    const eventRow = await pool.query(
+      'SELECT event_sequence, payload FROM leasemind_app.campaign_event_log WHERE event_id = $1',
+      [result.eventId]
+    );
+    assert.equal(eventRow.rows[0].event_sequence, '1');
+    assert.deepEqual(eventRow.rows[0].payload, { status: 'Created' });
+
+    const head = await pool.query(
+      'SELECT current_sequence, current_event_hash FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(head.rows[0].current_sequence, '1');
+    assert.equal(head.rows[0].current_event_hash, result.eventHash);
+
+    const projection = await pool.query(
+      'SELECT status, aggregate_version::text AS aggregate_version FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(projection.rows[0].status, 'Created');
+    assert.equal(projection.rows[0].aggregate_version, '1');
+  } finally {
+    await pool.end();
+  }
+});
+
+test('UPDATE on campaign_event_log is unconditionally rejected', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    await assert.rejects(
+      pool.query(
+        "UPDATE leasemind_app.campaign_event_log SET event_type = 'campaign.status_recorded.v1' WHERE campaign_id = $1",
+        [SCRATCH_CAMPAIGN_A]
+      ),
+      /CAMPAIGN_EVENT_LOG_IMMUTABLE/
+    );
+  } finally {
+    await pool.end();
+  }
+});
+
+test('DELETE on campaign_event_log is unconditionally rejected', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    await assert.rejects(
+      pool.query('DELETE FROM leasemind_app.campaign_event_log WHERE campaign_id = $1', [SCRATCH_CAMPAIGN_A]),
+      /CAMPAIGN_EVENT_LOG_IMMUTABLE/
+    );
+    const stillThere = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(stillThere.rows[0].count, 1);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('same idempotency key + same command replays the original event without a duplicate', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const first = await appendCampaignStatusEvent(pool, {
+      campaignId: SCRATCH_CAMPAIGN_A,
+      status: 'Created',
+      idempotencyKey: 'scratch-a:first'
+    });
+    assert.equal(first.isReplay, true);
+    assert.equal(first.eventSequence, '1');
+
+    const count = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(count.rows[0].count, 1);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('same idempotency key + different status is rejected, leaving no partial writes', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    await assert.rejects(
+      appendCampaignStatusEvent(pool, {
+        campaignId: SCRATCH_CAMPAIGN_A,
+        status: 'Analyzing',
+        idempotencyKey: 'scratch-a:first'
+      }),
+      /IDEMPOTENCY_KEY_CONFLICT/
+    );
+
+    const count = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(count.rows[0].count, 1, 'no new event should have been created');
+
+    const head = await pool.query(
+      'SELECT current_sequence FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(head.rows[0].current_sequence, '1', 'stream head must not advance');
+
+    const projection = await pool.query(
+      'SELECT status FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_A]
+    );
+    assert.equal(projection.rows[0].status, 'Created', 'projection must be unchanged');
+  } finally {
+    await pool.end();
+  }
+});
+
+test('invalid campaign_id (malformed or forbidden UUID version) is rejected before writing anything', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const invalidIds = [
+      'not-a-uuid',
+      '11111111-1111-1111-1111-111111111111', // v1
+      'aaaaaaaa-aaaa-3aaa-aaaa-aaaaaaaaaaaa' // v3
+    ];
+    for (const invalidId of invalidIds) {
+      await assert.rejects(
+        appendCampaignStatusEvent(pool, {
+          campaignId: invalidId,
+          status: 'Created',
+          idempotencyKey: 'invalid-id-test'
+        }),
+        /INVALID_CAMPAIGN_ID/,
+        `campaign_id: ${invalidId}`
+      );
+    }
+  } finally {
+    await pool.end();
+  }
+});
+
+test('unapproved status is rejected before writing anything', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    await assert.rejects(
+      appendCampaignStatusEvent(pool, {
+        campaignId: SCRATCH_CAMPAIGN_C,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: 'NotAStatus' as any,
+        idempotencyKey: 'scratch-c:invalid-status'
+      }),
+      /INVALID_CAMPAIGN_STATUS/
+    );
+
+    const count = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_C]
+    );
+    assert.equal(count.rows[0].count, 0);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('concurrent appends for the same campaign receive distinct sequential sequences without a race', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 12 });
+  try {
+    const attempts = 10;
+    const results = await Promise.all(
+      Array.from({ length: attempts }, (_, index) =>
+        appendCampaignStatusEvent(pool, {
+          campaignId: SCRATCH_CAMPAIGN_B,
+          status: CAMPAIGN_STATUSES[index % CAMPAIGN_STATUSES.length],
+          idempotencyKey: `scratch-b:concurrent:${index}`
+        })
+      )
+    );
+
+    const sequences = results.map(r => Number(r.eventSequence)).sort((a, b) => a - b);
+    assert.deepEqual(sequences, Array.from({ length: attempts }, (_, i) => i + 1));
+
+    const head = await pool.query(
+      'SELECT current_sequence FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_B]
+    );
+    assert.equal(head.rows[0].current_sequence, String(attempts));
+
+    const count = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_B]
+    );
+    assert.equal(count.rows[0].count, attempts);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('event_hash recomputes and matches; previous_event_hash forms a correct chain', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const rows = await pool.query<{
+      event_id: string;
+      campaign_id: string;
+      event_sequence: string;
+      event_type: string;
+      schema_version: number;
+      payload: { status: string };
+      idempotency_key: string;
+      command_hash: string;
+      previous_event_hash: string;
+      event_hash: string;
+      occurred_at: Date;
+    }>(
+      `SELECT event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+              idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at
+         FROM leasemind_app.campaign_event_log
+        WHERE campaign_id = $1
+        ORDER BY event_sequence ASC`,
+      [SCRATCH_CAMPAIGN_B]
+    );
+    assert.equal(rows.rowCount, 10);
+
+    for (const row of rows.rows) {
+      const recomputed = computeEventHash({
+        eventId: row.event_id,
+        campaignId: row.campaign_id,
+        eventSequence: row.event_sequence,
+        eventType: row.event_type,
+        schemaVersion: row.schema_version,
+        payload: row.payload as { status: any },
+        occurredAt: row.occurred_at.toISOString(),
+        previousEventHash: row.previous_event_hash,
+        idempotencyKey: row.idempotency_key,
+        commandHash: row.command_hash
+      });
+      assert.equal(recomputed, row.event_hash, `event_hash mismatch at sequence ${row.event_sequence}`);
+    }
+
+    assert.equal(rows.rows[0].previous_event_hash, GENESIS_EVENT_HASH);
+    for (let i = 1; i < rows.rows.length; i++) {
+      assert.equal(
+        rows.rows[i].previous_event_hash,
+        rows.rows[i - 1].event_hash,
+        `chain broken between sequence ${rows.rows[i - 1].event_sequence} and ${rows.rows[i].event_sequence}`
+      );
+    }
+  } finally {
+    await pool.end();
+  }
+});
+
+test('rebuilding a single campaign restores its projection from the Event Log', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    // Corrupt the derived projection directly; the Event Log itself cannot
+    // be touched (immutable), so this proves rebuild reads from the log,
+    // not from whatever the projection currently holds.
+    await pool.query(
+      "UPDATE leasemind_app.campaign_current_state_projection SET status = 'Paused', aggregate_version = 1 WHERE campaign_id = $1",
+      [SCRATCH_CAMPAIGN_B]
+    );
+
+    const latestEvent = await pool.query<{ event_sequence: string; payload: { status: string }; occurred_at: Date }>(
+      `SELECT event_sequence, payload, occurred_at
+         FROM leasemind_app.campaign_event_log
+        WHERE campaign_id = $1
+        ORDER BY event_sequence DESC
+        LIMIT 1`,
+      [SCRATCH_CAMPAIGN_B]
+    );
+
+    await rebuildCampaignProjection(pool, SCRATCH_CAMPAIGN_B);
+
+    const projection = await pool.query<{ status: string; aggregate_version: string; updated_at: Date }>(
+      'SELECT status, aggregate_version::text AS aggregate_version, updated_at FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [SCRATCH_CAMPAIGN_B]
+    );
+    assert.equal(projection.rows[0].status, latestEvent.rows[0].payload.status);
+    assert.equal(projection.rows[0].aggregate_version, latestEvent.rows[0].event_sequence);
+    assert.equal(projection.rows[0].updated_at.toISOString(), latestEvent.rows[0].occurred_at.toISOString());
+  } finally {
+    await pool.end();
+  }
+});
+
+test('cleanup: remove scratch campaigns from derived tables (Event Log rows remain, immutably)', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const scratchIds = [SCRATCH_CAMPAIGN_A, SCRATCH_CAMPAIGN_B, SCRATCH_CAMPAIGN_C];
+    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = ANY($1)', [
+      scratchIds
+    ]);
+    await pool.query('DELETE FROM leasemind_app.campaign_stream_head WHERE campaign_id = ANY($1)', [scratchIds]);
+
+    const remaining = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = ANY($1)',
+      [scratchIds]
+    );
+    assert.equal(remaining.rows[0].count, 0);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('synthetic seed creates exactly 11 campaigns via 11 initial append events', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   try {
     await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection');
@@ -153,20 +623,102 @@ test('synthetic seed inserts exactly 11 campaigns, one per approved status', { s
       rows.rows.map(row => row.status).sort(),
       [...CAMPAIGN_STATUSES].sort()
     );
+
+    const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
+    const events = await pool.query(
+      'SELECT campaign_id, event_sequence FROM leasemind_app.campaign_event_log WHERE campaign_id = ANY($1)',
+      [seedIds]
+    );
+    assert.equal(events.rowCount, 11);
+    assert.ok(events.rows.every(row => row.event_sequence === '1'));
   } finally {
     await pool.end();
   }
 });
 
-test('re-running the synthetic seed does not create duplicates', { skip: !hasDatabase }, async () => {
+test('re-running the synthetic seed reuses idempotency keys and creates no new events', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   try {
     const result = await seedCampaigns(pool);
     assert.equal(result.inserted, 0);
     assert.equal(result.skipped, 11);
 
-    const count = await pool.query('SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection');
-    assert.equal(count.rows[0].count, 11);
+    const projectionCount = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection'
+    );
+    assert.equal(projectionCount.rows[0].count, 11);
+
+    const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
+    const eventCount = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = ANY($1)',
+      [seedIds]
+    );
+    assert.equal(eventCount.rows[0].count, 11);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('rebuilding all campaigns restores correct projections for the 11 synthetic seed campaigns', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
+
+    // Corrupt every seeded projection row so a correct rebuild is provable.
+    await pool.query(
+      "UPDATE leasemind_app.campaign_current_state_projection SET status = 'Failed', aggregate_version = 999 WHERE campaign_id = ANY($1)",
+      [seedIds]
+    );
+
+    const rebuiltCount = await rebuildAllCampaignProjections(pool);
+    assert.ok(rebuiltCount >= 11);
+
+    for (const seed of SYNTHETIC_CAMPAIGN_SEEDS) {
+      const row = await pool.query(
+        'SELECT status, aggregate_version::text AS aggregate_version FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+        [seed.campaignId]
+      );
+      assert.equal(row.rows[0].status, seed.status, `campaign ${seed.campaignId} status after rebuild`);
+      assert.equal(row.rows[0].aggregate_version, '1', `campaign ${seed.campaignId} aggregate_version after rebuild`);
+    }
+
+    // rebuildAllCampaignProjections also resurrects any scratch campaigns
+    // still present in the Event Log; remove them again so the read-API
+    // tests below see exactly the 11 synthetic campaigns.
+    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
+      seedIds
+    ]);
+    const finalCount = await pool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection'
+    );
+    assert.equal(finalCount.rows[0].count, 11);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('rebuild does not modify the Event Log', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  try {
+    const before = await pool.query(
+      'SELECT campaign_id, event_sequence, event_hash FROM leasemind_app.campaign_event_log ORDER BY campaign_id, event_sequence'
+    );
+
+    await rebuildAllCampaignProjections(pool);
+
+    const after = await pool.query(
+      'SELECT campaign_id, event_sequence, event_hash FROM leasemind_app.campaign_event_log ORDER BY campaign_id, event_sequence'
+    );
+
+    assert.deepEqual(after.rows, before.rows);
+
+    // rebuildAllCampaignProjections resurrects any scratch campaigns still
+    // present in the Event Log; remove them again so later read-API tests
+    // see exactly the 11 synthetic campaigns.
+    const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
+    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
+      seedIds
+    ]);
   } finally {
     await pool.end();
   }
@@ -320,11 +872,14 @@ function assertNoLeakedSecrets(responseBody: string): void {
   }
 }
 
-test('migration down removes the entire app-foundation catalog', { skip: !hasDatabase }, async () => {
+test('migration down removes the entire app-foundation catalog (002 then 001)', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
   try {
     const result = await migrateDown(pool);
-    assert.ok(result.reverted.includes('001_campaign_current_state_projection.down.sql'));
+    assert.deepEqual(result.reverted, [
+      '002_campaign_event_log.down.sql',
+      '001_campaign_current_state_projection.down.sql'
+    ]);
 
     const schemaExists = await pool.query(
       "SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists"
@@ -335,6 +890,16 @@ test('migration down removes the entire app-foundation catalog', { skip: !hasDat
       "SELECT to_regclass('leasemind_app.campaign_current_state_projection') IS NOT NULL AS exists"
     );
     assert.equal(tableExists.rows[0].exists, false);
+
+    const eventLogExists = await pool.query(
+      "SELECT to_regclass('leasemind_app.campaign_event_log') IS NOT NULL AS exists"
+    );
+    assert.equal(eventLogExists.rows[0].exists, false);
+
+    const streamHeadExists = await pool.query(
+      "SELECT to_regclass('leasemind_app.campaign_stream_head') IS NOT NULL AS exists"
+    );
+    assert.equal(streamHeadExists.rows[0].exists, false);
   } finally {
     await pool.end();
   }
