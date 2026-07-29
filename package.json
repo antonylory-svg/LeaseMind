@@ -1,0 +1,17 @@
+{
+  "name": "leasemind-app-foundation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "LeaseMind application foundation (synthetic development only, ADR-0001).",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspace apps/api && npm run typecheck --workspace apps/web",
+    "test": "npm run test --workspace apps/api",
+    "build": "npm run build --workspace apps/api && npm run build --workspace apps/web",
+    "dev:api": "npm run dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web"
+  }
+}
