@@ -1,0 +1,17 @@
+services:
+  postgres:
+    image: postgres:18.4
+    environment:
+      POSTGRES_USER: lmapp_dev
+      POSTGRES_PASSWORD: synthetic-dev-only-password
+      POSTGRES_DB: lmapp_dev
+    ports:
+      - "127.0.0.1:5433:5432"
+    tmpfs:
+      - /var/lib/postgresql:rw,size=512m
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lmapp_dev -d lmapp_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s

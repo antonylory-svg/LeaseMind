@@ -1,0 +1,10 @@
+_incoming/
+
+# App foundation (ADR-0001) — Node/Vite runtime and local env files only.
+# Source, migrations and lockfiles are never ignored.
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+npm-debug.log*

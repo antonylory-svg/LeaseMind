@@ -1,0 +1,54 @@
+positive:
+  - id: openapi_redeem_with_opaque_token
+    kind: redeem_request
+    headers:
+      Reveal-Token: synthetic_opaque_token_0123456789abcdef0123456789abcdef
+      Idempotency-Key: synthetic-idempotency-0001
+    authenticated_recipient: 00000000-0000-4000-8000-000000000001
+  - id: automatic_delivery_with_established_time
+    kind: record_transition
+    event_type: REVEAL_DELIVERY_CONFIRMED
+    from_state: REVEAL_COMMITTED
+    to_state: REVEALED_ACTIVE
+    established_delivery_at: 2026-07-23T10:00:00Z
+  - id: human_delivery_from_disputed
+    kind: decision
+    decision_type: DELIVERY_CONFIRMED_BY_DECISION
+    from_state: DISCLOSURE_DISPUTED
+    to_state: REVEALED_ACTIVE
+    established_delivery_at: 2026-07-23T10:00:00Z
+  - id: lawful_basis_expired_reason
+    kind: event
+    event_type: LAWFUL_BASIS_INVALIDATED
+    reason_code: EXPIRED
+  - id: previous_contact_reopened_reason
+    kind: event
+    event_type: PREVIOUS_CONTACT_DECISION_CHANGED
+    reason_code: DECISION_REOPENED
+
+negative:
+  - id: token_id_without_secret
+    kind: redeem_request
+    path_reveal_token_id: 00000000-0000-4000-8000-000000000099
+    headers:
+      Idempotency-Key: synthetic-idempotency-0002
+    expected_error: LM-REVEAL-TOKEN-INVALID
+  - id: human_delivery_directly_from_committed
+    kind: decision
+    decision_type: DELIVERY_CONFIRMED_BY_DECISION
+    from_state: REVEAL_COMMITTED
+    to_state: REVEALED_ACTIVE
+    established_delivery_at: 2026-07-23T10:00:00Z
+    expected_error: LM-RECORD-TRANSITION-FORBIDDEN
+  - id: human_delivery_without_established_time
+    kind: decision
+    decision_type: DELIVERY_CONFIRMED_BY_DECISION
+    from_state: DISCLOSURE_DISPUTED
+    to_state: REVEALED_ACTIVE
+    expected_error: LM-REVEAL-EVIDENCE-INSUFFICIENT
+  - id: automatic_delivery_without_established_time
+    kind: record_transition
+    event_type: REVEAL_DELIVERY_CONFIRMED
+    from_state: REVEAL_COMMITTED
+    to_state: REVEALED_ACTIVE
+    expected_error: LM-REVEAL-EVIDENCE-INSUFFICIENT
