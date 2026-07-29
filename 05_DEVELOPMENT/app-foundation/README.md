@@ -27,7 +27,7 @@ docker compose up -d postgres
 docker compose ps postgres
 ```
 
-Порт публикуется только на `127.0.0.1:5432`, без persistent volume (`tmpfs`).
+Порт публикуется только на `127.0.0.1:5433`, без persistent volume (`tmpfs`).
 
 ## Backend
 
@@ -36,6 +36,9 @@ cp apps/api/.env.example apps/api/.env
 npm run dev --workspace apps/api
 ```
 
+`.env` загружается автоматически (`node --env-file-if-exists`, встроенная
+возможность Node.js 22) — ручной `export`/`source` не требуется. Уже заданные
+переменные окружения процесса имеют приоритет над значениями из `.env`.
 Слушает `127.0.0.1:3001` по умолчанию (см. `apps/api/.env.example`).
 
 ## Frontend
@@ -45,6 +48,9 @@ npm run dev --workspace apps/web
 ```
 
 Открыть `http://127.0.0.1:5173/` — техническая health-страница, без бизнес-сущностей.
+Frontend обращается к API по относительным путям (`/api/v1/...`); Vite dev
+server проксирует их на `http://127.0.0.1:3001` (см. `vite.config.ts`) —
+same-origin, без CORS.
 
 ## Проверки
 
@@ -54,6 +60,8 @@ npm run test --workspace apps/api
 npm run build --workspace apps/web
 curl -s http://127.0.0.1:3001/api/v1/health/live
 curl -s http://127.0.0.1:3001/api/v1/health/ready
+curl -s http://127.0.0.1:5173/api/v1/health/live
+curl -s http://127.0.0.1:5173/api/v1/health/ready
 ```
 
 ## Остановка
