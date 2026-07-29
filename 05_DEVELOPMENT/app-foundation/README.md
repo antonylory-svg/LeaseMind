@@ -52,6 +52,32 @@ Frontend обращается к API по относительным путям 
 server проксирует их на `http://127.0.0.1:3001` (см. `vite.config.ts`) —
 same-origin, без CORS.
 
+## Campaign Read Model (synthetic-only)
+
+Производная `Current State Projection` (не источник истины бизнес-событий —
+Immutable Event Log остаётся будущим отдельным write-side этапом). Источник
+утверждённой семантики: `03_ARCHITECTURE/ai-manager/LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md`
+(Approved, v1.0, раздел 5.3) — ровно 11 статусов, без переименований и
+добавлений. Только read-only API, без write endpoints и без переходов между
+статусами.
+
+```
+npm run migrate:up
+npm run seed
+npm run migrate:down
+```
+
+`migrate:up`/`migrate:down` — plain SQL миграции с checksum ledger
+(`apps/api/migrations/`); повторный `migrate:up` идемпотентен, изменение уже
+применённого файла отклоняется. `seed` — ровно 11 детерминированных synthetic
+Campaign (по одной на статус); повторный запуск не создаёт дубликатов. Ни
+одна из команд не выполняется автоматически при `npm run dev`/`npm start`.
+
+```
+curl -s http://127.0.0.1:3001/api/v1/campaigns
+curl -s http://127.0.0.1:3001/api/v1/campaigns/00000000-0000-4000-8000-000000000001
+```
+
 ## Проверки
 
 ```

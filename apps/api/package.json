@@ -8,7 +8,10 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test tests/*.test.ts"
+    "test": "node --import tsx --test tests/*.test.ts",
+    "migrate:up": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts up",
+    "migrate:down": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts down",
+    "seed": "node --env-file-if-exists=.env --import tsx src/db/seed-cli.ts"
   },
   "dependencies": {
     "fastify": "^5.0.0",

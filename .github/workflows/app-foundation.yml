@@ -74,6 +74,12 @@ jobs:
       - name: Frontend production build
         run: npm run build --workspace apps/web
 
+      - name: Apply Campaign read model migration
+        run: npm run migrate:up --workspace apps/api
+
+      - name: Seed synthetic campaigns
+        run: npm run seed --workspace apps/api
+
       - name: Start API for live probe
         run: |
           node --import tsx apps/api/src/server.ts &
@@ -106,6 +112,27 @@ jobs:
 
           echo "live=200 ready=200"
 
+      - name: Probe /api/v1/campaigns and /api/v1/campaigns/:campaignId
+        run: |
+          list_status=$(curl -s -o /tmp/campaigns-list.json -w '%{http_code}' http://127.0.0.1:3001/api/v1/campaigns)
+          if [ "$list_status" != "200" ]; then
+            echo "campaign list probe failed: HTTP $list_status" >&2
+            exit 1
+          fi
+          count=$(node -e "console.log(JSON.parse(require('fs').readFileSync('/tmp/campaigns-list.json','utf8')).campaigns.length)")
+          if [ "$count" != "11" ]; then
+            echo "expected 11 synthetic campaigns, got $count" >&2
+            exit 1
+          fi
+
+          detail_status=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3001/api/v1/campaigns/00000000-0000-4000-8000-000000000001)
+          if [ "$detail_status" != "200" ]; then
+            echo "campaign detail probe failed: HTTP $detail_status" >&2
+            exit 1
+          fi
+
+          echo "campaigns list=200 (11 items) detail=200"
+
       - name: Stop API process
         if: always()
         run: |
@@ -113,3 +140,7 @@ jobs:
             kill "$(cat api.pid)" 2>/dev/null || true
             rm -f api.pid
           fi
+
+      - name: Revert Campaign read model migration
+        if: always()
+        run: npm run migrate:down --workspace apps/api
