@@ -1,15 +1,6 @@
 name: Application Foundation
 
 on:
-  push:
-    branches:
-      - development/sprint-0
-    paths:
-      - 'apps/**'
-      - 'package.json'
-      - 'package-lock.json'
-      - 'docker-compose.yml'
-      - '.github/workflows/app-foundation.yml'
   pull_request:
     branches:
       - main
@@ -19,6 +10,16 @@ on:
       - 'package-lock.json'
       - 'docker-compose.yml'
       - '.github/workflows/app-foundation.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'docker-compose.yml'
+      - '.github/workflows/app-foundation.yml'
+  workflow_dispatch: {}
 
 permissions:
   contents: read
