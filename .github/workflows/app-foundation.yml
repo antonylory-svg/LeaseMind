@@ -34,6 +34,12 @@ jobs:
       PORT: '3001'
       NODE_ENV: development
       DATABASE_URL: postgres://lmapp_dev:synthetic-dev-only-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_RUNTIME_MODE: synthetic
+      LEASEMIND_PRODUCTION_LAUNCH_GATE: blocked
+      LEASEMIND_ALLOW_REAL_PII: 'false'
+      LEASEMIND_ALLOW_REAL_PAYMENTS: 'false'
+      LEASEMIND_ALLOW_PROTECTED_REVEAL: 'false'
+      LEASEMIND_ALLOW_PRODUCTION_ADAPTERS: 'false'
     services:
       postgres:
         image: postgres:18.4
