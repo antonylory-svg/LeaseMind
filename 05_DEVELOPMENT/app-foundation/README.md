@@ -78,6 +78,31 @@ curl -s http://127.0.0.1:3001/api/v1/campaigns
 curl -s http://127.0.0.1:3001/api/v1/campaigns/00000000-0000-4000-8000-000000000001
 ```
 
+## Pre-launch runtime safety gate
+
+`apps/api/src/runtimePolicy.ts` (см. `03_ARCHITECTURE/decisions/ADR-0003-pre-launch-runtime-safety-gate.md`)
+проверяется в `server.ts` до создания PostgreSQL-пула и до открытия порта.
+Единственное допустимое состояние до отдельного `PRODUCTION_LAUNCH_GATE`:
+
+```
+LEASEMIND_RUNTIME_MODE=synthetic
+LEASEMIND_PRODUCTION_LAUNCH_GATE=blocked
+LEASEMIND_ALLOW_REAL_PII=false
+LEASEMIND_ALLOW_REAL_PAYMENTS=false
+LEASEMIND_ALLOW_PROTECTED_REVEAL=false
+LEASEMIND_ALLOW_PRODUCTION_ADAPTERS=false
+```
+
+Отсутствие любой из этих переменных равнозначно указанному безопасному
+значению — по умолчанию сервер всегда стартует в этом единственном
+допустимом состоянии. Любое другое значение (`production`, `staging`,
+`open`, `true`, `TRUE`, `1`, `yes` и т.п.) останавливает процесс до
+подключения к базе данных и до bind порта; сообщение об ошибке называет
+только имя переменной, никогда не раскрывая `DATABASE_URL` или иные
+значения окружения. Изменить это поведение можно только новым кодом и
+новым утверждённым решением DEVELOPMENT — не изменением значения
+переменной окружения.
+
 ## Проверки
 
 ```

@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/server.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "node --import tsx --test tests/*.test.ts",
+    "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "migrate:up": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts up",
     "migrate:down": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts down",
     "seed": "node --env-file-if-exists=.env --import tsx src/db/seed-cli.ts"
@@ -18,8 +18,11 @@
     "pg": "^8.13.0"
   },
   "devDependencies": {
+    "@apidevtools/swagger-parser": "12.1.0",
     "@types/node": "^22.0.0",
     "@types/pg": "^8.11.0",
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }

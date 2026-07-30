@@ -1,0 +1,221 @@
+openapi: 3.1.0
+info:
+  title: LeaseMind App Foundation — Read-only API
+  version: 1.0.0
+  description: >-
+    Synthetic-only, read-only contract for the four HTTP operations that
+    actually exist in apps/api/src/app.ts: two health probes and the
+    Campaign Current State Projection read model (see
+    03_ARCHITECTURE/decisions/ADR-0001-application-development-stack.md,
+    ADR-0002-campaign-event-stream.md, ADR-0003-pre-launch-runtime-safety-gate.md
+    and ADR-0004-read-only-api-contract.md). No write operations exist or
+    are documented. PRODUCTION_LAUNCH_GATE remains blocked; this document
+    does not authorize any production deployment, real personal data, real
+    payments or protected-data disclosure.
+servers:
+  - url: http://127.0.0.1:3001
+    description: >-
+      Synthetic local development server only (see apps/api/.env.example).
+      No production server exists.
+
+paths:
+  /api/v1/health/live:
+    get:
+      operationId: getHealthLive
+      summary: Liveness probe
+      description: >-
+        Always returns 200 regardless of database reachability. Never
+        returns any other status code.
+      responses:
+        '200':
+          description: The process is alive.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthLiveResponse'
+
+  /api/v1/health/ready:
+    get:
+      operationId: getHealthReady
+      summary: Readiness probe
+      description: Reports whether the process can currently reach PostgreSQL.
+      responses:
+        '200':
+          description: The database is reachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthReadyOkResponse'
+        '503':
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+  /api/v1/campaigns:
+    get:
+      operationId: listCampaigns
+      summary: List all synthetic Campaigns
+      description: >-
+        Returns every row of the derived, rebuildable Campaign Current
+        State Projection (apps/api/migrations/001_campaign_current_state_projection.up.sql),
+        ordered by campaign_id ascending. Read-only; no write endpoint exists.
+      responses:
+        '200':
+          description: The full list of synthetic Campaigns.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignListResponse'
+        '503':
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+  /api/v1/campaigns/{campaignId}:
+    get:
+      operationId: getCampaignById
+      summary: Get a single synthetic Campaign by id
+      description: >-
+        campaignId must be a UUID v4 or v7; any other syntactically valid
+        UUID version (v1, v2, v3, v5, v6, v8) or malformed value is
+        rejected with 400 before any database query runs
+        (apps/api/src/uuid.ts).
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UuidV4OrV7'
+      responses:
+        '200':
+          description: The matching Campaign.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          description: campaignId is not a well-formed UUID v4 or v7.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidCampaignIdResponse'
+        '404':
+          description: No Campaign exists with the given campaignId.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CampaignNotFoundResponse'
+        '503':
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+components:
+  schemas:
+    UuidV4OrV7:
+      type: string
+      description: UUID v4 or v7 only. Versions 1, 2, 3, 5, 6 and 8 are forbidden.
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
+
+    HealthLiveResponse:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    HealthReadyOkResponse:
+      type: object
+      additionalProperties: false
+      required: [status, database]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+        database:
+          type: string
+          enum: [connected]
+
+    ServiceUnavailableResponse:
+      type: object
+      additionalProperties: false
+      required: [status, database]
+      properties:
+        status:
+          type: string
+          enum: [error]
+        database:
+          type: string
+          enum: [unreachable]
+
+    Campaign:
+      type: object
+      additionalProperties: false
+      required: [campaign_id, status, aggregate_version, created_at, updated_at]
+      properties:
+        campaign_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          description: >-
+            One of the 11 approved Campaign statuses
+            (LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md, Approved v1.0,
+            section 5.3). No additions, renames or removals.
+          enum:
+            - Created
+            - Analyzing
+            - Strategy Building
+            - Searching
+            - Qualifying
+            - Negotiating
+            - Viewing
+            - Deal Support
+            - Completed
+            - Paused
+            - Failed
+        aggregate_version:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CampaignListResponse:
+      type: object
+      additionalProperties: false
+      required: [campaigns]
+      properties:
+        campaigns:
+          type: array
+          items:
+            $ref: '#/components/schemas/Campaign'
+
+    InvalidCampaignIdResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum: [INVALID_CAMPAIGN_ID]
+
+    CampaignNotFoundResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum: [CAMPAIGN_NOT_FOUND]
