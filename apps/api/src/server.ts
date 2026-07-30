@@ -2,6 +2,7 @@ import { loadConfig } from './config.js';
 import { createPool } from './db.js';
 import { buildApp } from './app.js';
 import { enforceRuntimeSafetyGate, RuntimeSafetyViolation } from './runtimePolicy.js';
+import { verifyRuntimeDatabasePrivileges, DatabasePrivilegeViolation, DATABASE_PRIVILEGE_VIOLATION_CODE } from './dbPrivilegePolicy.js';
 
 async function main(): Promise<void> {
   try {
@@ -15,6 +16,17 @@ async function main(): Promise<void> {
 
   const config = loadConfig();
   const pool = createPool(config.databaseUrl);
+
+  try {
+    await verifyRuntimeDatabasePrivileges(pool);
+  } catch (error) {
+    // Never log the pool, config or the underlying error: only the stable
+    // code is safe to print. The port must never open after this point.
+    console.error(error instanceof DatabasePrivilegeViolation ? error.message : DATABASE_PRIVILEGE_VIOLATION_CODE);
+    await pool.end().catch(() => {});
+    process.exit(1);
+  }
+
   const app = buildApp({ pool });
 
   let shuttingDown = false;

@@ -15,6 +15,7 @@ import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
+import { MIGRATION_DATABASE_URL, MAINTENANCE_DATABASE_URL, API_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
 
 // This file owns its own complete migration/seed/teardown lifecycle,
 // independent of tests/campaigns.test.ts. Running test FILES sequentially
@@ -22,9 +23,13 @@ import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
 // file runs first tears its own state down or leaves it idempotently
 // re-appliable, so this file re-applies migrate:up + seed at its own start
 // regardless of what ran before it, and tears down at its own end.
+// Migration/catalog steps connect as lmapp_migrator (owner); seeding
+// connects as the real lmapp_maintainer; every HTTP-surface assertion
+// connects as the real lmapp_api_reader (DATABASE_URL) -- proving the
+// actual production-shaped roles serve the documented contract, not an
+// omnipotent connection standing in for them.
 
 const OPENAPI_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'openapi', 'openapi.yaml');
-const hasDatabase = Boolean(process.env.DATABASE_URL);
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -184,7 +189,7 @@ test('negative mutation: 400/404/503 error schemas reject an unrecognized error 
 });
 
 test('migration up (fresh) prepares the schema for contract verification', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await migrateUp(pool);
   } finally {
@@ -193,7 +198,7 @@ test('migration up (fresh) prepares the schema for contract verification', { ski
 });
 
 test('synthetic seed provides all 11 campaigns for contract verification', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MAINTENANCE_DATABASE_URL, max: 2 });
   try {
     await seedCampaigns(pool);
   } finally {
@@ -202,7 +207,7 @@ test('synthetic seed provides all 11 campaigns for contract verification', { ski
 });
 
 test('GET /api/v1/health/live: real response matches the documented 200 schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/api/v1/health/live' });
@@ -214,7 +219,7 @@ test('GET /api/v1/health/live: real response matches the documented 200 schema',
 });
 
 test('GET /api/v1/health/ready: real 200 response matches the documented schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/api/v1/health/ready' });
@@ -229,7 +234,7 @@ test(
   'GET /api/v1/campaigns: real response matches the documented schema and contains all 11 approved statuses',
   { skip: !hasDatabase },
   async () => {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+    const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
     const app = buildApp({ pool, logger: false });
     try {
       const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns' });
@@ -255,7 +260,7 @@ test(
 );
 
 test('GET /api/v1/campaigns/{campaignId}: real 200 response matches the documented schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const target = SYNTHETIC_CAMPAIGN_SEEDS[0];
@@ -268,7 +273,7 @@ test('GET /api/v1/campaigns/{campaignId}: real 200 response matches the document
 });
 
 test('GET /api/v1/campaigns/{campaignId}: malformed UUID matches the documented 400 schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns/not-a-uuid' });
@@ -280,7 +285,7 @@ test('GET /api/v1/campaigns/{campaignId}: malformed UUID matches the documented 
 });
 
 test('GET /api/v1/campaigns/{campaignId}: forbidden UUID versions match the documented 400 schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     for (const version of ['1', '2', '3', '5', '6', '8']) {
@@ -299,7 +304,7 @@ test('GET /api/v1/campaigns/{campaignId}: forbidden UUID versions match the docu
 });
 
 test('GET /api/v1/campaigns/{campaignId}: well-formed absent UUID matches the documented 404 schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns/00000000-0000-4000-8000-999999999999' });
@@ -311,7 +316,7 @@ test('GET /api/v1/campaigns/{campaignId}: well-formed absent UUID matches the do
 });
 
 test('GET /api/v1/campaigns/{campaignId}: SQL-injection-shaped value matches the documented 400 schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const payloads = ["1' OR '1'='1", "'; DROP TABLE leasemind_app.campaign_current_state_projection; --"];
@@ -357,7 +362,7 @@ test('Campaign and health endpoints: 503 responses match the documented schema a
 });
 
 test('an undocumented endpoint/method is not part of the contract and is not routable at runtime', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     assert.equal(app.hasRoute({ method: 'POST', url: '/api/v1/campaigns' }), false);
@@ -381,7 +386,7 @@ test('an undocumented endpoint/method is not part of the contract and is not rou
 });
 
 test('migration down (final teardown) removes the contract-verification schema', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await migrateDown(pool);
     const schemaExists = await pool.query("SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists");

@@ -28,11 +28,51 @@ docker compose ps postgres
 ```
 
 Порт публикуется только на `127.0.0.1:5433`, без persistent volume (`tmpfs`).
+`POSTGRES_USER`/`POSTGRES_PASSWORD` здесь — только cluster bootstrap/admin
+identity (см. следующий раздел); приложение ей никогда не пользуется.
+
+## Least-privilege database boundary
+
+См. `03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md`.
+Четыре разных подключения, четыре разные роли, никогда не взаимозаменяемые:
+
+| Роль | Переменная | Используется |
+| --- | --- | --- |
+| `lmapp_api_reader` | `DATABASE_URL` | только `server.ts` |
+| `lmapp_migrator` | `LEASEMIND_MIGRATION_DATABASE_URL` | только `migrate-cli.ts` |
+| `lmapp_maintainer` | `LEASEMIND_MAINTENANCE_DATABASE_URL` | только `seed-cli.ts` |
+| bootstrap/admin | `LEASEMIND_BOOTSTRAP_DATABASE_URL` | только `provision-roles` и тесты |
+
+Роли создаются/сбрасываются **до** `migrate:up`, отдельным идемпотентным
+шагом (role creation — cluster-level операция, не входит в numbered
+migrations):
+
+```
+cp apps/api/.env.example apps/api/.env
+npm run provision-roles
+npm run migrate:up
+npm run seed
+```
+
+`provision-roles` подключается через `LEASEMIND_BOOTSTRAP_DATABASE_URL` и
+создаёт/сбрасывает `lmapp_migrator`/`lmapp_maintainer`/`lmapp_api_reader` с
+паролями из `LEASEMIND_MIGRATOR_PASSWORD`/`LEASEMIND_MAINTAINER_PASSWORD`/
+`LEASEMIND_API_READER_PASSWORD` (только synthetic значения; пароли никогда
+не пишутся в SQL-файлы, TypeScript, логи или error messages). Повторный
+запуск идемпотентен и безопасен. `migrate:up` (роль `lmapp_migrator`)
+дополнительно применяет `003_least_privilege_grants.up.sql`, выдающую
+`lmapp_api_reader`/`lmapp_maintainer` только минимально необходимые
+привилегии.
+
+При старте `server.ts` проверяет фактические привилегии подключённой роли
+(`apps/api/src/dbPrivilegePolicy.ts`) после создания PostgreSQL-пула и до
+открытия порта; любое отклонение от allowlist `lmapp_api_reader`
+останавливает процесс с кодом `DATABASE_PRIVILEGE_VIOLATION` — без
+`DATABASE_URL`, пароля или stack trace в выводе.
 
 ## Backend
 
 ```
-cp apps/api/.env.example apps/api/.env
 npm run dev --workspace apps/api
 ```
 

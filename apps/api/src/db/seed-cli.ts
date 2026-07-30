@@ -1,10 +1,10 @@
-import { loadConfig } from '../config.js';
+import { loadMaintenanceDatabaseUrl } from '../config.js';
 import { createPool } from '../db.js';
 import { seedCampaigns } from './seed.js';
 
 async function main(): Promise<void> {
-  const config = loadConfig();
-  const pool = createPool(config.databaseUrl);
+  const databaseUrl = loadMaintenanceDatabaseUrl();
+  const pool = createPool(databaseUrl);
   try {
     const result = await seedCampaigns(pool);
     console.log(JSON.stringify(result));

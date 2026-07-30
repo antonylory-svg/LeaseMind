@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import pg from 'pg';
 import { buildApp } from '../src/app.js';
+import { API_DATABASE_URL } from './testDatabaseUrls.js';
 
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 
@@ -35,9 +36,9 @@ test('GET /api/v1/health/ready returns 503 when database is unreachable', async 
 
 test(
   'GET /api/v1/health/ready returns 200 when database is reachable',
-  { skip: !process.env.DATABASE_URL },
+  { skip: !API_DATABASE_URL },
   async () => {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 1 });
+    const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 1 });
     const app = buildApp({ pool, logger: false });
     try {
       const response = await app.inject({ method: 'GET', url: '/api/v1/health/ready' });
