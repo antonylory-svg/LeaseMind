@@ -1,4 +1,4 @@
-import { loadConfig } from '../config.js';
+import { loadMigrationDatabaseUrl } from '../config.js';
 import { createPool } from '../db.js';
 import { migrateUp, migrateDown } from './migrate.js';
 
@@ -10,8 +10,8 @@ async function main(): Promise<void> {
     return;
   }
 
-  const config = loadConfig();
-  const pool = createPool(config.databaseUrl);
+  const databaseUrl = loadMigrationDatabaseUrl();
+  const pool = createPool(databaseUrl);
   try {
     const result = direction === 'up' ? await migrateUp(pool) : await migrateDown(pool);
     console.log(JSON.stringify(result));

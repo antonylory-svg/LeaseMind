@@ -4,6 +4,9 @@ import { spawn } from 'node:child_process';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import pg from 'pg';
+import { migrateUp } from '../src/db/migrate.js';
+import { API_DATABASE_URL, MIGRATION_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
 
 // End-to-end proof (real spawned process, not just the unit-level function)
 // that the runtime safety gate runs before any PostgreSQL connection attempt
@@ -133,51 +136,73 @@ test('spawned-process error output does not leak the synthetic DATABASE_URL cred
   assert.equal(result.stderr.includes('password'), false);
 });
 
-test('the server starts normally (no runtime safety violation) with a fully safe explicit environment', async () => {
-  const testPort = 34569;
-  const env = buildChildEnv({
-    HOST: '127.0.0.1',
-    PORT: String(testPort),
-    NODE_ENV: 'development',
-    DATABASE_URL: UNREACHABLE_DATABASE_URL,
-    LEASEMIND_RUNTIME_MODE: 'synthetic',
-    LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
-    LEASEMIND_ALLOW_REAL_PII: 'false',
-    LEASEMIND_ALLOW_REAL_PAYMENTS: 'false',
-    LEASEMIND_ALLOW_PROTECTED_REVEAL: 'false',
-    LEASEMIND_ALLOW_PRODUCTION_ADAPTERS: 'false'
-  });
-
-  const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
-    cwd: API_ROOT,
-    env,
-    windowsHide: true
-  });
-  let stderr = '';
-  child.stderr.on('data', chunk => {
-    stderr += chunk.toString();
-  });
-
+// This test requires a real, reachable, correctly-provisioned database:
+// startup now also runs verifyRuntimeDatabasePrivileges() (ADR-0005) against
+// a live pool, after the runtime safety gate and before app.listen(), so an
+// unreachable DATABASE_URL would itself cause a (correct) startup refusal.
+// It does not assume anything about execution order relative to
+// tests/campaigns.test.ts or tests/openapiContract.test.ts (each of which
+// independently owns its own migration lifecycle, including tearing the
+// schema down at its own end) -- it re-applies migrate:up itself first.
+test('migration up (fresh) prepares the schema for the safe-startup probe', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
-    const opened = await new Promise<boolean>(resolve => {
-      const deadline = Date.now() + 5000;
-      const poll = async () => {
-        if (await isPortOpen(testPort)) {
-          resolve(true);
-          return;
-        }
-        if (Date.now() > deadline) {
-          resolve(false);
-          return;
-        }
-        setTimeout(poll, 100);
-      };
-      void poll();
-    });
-
-    assert.equal(opened, true, 'server should bind the port when the environment is safe');
-    assert.equal(stderr.includes('RUNTIME_SAFETY_VIOLATION'), false);
+    await migrateUp(pool);
   } finally {
-    child.kill();
+    await pool.end();
   }
 });
+
+test(
+  'the server starts normally (no runtime safety or database privilege violation) with a fully safe explicit environment',
+  { skip: !hasDatabase },
+  async () => {
+    const testPort = 34569;
+    const env = buildChildEnv({
+      HOST: '127.0.0.1',
+      PORT: String(testPort),
+      NODE_ENV: 'development',
+      DATABASE_URL: API_DATABASE_URL,
+      LEASEMIND_RUNTIME_MODE: 'synthetic',
+      LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
+      LEASEMIND_ALLOW_REAL_PII: 'false',
+      LEASEMIND_ALLOW_REAL_PAYMENTS: 'false',
+      LEASEMIND_ALLOW_PROTECTED_REVEAL: 'false',
+      LEASEMIND_ALLOW_PRODUCTION_ADAPTERS: 'false'
+    });
+
+    const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+      cwd: API_ROOT,
+      env,
+      windowsHide: true
+    });
+    let stderr = '';
+    child.stderr.on('data', chunk => {
+      stderr += chunk.toString();
+    });
+
+    try {
+      const opened = await new Promise<boolean>(resolve => {
+        const deadline = Date.now() + 5000;
+        const poll = async () => {
+          if (await isPortOpen(testPort)) {
+            resolve(true);
+            return;
+          }
+          if (Date.now() > deadline) {
+            resolve(false);
+            return;
+          }
+          setTimeout(poll, 100);
+        };
+        void poll();
+      });
+
+      assert.equal(opened, true, 'server should bind the port when the environment is fully safe');
+      assert.equal(stderr.includes('RUNTIME_SAFETY_VIOLATION'), false);
+      assert.equal(stderr.includes('DATABASE_PRIVILEGE_VIOLATION'), false);
+    } finally {
+      child.kill();
+    }
+  }
+);

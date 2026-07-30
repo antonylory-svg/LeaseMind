@@ -33,7 +33,16 @@ jobs:
       HOST: 127.0.0.1
       PORT: '3001'
       NODE_ENV: development
-      DATABASE_URL: postgres://lmapp_dev:synthetic-dev-only-password@127.0.0.1:5432/lmapp_dev
+      # Least-privilege database boundary (see
+      # 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md).
+      # Four distinct synthetic-only connections/roles -- never interchangeable.
+      DATABASE_URL: postgres://lmapp_api_reader:synthetic-ci-api-reader-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_MIGRATION_DATABASE_URL: postgres://lmapp_migrator:synthetic-ci-migrator-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_MAINTENANCE_DATABASE_URL: postgres://lmapp_maintainer:synthetic-ci-maintainer-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_BOOTSTRAP_DATABASE_URL: postgres://lmapp_dev:synthetic-dev-only-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_MIGRATOR_PASSWORD: synthetic-ci-migrator-password
+      LEASEMIND_MAINTAINER_PASSWORD: synthetic-ci-maintainer-password
+      LEASEMIND_API_READER_PASSWORD: synthetic-ci-api-reader-password
       LEASEMIND_RUNTIME_MODE: synthetic
       LEASEMIND_PRODUCTION_LAUNCH_GATE: blocked
       LEASEMIND_ALLOW_REAL_PII: 'false'
@@ -71,6 +80,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Provision synthetic database roles
+        run: npm run provision-roles --workspace apps/api
 
       - name: Typecheck (api + web)
         run: npm run typecheck

@@ -1,4 +1,10 @@
 services:
+  # POSTGRES_USER here is the cluster BOOTSTRAP/ADMIN identity only (see
+  # 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md).
+  # It is used solely by `npm run provision-roles` (LEASEMIND_BOOTSTRAP_DATABASE_URL)
+  # and test infrastructure -- never by server.ts, migrate-cli.ts or
+  # seed-cli.ts, which use lmapp_api_reader / lmapp_migrator / lmapp_maintainer
+  # (created by provision-roles, granted by migration 003) instead.
   postgres:
     image: postgres:18.4
     environment:

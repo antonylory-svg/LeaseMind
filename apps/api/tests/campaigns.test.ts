@@ -16,9 +16,9 @@ import {
   CAMPAIGN_EVENT_TYPE,
   CAMPAIGN_EVENT_SCHEMA_VERSION
 } from '../src/db/campaignEvents.js';
+import { MIGRATION_DATABASE_URL, MAINTENANCE_DATABASE_URL, API_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
 
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
-const hasDatabase = Boolean(process.env.DATABASE_URL);
 const MIGRATION_FILE_001 = '001_campaign_current_state_projection.up.sql';
 const MIGRATION_FILE_002 = '002_campaign_event_log.up.sql';
 
@@ -33,10 +33,16 @@ const SCRATCH_CAMPAIGN_B = '00000000-0000-4000-9000-000000000002';
 const SCRATCH_CAMPAIGN_C = '00000000-0000-4000-9000-000000000003';
 
 // Everything in this file that touches real Postgres catalog/data requires a
-// live, disposable, synthetic-only database (DATABASE_URL). The DB-unavailable
-// probe near the end is the one exception -- it deliberately never needs one.
+// live, disposable, synthetic-only database. Business-logic/catalog tests
+// connect as lmapp_migrator (owner of every object, so it can freely prove
+// constraint behavior); the six HTTP-surface tests connect as the real
+// lmapp_api_reader (DATABASE_URL) to prove the actual production role can
+// serve the four read-only operations end to end. See
+// apps/api/tests/dbPrivilegeBoundary.test.ts for the dedicated privilege
+// boundary (positive + negative) probes. The DB-unavailable probe near the
+// end is the one exception -- it deliberately never needs a database.
 test('migration up creates the exact catalog: schema, enum, table, constraints', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const result = await migrateUp(pool);
     assert.ok(result.applied.includes(MIGRATION_FILE_001));
@@ -116,7 +122,7 @@ test('migration up creates the exact catalog: schema, enum, table, constraints',
 });
 
 test('migration up (002) creates the Campaign Event Log catalog and constraints', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const eventLogExists = await pool.query(
       "SELECT to_regclass('leasemind_app.campaign_event_log') IS NOT NULL AS exists"
@@ -247,7 +253,7 @@ test('migration up (002) creates the Campaign Event Log catalog and constraints'
 });
 
 test('re-running migration up is idempotent (no error, migration skipped)', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const result = await migrateUp(pool);
     assert.deepEqual(result.applied, []);
@@ -259,7 +265,7 @@ test('re-running migration up is idempotent (no error, migration skipped)', { sk
 });
 
 test('a checksum mismatch on an already-applied migration is rejected', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const migrationPath = new URL('../migrations/001_campaign_current_state_projection.up.sql', import.meta.url);
     const realSql = await readFile(migrationPath, 'utf8');
@@ -290,7 +296,7 @@ test('a checksum mismatch on an already-applied migration is rejected', { skip: 
 });
 
 test('first append creates event, stream head and projection atomically', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const result = await appendCampaignStatusEvent(pool, {
       campaignId: SCRATCH_CAMPAIGN_A,
@@ -333,7 +339,7 @@ test('first append creates event, stream head and projection atomically', { skip
 });
 
 test('UPDATE on campaign_event_log is unconditionally rejected', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await assert.rejects(
       pool.query(
@@ -348,7 +354,7 @@ test('UPDATE on campaign_event_log is unconditionally rejected', { skip: !hasDat
 });
 
 test('DELETE on campaign_event_log is unconditionally rejected', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await assert.rejects(
       pool.query('DELETE FROM leasemind_app.campaign_event_log WHERE campaign_id = $1', [SCRATCH_CAMPAIGN_A]),
@@ -365,7 +371,7 @@ test('DELETE on campaign_event_log is unconditionally rejected', { skip: !hasDat
 });
 
 test('same idempotency key + same command replays the original event without a duplicate', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const first = await appendCampaignStatusEvent(pool, {
       campaignId: SCRATCH_CAMPAIGN_A,
@@ -386,7 +392,7 @@ test('same idempotency key + same command replays the original event without a d
 });
 
 test('same idempotency key + different status is rejected, leaving no partial writes', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await assert.rejects(
       appendCampaignStatusEvent(pool, {
@@ -420,7 +426,7 @@ test('same idempotency key + different status is rejected, leaving no partial wr
 });
 
 test('invalid campaign_id (malformed or forbidden UUID version) is rejected before writing anything', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const invalidIds = [
       'not-a-uuid',
@@ -444,7 +450,7 @@ test('invalid campaign_id (malformed or forbidden UUID version) is rejected befo
 });
 
 test('unapproved status is rejected before writing anything', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await assert.rejects(
       appendCampaignStatusEvent(pool, {
@@ -467,7 +473,7 @@ test('unapproved status is rejected before writing anything', { skip: !hasDataba
 });
 
 test('concurrent appends for the same campaign receive distinct sequential sequences without a race', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 12 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 12 });
   try {
     const attempts = 10;
     const results = await Promise.all(
@@ -500,7 +506,7 @@ test('concurrent appends for the same campaign receive distinct sequential seque
 });
 
 test('event_hash recomputes and matches; previous_event_hash forms a correct chain', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const rows = await pool.query<{
       event_id: string;
@@ -554,7 +560,11 @@ test('event_hash recomputes and matches; previous_event_hash forms a correct cha
 });
 
 test('rebuilding a single campaign restores its projection from the Event Log', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  // Rebuild is a maintenance-path function (ADR-0005: "используется только
+  // seed, append Campaign Event и projection rebuild"). Exercised here
+  // through the real lmapp_maintainer connection, not the migrator owner --
+  // migration 003 grants it exactly the SELECT/INSERT/UPDATE this test needs.
+  const pool = new pg.Pool({ connectionString: MAINTENANCE_DATABASE_URL, max: 2 });
   try {
     // Corrupt the derived projection directly; the Event Log itself cannot
     // be touched (immutable), so this proves rebuild reads from the log,
@@ -588,7 +598,7 @@ test('rebuilding a single campaign restores its projection from the Event Log', 
 });
 
 test('cleanup: remove scratch campaigns from derived tables (Event Log rows remain, immutably)', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const scratchIds = [SCRATCH_CAMPAIGN_A, SCRATCH_CAMPAIGN_B, SCRATCH_CAMPAIGN_C];
     await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = ANY($1)', [
@@ -607,7 +617,7 @@ test('cleanup: remove scratch campaigns from derived tables (Event Log rows rema
 });
 
 test('synthetic seed creates exactly 11 campaigns via 11 initial append events', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection');
     assert.equal(SYNTHETIC_CAMPAIGN_SEEDS.length, 11);
@@ -637,7 +647,7 @@ test('synthetic seed creates exactly 11 campaigns via 11 initial append events',
 });
 
 test('re-running the synthetic seed reuses idempotency keys and creates no new events', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const result = await seedCampaigns(pool);
     assert.equal(result.inserted, 0);
@@ -660,21 +670,27 @@ test('re-running the synthetic seed reuses idempotency keys and creates no new e
 });
 
 test('rebuilding all campaigns restores correct projections for the 11 synthetic seed campaigns', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  // rebuildAllCampaignProjections is exercised via the real lmapp_maintainer
+  // connection (ADR-0005). lmapp_migrator is used only for the final
+  // cleanup DELETE, which lmapp_maintainer intentionally cannot perform
+  // (no DELETE/TRUNCATE) -- that DELETE is test setup/cleanup, not part of
+  // the maintenance business path.
+  const maintenancePool = new pg.Pool({ connectionString: MAINTENANCE_DATABASE_URL, max: 2 });
+  const migratorPool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
 
     // Corrupt every seeded projection row so a correct rebuild is provable.
-    await pool.query(
+    await maintenancePool.query(
       "UPDATE leasemind_app.campaign_current_state_projection SET status = 'Failed', aggregate_version = 999 WHERE campaign_id = ANY($1)",
       [seedIds]
     );
 
-    const rebuiltCount = await rebuildAllCampaignProjections(pool);
+    const rebuiltCount = await rebuildAllCampaignProjections(maintenancePool);
     assert.ok(rebuiltCount >= 11);
 
     for (const seed of SYNTHETIC_CAMPAIGN_SEEDS) {
-      const row = await pool.query(
+      const row = await maintenancePool.query(
         'SELECT status, aggregate_version::text AS aggregate_version FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
         [seed.campaignId]
       );
@@ -685,28 +701,31 @@ test('rebuilding all campaigns restores correct projections for the 11 synthetic
     // rebuildAllCampaignProjections also resurrects any scratch campaigns
     // still present in the Event Log; remove them again so the read-API
     // tests below see exactly the 11 synthetic campaigns.
-    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
+    await migratorPool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
       seedIds
     ]);
-    const finalCount = await pool.query(
+    const finalCount = await migratorPool.query(
       'SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection'
     );
     assert.equal(finalCount.rows[0].count, 11);
   } finally {
-    await pool.end();
+    await maintenancePool.end();
+    await migratorPool.end();
   }
 });
 
 test('rebuild does not modify the Event Log', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  // Same maintenance-path/migrator-cleanup split as the previous test.
+  const maintenancePool = new pg.Pool({ connectionString: MAINTENANCE_DATABASE_URL, max: 2 });
+  const migratorPool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
-    const before = await pool.query(
+    const before = await maintenancePool.query(
       'SELECT campaign_id, event_sequence, event_hash FROM leasemind_app.campaign_event_log ORDER BY campaign_id, event_sequence'
     );
 
-    await rebuildAllCampaignProjections(pool);
+    await rebuildAllCampaignProjections(maintenancePool);
 
-    const after = await pool.query(
+    const after = await maintenancePool.query(
       'SELECT campaign_id, event_sequence, event_hash FROM leasemind_app.campaign_event_log ORDER BY campaign_id, event_sequence'
     );
 
@@ -716,16 +735,17 @@ test('rebuild does not modify the Event Log', { skip: !hasDatabase }, async () =
     // present in the Event Log; remove them again so later read-API tests
     // see exactly the 11 synthetic campaigns.
     const seedIds = SYNTHETIC_CAMPAIGN_SEEDS.map(seed => seed.campaignId);
-    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
+    await migratorPool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id != ALL($1)', [
       seedIds
     ]);
   } finally {
-    await pool.end();
+    await maintenancePool.end();
+    await migratorPool.end();
   }
 });
 
 test('GET /api/v1/campaigns returns all 11 synthetic campaigns, sorted deterministically', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns' });
@@ -744,7 +764,7 @@ test('GET /api/v1/campaigns returns all 11 synthetic campaigns, sorted determini
 });
 
 test('GET /api/v1/campaigns/:campaignId returns 200 for an existing campaign', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const target = SYNTHETIC_CAMPAIGN_SEEDS[0];
@@ -760,7 +780,7 @@ test('GET /api/v1/campaigns/:campaignId returns 200 for an existing campaign', {
 });
 
 test('GET /api/v1/campaigns/:campaignId rejects malformed UUIDs with 400', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const malformedValues = ['not-a-uuid', '12345', '00000000-0000-4000-8000', 'aaaaaaaa-aaaa-4aaa-zzzz-aaaaaaaaaaaa'];
@@ -778,7 +798,7 @@ test(
   'GET /api/v1/campaigns/:campaignId rejects forbidden UUID versions (v1/v2/v3/v5/v6/v8) with 400',
   { skip: !hasDatabase },
   async () => {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+    const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
     const app = buildApp({ pool, logger: false });
     try {
       for (const version of ['1', '2', '3', '5', '6', '8']) {
@@ -794,7 +814,7 @@ test(
 );
 
 test('GET /api/v1/campaigns/:campaignId returns 404 for a well-formed but absent UUID', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
     const response = await app.inject({
@@ -812,7 +832,7 @@ test(
   'GET /api/v1/campaigns/:campaignId rejects a SQL-injection-shaped value before touching SQL',
   { skip: !hasDatabase },
   async () => {
-    const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+    const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
     const app = buildApp({ pool, logger: false });
     try {
       const injectionPayloads = [
@@ -872,11 +892,12 @@ function assertNoLeakedSecrets(responseBody: string): void {
   }
 }
 
-test('migration down removes the entire app-foundation catalog (002 then 001)', { skip: !hasDatabase }, async () => {
-  const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
+test('migration down removes the entire app-foundation catalog (003 then 002 then 001)', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const result = await migrateDown(pool);
     assert.deepEqual(result.reverted, [
+      '003_least_privilege_grants.down.sql',
       '002_campaign_event_log.down.sql',
       '001_campaign_current_state_projection.down.sql'
     ]);
