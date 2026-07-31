@@ -44,9 +44,15 @@ const SCRATCH_CAMPAIGN_C = '00000000-0000-4000-9000-000000000003';
 test('migration up creates the exact catalog: schema, enum, table, constraints', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
+    // migrateUp is idempotent and every *.test.ts file independently calls it
+    // for its own setup (see tests/testDatabaseUrls.ts / hasDatabase); which
+    // file's process happens to reach this first is not guaranteed across
+    // environments (e.g. Node's own glob resolution for `tests/*.test.ts`
+    // vs. a shell expanding it), so a migration already applied by another
+    // file's setup is exactly as valid as applying it fresh here.
     const result = await migrateUp(pool);
-    assert.ok(result.applied.includes(MIGRATION_FILE_001));
-    assert.ok(result.applied.includes(MIGRATION_FILE_002));
+    assert.ok(result.applied.includes(MIGRATION_FILE_001) || result.skipped.includes(MIGRATION_FILE_001));
+    assert.ok(result.applied.includes(MIGRATION_FILE_002) || result.skipped.includes(MIGRATION_FILE_002));
 
     const schemaExists = await pool.query(
       "SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists"
