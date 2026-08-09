@@ -91,9 +91,6 @@ jobs:
       - name: Typecheck (api + web)
         run: npm run typecheck
 
-      - name: Backend tests
-        run: npm run test --workspace apps/api
-
       - name: Frontend production build
         run: npm run build --workspace apps/web
 
@@ -167,3 +164,10 @@ jobs:
       - name: Revert Campaign read model migration
         if: always()
         run: npm run migrate:down --workspace apps/api
+
+      # Run stateful backend tests only after the clean live-probe lifecycle.
+      # Sprint 4 acceptance tests deliberately retain immutable synthetic
+      # subject-linked events, so they must not contaminate the 11-item probe
+      # or the preceding migration rollback.
+      - name: Backend tests
+        run: npm run test --workspace apps/api
