@@ -250,7 +250,13 @@ test('CTA-L-007: changing the price creates a new revision and the old revision 
     const second = await app.inject({
       method: 'POST',
       url: '/api/v1/technical-assignments',
-      payload: { idempotency_key: key, scenario: 'need_tenant', payload: minimalProperty({ property_monthly_rent_rub: 200000 }) }
+      payload: {
+        idempotency_key: key,
+        technical_assignment_id: first.json().technical_assignment_id,
+        expected_revision: first.json().revision,
+        scenario: 'need_tenant',
+        payload: minimalProperty({ property_monthly_rent_rub: 200000 })
+      }
     });
     assert.equal(second.statusCode, 200);
     const secondBody = second.json();
@@ -311,6 +317,144 @@ test('CTA-L-009: repeating the save command with the same idempotency_key does n
       key
     ]);
     assert.equal(rows.rows[0].count, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: reload -> edit -> save updates the restored Technical Assignment instead of creating a duplicate', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const creationKey = nextKey('restore-create');
+    const first = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: creationKey, scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const original = first.json();
+
+    // A remounted frontend has a fresh command key but the server-owned ID
+    // and revision returned by GET /technical-assignments/{id}.
+    const update = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: {
+        idempotency_key: nextKey('restore-update'),
+        technical_assignment_id: original.technical_assignment_id,
+        expected_revision: original.revision,
+        scenario: 'need_tenant',
+        payload: minimalProperty({ property_monthly_rent_rub: 175000 })
+      }
+    });
+    assert.equal(update.statusCode, 200);
+    assert.equal(update.json().technical_assignment_id, original.technical_assignment_id);
+    assert.equal(update.json().revision, original.revision + 1);
+
+    const rows = await pools.technicalAssignmentPool.query(
+      'SELECT count(*)::int AS count, min(idempotency_key) AS creation_key FROM leasemind_app.property WHERE property_id = $1',
+      [original.technical_assignment_id]
+    );
+    assert.equal(rows.rows[0].count, 1);
+    assert.equal(rows.rows[0].creation_key, creationKey, 'an update command must not replace the draft creation identity');
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: concurrent updates from one revision allow one winner and reject the stale writer', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const first = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('concurrent-update-create'), scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const original = first.json();
+    const request = (rent: number) =>
+      app.inject({
+        method: 'POST',
+        url: '/api/v1/technical-assignments',
+        payload: {
+          idempotency_key: nextKey(`concurrent-update-${rent}`),
+          technical_assignment_id: original.technical_assignment_id,
+          expected_revision: original.revision,
+          scenario: 'need_tenant',
+          payload: minimalProperty({ property_monthly_rent_rub: rent })
+        }
+      });
+
+    const responses = await Promise.all([request(180000), request(190000)]);
+    assert.deepEqual(
+      responses.map(response => response.statusCode).sort(),
+      [200, 400]
+    );
+    const conflict = responses.find(response => response.statusCode === 400)!;
+    assert.equal(conflict.json().error, 'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT');
+
+    const current = await app.inject({ method: 'GET', url: `/api/v1/technical-assignments/${original.technical_assignment_id}` });
+    assert.equal(current.json().revision, original.revision + 1);
+    assert.ok([180000, 190000].includes(current.json().payload.property_monthly_rent_rub));
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: concurrent first saves cannot bind one idempotency key to both scenarios', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const key = nextKey('concurrent-cross-scenario');
+    const [property, tenantRequest] = await Promise.all([
+      app.inject({
+        method: 'POST',
+        url: '/api/v1/technical-assignments',
+        payload: { idempotency_key: key, scenario: 'need_tenant', payload: minimalProperty() }
+      }),
+      app.inject({
+        method: 'POST',
+        url: '/api/v1/technical-assignments',
+        payload: { idempotency_key: key, scenario: 'need_property', payload: minimalTenantRequest() }
+      })
+    ]);
+    assert.deepEqual([property.statusCode, tenantRequest.statusCode].sort(), [201, 400]);
+    const rejected = property.statusCode === 400 ? property : tenantRequest;
+    assert.equal(rejected.json().error, 'TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE');
+
+    const counts = await pools.technicalAssignmentPool.query(
+      `SELECT
+         (SELECT count(*)::int FROM leasemind_app.property WHERE idempotency_key = $1) AS properties,
+         (SELECT count(*)::int FROM leasemind_app.tenant_request WHERE idempotency_key = $1) AS tenant_requests`,
+      [key]
+    );
+    assert.equal(counts.rows[0].properties + counts.rows[0].tenant_requests, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: update target ID and expected revision must be supplied together', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const base = {
+      idempotency_key: nextKey('paired-update-fields'),
+      scenario: 'need_tenant',
+      payload: minimalProperty()
+    };
+    const idWithoutRevision = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { ...base, technical_assignment_id: '00000000-0000-4000-8000-000000000123' }
+    });
+    const revisionWithoutId = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { ...base, expected_revision: 1 }
+    });
+    assert.equal(idWithoutRevision.statusCode, 400);
+    assert.equal(revisionWithoutId.statusCode, 400);
   } finally {
     await app.close();
   }
@@ -539,7 +683,13 @@ test('CTA-T-009: changing location/area after readiness creates a new revision, 
     const second = await app.inject({
       method: 'POST',
       url: '/api/v1/technical-assignments',
-      payload: { idempotency_key: key, scenario: 'need_property', payload: minimalTenantRequest({ request_area_min_sqm: 60 }) }
+      payload: {
+        idempotency_key: key,
+        technical_assignment_id: first.json().technical_assignment_id,
+        expected_revision: staleRevision,
+        scenario: 'need_property',
+        payload: minimalTenantRequest({ request_area_min_sqm: 60 })
+      }
     });
     const secondBody = second.json();
     assert.equal(secondBody.revision, staleRevision + 1);
@@ -664,7 +814,13 @@ test('CTA-C-004: changing a field after readiness bumps the revision and blocks 
     const second = await app.inject({
       method: 'POST',
       url: '/api/v1/technical-assignments',
-      payload: { idempotency_key: key, scenario: 'need_tenant', payload: minimalProperty({ property_area_sqm: 250 }) }
+      payload: {
+        idempotency_key: key,
+        technical_assignment_id: first.json().technical_assignment_id,
+        expected_revision: firstRevision,
+        scenario: 'need_tenant',
+        payload: minimalProperty({ property_area_sqm: 250 })
+      }
     });
     const secondBody = second.json();
     assert.equal(secondBody.revision, firstRevision + 1);
@@ -946,6 +1102,44 @@ test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch crea
       events.rows.map((r: { event_type: string }) => r.event_type),
       ['campaign.subject_linked.v1', 'campaign.status_recorded.v1']
     );
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: simultaneous retries of one launch command converge to one Campaign response', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('concurrent-launch-ta'), scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const assignment = saved.json();
+    const payload = {
+      idempotency_key: nextKey('concurrent-launch-command'),
+      technical_assignment_id: assignment.technical_assignment_id,
+      expected_revision: assignment.revision,
+      contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+    };
+
+    const responses = await Promise.all([
+      app.inject({ method: 'POST', url: '/api/v1/campaigns', payload }),
+      app.inject({ method: 'POST', url: '/api/v1/campaigns', payload })
+    ]);
+    assert.deepEqual(
+      responses.map(response => response.statusCode).sort(),
+      [200, 201]
+    );
+    assert.deepEqual(responses[0].json(), responses[1].json());
+
+    const campaignId = responses[0].json().campaign_id;
+    const events = await pools.commandPool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_event_log WHERE campaign_id = $1',
+      [campaignId]
+    );
+    assert.equal(events.rows[0].count, 2, 'one subject link plus one Created event, never duplicates');
   } finally {
     await app.close();
   }

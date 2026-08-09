@@ -23,7 +23,8 @@ const ALL_CODES = [
   'TECHNICAL_ASSIGNMENT_PERSONAL_DATA_FORBIDDEN',
   'TECHNICAL_ASSIGNMENT_SECRET_FORBIDDEN',
   'TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE',
-  'TECHNICAL_ASSIGNMENT_STATE_INVALID'
+  'TECHNICAL_ASSIGNMENT_STATE_INVALID',
+  'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT'
 ];
 
 function assertNoTechnicalLeak(message: string) {
@@ -299,6 +300,14 @@ test('generic fallback codes (invalid value, forbidden data, secret) stay techni
     assert.match(result.message, /Дополнительные коммерческие условия/);
     assertNoTechnicalLeak(result.message);
   }
+});
+
+test('a stale update gets an actionable Russian concurrency message without technical identifiers', () => {
+  const result = explainTechnicalAssignmentError('TECHNICAL_ASSIGNMENT_REVISION_CONFLICT', null, {}, PROPERTY_FIELDS);
+  assert.match(result.message, /другой вкладке/i);
+  assert.match(result.message, /обновите страницу/i);
+  assert.deepEqual(result.highlightFieldIds, []);
+  assertNoTechnicalLeak(result.message);
 });
 
 // --- Every field/code combination that can realistically occur stays technical-free ---

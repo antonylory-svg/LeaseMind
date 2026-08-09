@@ -25,6 +25,14 @@ function computeLaunchCommandHash(campaignId: string, technicalAssignmentId: str
   return sha256Hex(`${DOMAIN_SEPARATOR}|COMMAND|${campaignId}|${technicalAssignmentId}|${expectedRevision}`);
 }
 
+/** Serializes retries for one deterministic Campaign identity before the
+ * replay lookup. Without this lock, two simultaneous first attempts can
+ * both observe "no event" and the loser later sees campaign_started
+ * instead of returning the already-committed idempotent result. */
+async function lockLaunchCommand(client: pg.PoolClient, campaignId: string): Promise<void> {
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1, 0))', [`campaign-launch:${campaignId}`]);
+}
+
 export class TechnicalAssignmentNotFoundError extends Error {
   constructor() {
     super('TECHNICAL_ASSIGNMENT_STATE_INVALID');
@@ -121,6 +129,8 @@ export async function launchCampaignFromTechnicalAssignment(pool: pg.Pool, input
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
+    await lockLaunchCommand(client, campaignId);
 
     const existingEvent = await client.query<{ command_hash: string; occurred_at: Date }>(
       `SELECT command_hash, occurred_at FROM leasemind_app.campaign_event_log

@@ -10,6 +10,7 @@ import {
   TechnicalAssignmentFieldError,
   TechnicalAssignmentScenarioImmutableError,
   TechnicalAssignmentStateInvalidError,
+  TechnicalAssignmentRevisionConflictError,
   type Scenario
 } from './db/technicalAssignment.js';
 import { PROPERTY_FIELD_SPECS, TENANT_REQUEST_FIELD_SPECS } from './db/technicalAssignmentValidation.js';
@@ -189,9 +190,18 @@ const saveTechnicalAssignmentBodySchema = {
   required: ['idempotency_key', 'scenario', 'payload'],
   properties: {
     idempotency_key: { type: 'string', minLength: 1, maxLength: 200 },
+    technical_assignment_id: { type: 'string', format: 'uuid' },
+    expected_revision: { type: 'integer', minimum: 1 },
     scenario: { type: 'string', enum: ['need_tenant', 'need_property'] },
     payload: { type: 'object' }
   },
+  allOf: [
+    {
+      if: { required: ['technical_assignment_id'] },
+      then: { required: ['expected_revision'] },
+      else: { not: { required: ['expected_revision'] } }
+    }
+  ],
   if: { properties: { scenario: { const: 'need_tenant' } } },
   then: {
     properties: {
@@ -255,6 +265,7 @@ const technicalAssignmentErrorResponseSchema = {
         'TECHNICAL_ASSIGNMENT_SCENARIO_REQUIRED',
         'TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE',
         'TECHNICAL_ASSIGNMENT_STATE_INVALID',
+        'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT',
         'TECHNICAL_ASSIGNMENT_REQUIRED_FIELD_MISSING',
         'TECHNICAL_ASSIGNMENT_FIELD_TYPE_INVALID',
         'TECHNICAL_ASSIGNMENT_FIELD_VALUE_INVALID',
@@ -403,10 +414,18 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         return reply.code(400).send({ error: 'TECHNICAL_ASSIGNMENT_FIELD_VALUE_INVALID' as const, field_id: null });
       }
 
-      const body = request.body as { idempotency_key: string; scenario: Scenario; payload: Record<string, unknown> };
+      const body = request.body as {
+        idempotency_key: string;
+        technical_assignment_id?: string;
+        expected_revision?: number;
+        scenario: Scenario;
+        payload: Record<string, unknown>;
+      };
       try {
         const result = await saveTechnicalAssignmentDraft(technicalAssignmentPool, {
           idempotencyKey: body.idempotency_key,
+          technicalAssignmentId: body.technical_assignment_id,
+          expectedRevision: body.expected_revision,
           scenario: body.scenario,
           payload: body.payload
         });
@@ -427,9 +446,19 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
           request.safeErrorCode = error.code;
           return reply.code(400).send({ error: error.code, field_id: error.field_id });
         }
-        if (error instanceof TechnicalAssignmentScenarioImmutableError || error instanceof TechnicalAssignmentStateInvalidError) {
+        if (
+          error instanceof TechnicalAssignmentScenarioImmutableError ||
+          error instanceof TechnicalAssignmentStateInvalidError ||
+          error instanceof TechnicalAssignmentRevisionConflictError
+        ) {
           request.safeErrorCode = error.message;
-          return reply.code(400).send({ error: error.message as 'TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE' | 'TECHNICAL_ASSIGNMENT_STATE_INVALID', field_id: null });
+          return reply.code(400).send({
+            error: error.message as
+              | 'TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE'
+              | 'TECHNICAL_ASSIGNMENT_STATE_INVALID'
+              | 'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT',
+            field_id: null
+          });
         }
         request.safeErrorCode = 'DATABASE_UNAVAILABLE';
         return reply.code(503).send({ status: 'error' as const, database: 'unreachable' as const });

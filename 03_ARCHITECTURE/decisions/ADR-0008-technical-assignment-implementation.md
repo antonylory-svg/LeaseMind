@@ -93,6 +93,25 @@ synthetic-only реализации Sprint 4, не предвосхищая ре
   Любая ошибка на любом шаге — `ROLLBACK`, ни одна из шести операций не
   фиксируется частично.
 
+#### 1.1. Восстановление и optimistic concurrency
+
+- Первый save без `technical_assignment_id` создаёт черновик и связывает
+  creation-`idempotency_key` с выданным сервером ID. Идентичный повтор такого
+  вызова остаётся безопасным no-op.
+- После первого ответа и после восстановления по URL клиент отправляет пару
+  `technical_assignment_id + expected_revision`. Оба поля присутствуют вместе
+  или отсутствуют вместе. Изменяющий save для устаревшей revision отклоняется
+  `TECHNICAL_ASSIGNMENT_REVISION_CONFLICT`; введённые в другой вкладке данные
+  не перезаписываются.
+- Транзакционная advisory-lock сериализует команды по target ID и creation
+  idempotency key. Это закрывает гонки одновременного create/update и не даёт
+  одному ключу одновременно создать строки в `Property` и `TenantRequest`.
+- Идентичный повтор после потерянного HTTP-ответа возвращает уже сохранённую
+  revision без новой записи и без дополнительного revision bump.
+- Launch-команда берёт отдельную транзакционную advisory-lock по
+  детерминированному Campaign ID до replay lookup: параллельные повторы
+  сходятся к одному Campaign и одному idempotent response.
+
 ### 2. Contacts Gate (synthetic-only for Sprint 4)
 
 - Реальная модель согласия остаётся Launch blocker (§13.6, §18.3.4) и не

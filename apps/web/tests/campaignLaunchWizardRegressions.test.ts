@@ -39,7 +39,7 @@ test('CampaignLaunchWizard never actually calls localStorage or sessionStorage',
 test('the restore-on-mount effect reads the URL and re-fetches from the backend, not from any trusted client cache', () => {
   const start = SOURCE.indexOf('useEffect(() => {\n    const id = getTechnicalAssignmentIdFromSearch(window.location.search);');
   assert.ok(start >= 0, 'restore-on-mount effect not found');
-  const end = SOURCE.indexOf('}, []);', start);
+  const end = SOURCE.indexOf('}, [restoreAttempt]);', start);
   assert.ok(end > start, 'could not find the end of the restore-on-mount effect');
   const body = SOURCE.slice(start, end);
   assert.ok(body.includes('getTechnicalAssignmentIdFromSearch(window.location.search)'), 'must read the id from window.location.search');
@@ -57,6 +57,25 @@ test('handleSaveDraft persists the just-saved technical_assignment_id into the U
   const savedBranch = body.slice(savedBranchStart);
   assert.ok(savedBranch.includes('buildSearchWithTechnicalAssignmentId('), 'must build a URL search string carrying the technical_assignment_id');
   assert.ok(savedBranch.includes('window.history.replaceState('), 'must write the id into the URL via history.replaceState');
+});
+
+test('handleSaveDraft targets the currently loaded assignment and revision after restore', () => {
+  const body = functionBody(SOURCE, 'const handleSaveDraft = async () => {');
+  assert.ok(
+    body.includes('saveTechnicalAssignmentDraft(taIdempotencyKey, scenario, payload, assignment ?? undefined)'),
+    'restored and subsequent saves must send the server-owned assignment identity/revision'
+  );
+});
+
+test('a transient restore error keeps the URL recovery reference and exposes retry', () => {
+  const effectStart = SOURCE.indexOf('fetchTechnicalAssignmentById(id).then(result => {');
+  assert.ok(effectStart >= 0, 'restore request result handler not found');
+  const notFoundStart = SOURCE.indexOf("result.kind === 'not_found'", effectStart);
+  assert.ok(notFoundStart > effectStart, 'confirmed not-found branch not found');
+  const transientBranch = SOURCE.slice(effectStart, notFoundStart);
+  assert.ok(transientBranch.includes("result.kind === 'error'"), 'transient error branch not found');
+  assert.ok(!transientBranch.includes('buildSearchWithoutTechnicalAssignmentId'), 'transient errors must never remove the recovery reference');
+  assert.ok(SOURCE.includes('setRestoreAttempt(attempt => attempt + 1)'), 'the user must be able to retry restore');
 });
 
 // ---------------------------------------------------------------------------

@@ -141,7 +141,10 @@ paths:
       summary: Create or update a synthetic Technical Assignment draft
       description: >-
         Creates a new draft on first call for a given idempotency_key, or
-        updates the same draft on subsequent calls with the same key.
+        updates an explicitly targeted draft when technical_assignment_id
+        and expected_revision are both supplied. A changed update whose
+        expected_revision is stale is rejected; an identical retry remains
+        a no-op and returns the current revision.
         Exactly 30 approved Property fields (`scenario=need_tenant`) or 29
         approved TenantRequest fields (`scenario=need_property`) are
         accepted -- no other property, including any name/phone/email/
@@ -171,7 +174,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/TechnicalAssignment'
         '400':
-          description: The request body is malformed, a field is invalid, a cross-field rule is violated, or the scenario does not match a prior save under this idempotency_key.
+          description: The request body is malformed, a field is invalid, a cross-field rule is violated, the scenario does not match the target, or expected_revision is stale.
           content:
             application/json:
               schema:
@@ -412,6 +415,7 @@ components:
             - TECHNICAL_ASSIGNMENT_SCENARIO_REQUIRED
             - TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE
             - TECHNICAL_ASSIGNMENT_STATE_INVALID
+            - TECHNICAL_ASSIGNMENT_REVISION_CONFLICT
             - TECHNICAL_ASSIGNMENT_REQUIRED_FIELD_MISSING
             - TECHNICAL_ASSIGNMENT_FIELD_TYPE_INVALID
             - TECHNICAL_ASSIGNMENT_FIELD_VALUE_INVALID
@@ -423,11 +427,22 @@ components:
       type: object
       additionalProperties: false
       required: [idempotency_key, scenario, payload]
+      dependentRequired:
+        technical_assignment_id: [expected_revision]
+        expected_revision: [technical_assignment_id]
       properties:
         idempotency_key:
           type: string
           minLength: 1
           maxLength: 200
+          description: Caller-generated command deduplication token. A first save binds its value to the newly created draft; restored-draft updates may use a fresh command token together with technical_assignment_id and expected_revision.
+        technical_assignment_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+          description: Existing draft target. Must be supplied together with expected_revision for an update and omitted for the first save.
+        expected_revision:
+          type: integer
+          minimum: 1
+          description: Revision last observed by the caller. Must be supplied together with technical_assignment_id; a changed stale update is rejected.
         scenario:
           type: string
           enum: [need_tenant, need_property]

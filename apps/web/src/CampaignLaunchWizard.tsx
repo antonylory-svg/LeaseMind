@@ -331,6 +331,8 @@ export default function CampaignLaunchWizard() {
   // silent, without inventing a new autosave endpoint/behavior.
   const [restoring, setRestoring] = useState(() => Boolean(getTechnicalAssignmentIdFromSearch(window.location.search)));
   const [restoreNotice, setRestoreNotice] = useState<string | null>(null);
+  const [restoreFailed, setRestoreFailed] = useState(false);
+  const [restoreAttempt, setRestoreAttempt] = useState(0);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Defect 2 (Sprint 4): the Contacts screen previously let "Далее" through
@@ -370,15 +372,23 @@ export default function CampaignLaunchWizard() {
     if (!id) return;
     let cancelled = false;
     setRestoring(true);
-    fetchTechnicalAssignmentById(id).then(found => {
+    setRestoreFailed(false);
+    setRestoreNotice(null);
+    fetchTechnicalAssignmentById(id).then(result => {
       if (cancelled) return;
       setRestoring(false);
-      if (!found) {
+      if (result.kind === 'error') {
+        setRestoreFailed(true);
+        setRestoreNotice('Не удалось восстановить Техническое задание: сервис временно недоступен. Ссылка сохранена — попробуйте ещё раз.');
+        return;
+      }
+      if (result.kind === 'not_found') {
         setRestoreNotice('Черновик с этим идентификатором не найден. Возможно, ссылка устарела.');
         const nextSearch = buildSearchWithoutTechnicalAssignmentId(window.location.search);
         window.history.replaceState(null, '', `${window.location.pathname}${nextSearch}`);
         return;
       }
+      const found = result.assignment;
       const restoredFields = fieldsForScenario(found.scenario);
       setGoal(found.scenario === 'need_tenant' ? 'owner' : 'tenant');
       setAssignment(found);
@@ -392,7 +402,7 @@ export default function CampaignLaunchWizard() {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [restoreAttempt]);
 
   // Never silent: warns before a reload/close if there are edits since the
   // last successful "Сохранить" (see the note on hasUnsavedChanges above).
@@ -507,7 +517,7 @@ export default function CampaignLaunchWizard() {
       setStringArrayDraft(prev => ({ ...prev, ...flushed }));
     }
 
-    const result = await saveTechnicalAssignmentDraft(taIdempotencyKey, scenario, payload);
+    const result = await saveTechnicalAssignmentDraft(taIdempotencyKey, scenario, payload, assignment ?? undefined);
     setSaving(false);
     if (result.kind === 'saved') {
       setAssignment(result.assignment);
@@ -564,14 +574,26 @@ export default function CampaignLaunchWizard() {
 
   const refreshAssignment = async () => {
     if (!assignment) return;
-    const found = await fetchTechnicalAssignmentById(assignment.technical_assignment_id);
-    if (found) setAssignment(found);
+    const result = await fetchTechnicalAssignmentById(assignment.technical_assignment_id);
+    if (result.kind === 'loaded') setAssignment(result.assignment);
   };
 
   if (restoring) {
     return (
       <section>
         <p>Восстановление ранее сохранённого Технического задания...</p>
+      </section>
+    );
+  }
+
+  if (restoreFailed) {
+    return (
+      <section>
+        <h2>Восстановление Технического задания</h2>
+        <p role="alert">{restoreNotice}</p>
+        <button type="button" onClick={() => setRestoreAttempt(attempt => attempt + 1)}>
+          Повторить восстановление
+        </button>
       </section>
     );
   }

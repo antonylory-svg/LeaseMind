@@ -229,6 +229,12 @@ export function explainTechnicalAssignmentError(
       highlightFieldIds: []
     };
   }
+  if (code === 'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT') {
+    return {
+      message: 'Техническое задание изменилось в другой вкладке или после последнего сохранения. Ваши введённые значения сохранены на экране — обновите страницу, проверьте актуальную версию и повторите изменения.',
+      highlightFieldIds: []
+    };
+  }
   if (!fieldId) {
     return { message: GENERIC_UNAVAILABLE_MESSAGE, highlightFieldIds: [] };
   }
