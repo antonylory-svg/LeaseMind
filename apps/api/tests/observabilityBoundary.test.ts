@@ -18,7 +18,14 @@ import {
   loggerOptions,
   UNMATCHED_ROUTE
 } from '../src/observability/logging.js';
-import { MIGRATION_DATABASE_URL, MAINTENANCE_DATABASE_URL, API_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
+import {
+  MIGRATION_DATABASE_URL,
+  MAINTENANCE_DATABASE_URL,
+  API_DATABASE_URL,
+  COMMAND_DATABASE_URL,
+  TA_DATABASE_URL,
+  hasDatabase
+} from './testDatabaseUrls.js';
 
 // Secure application observability boundary -- see
 // 03_ARCHITECTURE/decisions/ADR-0006-secure-application-observability-boundary.md.
@@ -459,6 +466,8 @@ async function startServer(port: number, databaseUrl: string): Promise<ServerHan
     PORT: String(port),
     NODE_ENV: 'development',
     DATABASE_URL: databaseUrl,
+    LEASEMIND_COMMAND_DATABASE_URL: COMMAND_DATABASE_URL,
+    LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL: TA_DATABASE_URL,
     LEASEMIND_RUNTIME_MODE: 'synthetic',
     LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
     LEASEMIND_ALLOW_REAL_PII: 'false',

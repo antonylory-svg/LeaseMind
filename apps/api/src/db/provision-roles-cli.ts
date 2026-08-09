@@ -16,11 +16,15 @@ async function main(): Promise<void> {
   let migratorPassword: string;
   let maintainerPassword: string;
   let apiReaderPassword: string;
+  let campaignWriterPassword: string;
+  let taWriterPassword: string;
   try {
     bootstrapUrl = requireEnv('LEASEMIND_BOOTSTRAP_DATABASE_URL');
     migratorPassword = requireEnv('LEASEMIND_MIGRATOR_PASSWORD');
     maintainerPassword = requireEnv('LEASEMIND_MAINTAINER_PASSWORD');
     apiReaderPassword = requireEnv('LEASEMIND_API_READER_PASSWORD');
+    campaignWriterPassword = requireEnv('LEASEMIND_CAMPAIGN_WRITER_PASSWORD');
+    taWriterPassword = requireEnv('LEASEMIND_TA_WRITER_PASSWORD');
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'provisioning configuration error');
     process.exitCode = 1;
@@ -29,7 +33,13 @@ async function main(): Promise<void> {
 
   const pool = new pg.Pool({ connectionString: bootstrapUrl, max: 2 });
   try {
-    const result = await provisionRoles(pool, { migratorPassword, maintainerPassword, apiReaderPassword });
+    const result = await provisionRoles(pool, {
+      migratorPassword,
+      maintainerPassword,
+      apiReaderPassword,
+      campaignWriterPassword,
+      taWriterPassword
+    });
     console.log(JSON.stringify(result));
   } catch {
     // Never print the underlying error: it could echo back connection

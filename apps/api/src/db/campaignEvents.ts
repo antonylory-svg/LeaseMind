@@ -32,7 +32,11 @@ export interface EventHashInput {
   eventSequence: string;
   eventType: string;
   schemaVersion: number;
-  payload: { status: CampaignStatus };
+  // Widened to a generic payload (rather than { status: CampaignStatus })
+  // so other additive event types (e.g. campaign.subject_linked.v1 in
+  // apps/api/src/db/launchCampaign.ts) can reuse this same hash formula.
+  // Runtime behavior is unchanged: JSON.stringify(payload) either way.
+  payload: Record<string, unknown>;
   occurredAt: string;
   previousEventHash: string;
   idempotencyKey: string;

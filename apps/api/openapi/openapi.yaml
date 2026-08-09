@@ -1,17 +1,20 @@
 openapi: 3.1.0
 info:
-  title: LeaseMind App Foundation — Read-only API
-  version: 1.0.0
+  title: LeaseMind App Foundation API
+  version: 1.2.0
   description: >-
-    Synthetic-only, read-only contract for the four HTTP operations that
-    actually exist in apps/api/src/app.ts: two health probes and the
-    Campaign Current State Projection read model (see
+    Synthetic-only contract for the seven HTTP operations that actually
+    exist in apps/api/src/app.ts: two health probes, the Campaign Current
+    State Projection read model, the Technical Assignment save-draft and
+    read commands, and the atomic Campaign launch command (see
     03_ARCHITECTURE/decisions/ADR-0001-application-development-stack.md,
-    ADR-0002-campaign-event-stream.md, ADR-0003-pre-launch-runtime-safety-gate.md
-    and ADR-0004-read-only-api-contract.md). No write operations exist or
-    are documented. PRODUCTION_LAUNCH_GATE remains blocked; this document
-    does not authorize any production deployment, real personal data, real
-    payments or protected-data disclosure.
+    ADR-0002-campaign-event-stream.md, ADR-0003-pre-launch-runtime-safety-gate.md,
+    ADR-0004-read-only-api-contract.md,
+    ADR-0007-synthetic-campaign-creation-command-boundary.md and
+    ADR-0008-technical-assignment-implementation.md). No other write
+    operation exists or is documented. PRODUCTION_LAUNCH_GATE remains
+    blocked; this document does not authorize any production deployment,
+    real personal data, real payments or protected-data disclosure.
 servers:
   - url: http://127.0.0.1:3001
     description: >-
@@ -60,7 +63,8 @@ paths:
       description: >-
         Returns every row of the derived, rebuildable Campaign Current
         State Projection (apps/api/migrations/001_campaign_current_state_projection.up.sql),
-        ordered by campaign_id ascending. Read-only; no write endpoint exists.
+        ordered by campaign_id ascending. Read-only; see the POST operation
+        below for the one write operation on this path.
       responses:
         '200':
           description: The full list of synthetic Campaigns.
@@ -74,6 +78,140 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+    post:
+      operationId: launchCampaign
+      summary: Atomically launch a new synthetic Campaign from a ready Technical Assignment
+      description: >-
+        The only write operation on this path. One atomic transaction:
+        verifies the referenced Technical Assignment is
+        `lifecycle_status=ready_for_analysis` at exactly `expected_revision`
+        and that a valid Contacts Gate marker is present, then creates the
+        synthetic Campaign in status `Created`, appends the
+        `campaign.subject_linked.v1` provenance event, and marks the
+        Technical Assignment `campaign_started`
+        (apps/api/src/db/launchCampaign.ts). campaign_id, aggregate_version,
+        created_at and updated_at are always server-generated; campaign_id
+        is derived deterministically from idempotency_key, so retrying the
+        same command with the same idempotency_key returns the same
+        Campaign instead of creating a duplicate (200, not 201). The
+        request body accepts no name, phone, email or any other contact
+        field. See ADR-0007-synthetic-campaign-creation-command-boundary.md
+        and ADR-0008-technical-assignment-implementation.md.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LaunchCampaignRequest'
+      responses:
+        '201':
+          description: A new synthetic Campaign was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '200':
+          description: >-
+            idempotency_key was already used for this exact command; the
+            existing Campaign is returned unchanged, no duplicate created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '400':
+          description: >-
+            The request body is malformed, the Technical Assignment is not
+            ready/found, its revision does not match expected_revision, or
+            the Contacts Gate marker is missing/invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LaunchCampaignErrorResponse'
+        '503':
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+  /api/v1/technical-assignments:
+    post:
+      operationId: saveTechnicalAssignmentDraft
+      summary: Create or update a synthetic Technical Assignment draft
+      description: >-
+        Creates a new draft on first call for a given idempotency_key, or
+        updates the same draft on subsequent calls with the same key.
+        Exactly 30 approved Property fields (`scenario=need_tenant`) or 29
+        approved TenantRequest fields (`scenario=need_property`) are
+        accepted -- no other property, including any name/phone/email/
+        contact field, can be submitted. `technical_assignment_id`,
+        `revision` and `lifecycle_status` are always server-computed.
+        `property_exact_address` is accepted but never returned in any
+        response (see `has_exact_address`). See
+        02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md and
+        ADR-0008-technical-assignment-implementation.md.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SaveTechnicalAssignmentRequest'
+      responses:
+        '201':
+          description: A new Technical Assignment draft was created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnicalAssignment'
+        '200':
+          description: An existing Technical Assignment draft was updated (or an identical resubmission was a no-op).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnicalAssignment'
+        '400':
+          description: The request body is malformed, a field is invalid, a cross-field rule is violated, or the scenario does not match a prior save under this idempotency_key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnicalAssignmentErrorResponse'
+        '503':
+          description: The database is unreachable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableResponse'
+
+  /api/v1/technical-assignments/{technicalAssignmentId}:
+    get:
+      operationId: getTechnicalAssignmentById
+      summary: Get a single Technical Assignment draft by id
+      parameters:
+        - name: technicalAssignmentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UuidV4OrV7'
+      responses:
+        '200':
+          description: The matching Technical Assignment.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TechnicalAssignment'
+        '404':
+          description: No Technical Assignment exists with the given id.
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [error]
+                properties:
+                  error:
+                    type: string
+                    enum: [TECHNICAL_ASSIGNMENT_NOT_FOUND]
 
   /api/v1/campaigns/{campaignId}:
     get:
@@ -219,3 +357,187 @@ components:
         error:
           type: string
           enum: [CAMPAIGN_NOT_FOUND]
+
+    LaunchCampaignRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotency_key, technical_assignment_id, expected_revision, contacts_gate_evidence]
+      properties:
+        idempotency_key:
+          type: string
+          minLength: 1
+          maxLength: 200
+          description: >-
+            Caller-generated deduplication token for this launch command.
+            Never a contact field -- no other property is accepted on this
+            request.
+        technical_assignment_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+        expected_revision:
+          type: integer
+          minimum: 1
+          description: The Technical Assignment revision the caller last observed as ready_for_analysis; a mismatch means the Analysis the caller saw is stale.
+        contacts_gate_evidence:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Synthetic-only Contacts Gate marker (ADR-0008 section 2). A real consent record is a Launch blocker, not implemented.
+
+    LaunchCampaignErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: string
+          enum:
+            - INVALID_IDEMPOTENCY_KEY
+            - TECHNICAL_ASSIGNMENT_STATE_INVALID
+            - TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED
+            - TECHNICAL_ASSIGNMENT_ANALYSIS_STALE
+            - TECHNICAL_ASSIGNMENT_CONTACTS_GATE_REQUIRED
+            - TECHNICAL_ASSIGNMENT_REVISION_CONFLICT
+
+    TechnicalAssignmentErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        field_id:
+          type: [string, 'null']
+        error:
+          type: string
+          enum:
+            - TECHNICAL_ASSIGNMENT_SCHEMA_UNSUPPORTED
+            - TECHNICAL_ASSIGNMENT_SCENARIO_REQUIRED
+            - TECHNICAL_ASSIGNMENT_SCENARIO_IMMUTABLE
+            - TECHNICAL_ASSIGNMENT_STATE_INVALID
+            - TECHNICAL_ASSIGNMENT_REQUIRED_FIELD_MISSING
+            - TECHNICAL_ASSIGNMENT_FIELD_TYPE_INVALID
+            - TECHNICAL_ASSIGNMENT_FIELD_VALUE_INVALID
+            - TECHNICAL_ASSIGNMENT_CROSS_FIELD_CONFLICT
+            - TECHNICAL_ASSIGNMENT_PERSONAL_DATA_FORBIDDEN
+            - TECHNICAL_ASSIGNMENT_SECRET_FORBIDDEN
+
+    SaveTechnicalAssignmentRequest:
+      type: object
+      additionalProperties: false
+      required: [idempotency_key, scenario, payload]
+      properties:
+        idempotency_key:
+          type: string
+          minLength: 1
+          maxLength: 200
+        scenario:
+          type: string
+          enum: [need_tenant, need_property]
+        payload:
+          description: Exactly the 30 Property fields (need_tenant) or 29 TenantRequest fields (need_property) -- see PropertyPayload / TenantRequestPayload. No other property is accepted.
+          oneOf:
+            - $ref: '#/components/schemas/PropertyPayload'
+            - $ref: '#/components/schemas/TenantRequestPayload'
+
+    TechnicalAssignment:
+      type: object
+      additionalProperties: false
+      required: [technical_assignment_id, scenario, schema_version, revision, lifecycle_status, has_exact_address, payload, created_at, updated_at]
+      properties:
+        technical_assignment_id:
+          type: string
+          format: uuid
+        scenario:
+          type: string
+          enum: [need_tenant, need_property]
+        schema_version:
+          type: string
+          enum: ['1.0']
+        revision:
+          type: integer
+          minimum: 1
+        lifecycle_status:
+          type: string
+          enum: [draft, ready_for_analysis, campaign_started]
+        has_exact_address:
+          type: boolean
+          description: True if a protected property_exact_address is stored. The raw address itself is never included in any response.
+        payload:
+          oneOf:
+            - $ref: '#/components/schemas/PropertyPayload'
+            - $ref: '#/components/schemas/TenantRequestPayload'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PropertyPayload:
+      type: object
+      description: Exactly the 30 approved Property fields (02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md section 7.2). property_exact_address is accepted on write but never echoed back.
+      additionalProperties: false
+      properties:
+        property_type: { type: ['string', 'null'], enum: [retail_unit, office, warehouse, light_industrial, free_purpose, standalone_building, land, other, null] }
+        property_type_other: { type: ['string', 'null'] }
+        property_country_code: { type: ['string', 'null'], enum: ['RU', null] }
+        property_region: { type: ['string', 'null'] }
+        property_city: { type: ['string', 'null'] }
+        property_districts: { type: array, items: { type: string } }
+        property_exact_address: { type: ['string', 'null'] }
+        property_area_sqm: { type: ['number', 'null'] }
+        property_floor: { type: ['integer', 'null'] }
+        property_total_floors: { type: ['integer', 'null'] }
+        property_entrance_type: { type: ['string', 'null'], enum: [separate_street, separate_yard, shared, loading_only, none, null] }
+        property_condition: { type: ['string', 'null'], enum: [shell_and_core, requires_full_renovation, cosmetic_renovation, ready_to_use, null] }
+        property_available_from: { type: ['string', 'null'], format: date }
+        property_monthly_rent_rub: { type: ['integer', 'null'] }
+        property_operating_expenses_included: { type: ['boolean', 'null'] }
+        property_utilities_included: { type: ['boolean', 'null'] }
+        property_security_deposit_rub: { type: ['integer', 'null'] }
+        property_min_lease_months: { type: ['integer', 'null'] }
+        property_allowed_business_categories: { type: array, items: { type: string } }
+        property_excluded_business_categories: { type: array, items: { type: string } }
+        property_target_tenant_categories: { type: array, items: { type: string } }
+        property_business_category_other: { type: ['string', 'null'] }
+        property_power_kw: { type: ['number', 'null'] }
+        property_ceiling_height_m: { type: ['number', 'null'] }
+        property_features: { type: array, items: { type: string } }
+        property_parking_spaces: { type: ['integer', 'null'] }
+        property_loading_access: { type: ['string', 'null'], enum: [none, small_vehicle, truck, loading_dock, null] }
+        property_access_mode: { type: ['string', 'null'], enum: [business_hours, extended_hours, access_24_7, by_agreement, null] }
+        property_deal_priority: { type: ['string', 'null'], enum: [fastest_deal, balanced, maximum_economics, counterparty_reliability, null] }
+        property_additional_requirements: { type: ['string', 'null'] }
+
+    TenantRequestPayload:
+      type: object
+      description: Exactly the 29 approved TenantRequest fields (02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md section 8.2).
+      additionalProperties: false
+      properties:
+        request_business_category: { type: ['string', 'null'] }
+        request_business_category_other: { type: ['string', 'null'] }
+        request_business_stage: { type: ['string', 'null'], enum: [new_business, operating, expansion, relocation, additional_location, null] }
+        request_expected_occupancy_people: { type: ['integer', 'null'] }
+        request_country_code: { type: ['string', 'null'], enum: ['RU', null] }
+        request_region: { type: ['string', 'null'] }
+        request_cities: { type: array, items: { type: string } }
+        request_districts: { type: array, items: { type: string } }
+        request_location_priorities: { type: array, items: { type: string } }
+        request_property_types: { type: array, items: { type: string } }
+        request_property_type_other: { type: ['string', 'null'] }
+        request_area_min_sqm: { type: ['number', 'null'] }
+        request_area_max_sqm: { type: ['number', 'null'] }
+        request_monthly_budget_max_rub: { type: ['integer', 'null'] }
+        request_budget_includes_operating_expenses: { type: ['boolean', 'null'] }
+        request_condition_options: { type: array, items: { type: string } }
+        request_move_in_by: { type: ['string', 'null'], format: date }
+        request_min_lease_months: { type: ['integer', 'null'] }
+        request_power_min_kw: { type: ['number', 'null'] }
+        request_ceiling_height_min_m: { type: ['number', 'null'] }
+        request_entrance_requirement: { type: ['string', 'null'], enum: [separate_required, separate_preferred, shared_allowed, no_preference, null] }
+        request_floor_options: { type: array, items: { type: string } }
+        request_parking_min_spaces: { type: ['integer', 'null'] }
+        request_loading_access_required: { type: ['boolean', 'null'] }
+        request_access_mode: { type: ['string', 'null'], enum: [business_hours, extended_hours, access_24_7, by_agreement, null] }
+        request_required_features: { type: array, items: { type: string } }
+        request_excluded_features: { type: array, items: { type: string } }
+        request_deal_priority: { type: ['string', 'null'], enum: [fastest_deal, balanced, maximum_economics, counterparty_reliability, null] }
+        request_additional_requirements: { type: ['string', 'null'] }

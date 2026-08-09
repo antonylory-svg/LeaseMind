@@ -1,15 +1,20 @@
 import type pg from 'pg';
 
 // Fixed, non-configurable role names -- never derived from untrusted input.
-// See 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md.
+// See 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md
+// and ADR-0007-synthetic-campaign-creation-command-boundary.md.
 export const MIGRATOR_ROLE = 'lmapp_migrator';
 export const MAINTAINER_ROLE = 'lmapp_maintainer';
 export const API_READER_ROLE = 'lmapp_api_reader';
+export const CAMPAIGN_WRITER_ROLE = 'lmapp_campaign_writer';
+export const TA_WRITER_ROLE = 'lmapp_ta_writer';
 
 export interface ProvisionRolesInput {
   migratorPassword: string;
   maintainerPassword: string;
   apiReaderPassword: string;
+  campaignWriterPassword: string;
+  taWriterPassword: string;
 }
 
 export interface ProvisionRolesResult {
@@ -34,7 +39,7 @@ async function ensureRoleExists(client: pg.PoolClient, roleName: string): Promis
 }
 
 /**
- * Idempotently provisions the three fixed, least-privilege LOGIN roles.
+ * Idempotently provisions the five fixed, least-privilege LOGIN roles.
  * Must be run via a bootstrap/admin connection (LEASEMIND_BOOTSTRAP_DATABASE_URL)
  * -- never via the application's own DATABASE_URL/migration/maintenance
  * connections. Every run resets dangerous role attributes unconditionally,
@@ -46,7 +51,9 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
   const roles: Array<{ name: string; password: string }> = [
     { name: MIGRATOR_ROLE, password: input.migratorPassword },
     { name: MAINTAINER_ROLE, password: input.maintainerPassword },
-    { name: API_READER_ROLE, password: input.apiReaderPassword }
+    { name: API_READER_ROLE, password: input.apiReaderPassword },
+    { name: CAMPAIGN_WRITER_ROLE, password: input.campaignWriterPassword },
+    { name: TA_WRITER_ROLE, password: input.taWriterPassword }
   ];
 
   const client = await pool.connect();

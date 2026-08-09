@@ -6,7 +6,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { migrateUp } from '../src/db/migrate.js';
-import { API_DATABASE_URL, MIGRATION_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
+import { API_DATABASE_URL, MIGRATION_DATABASE_URL, COMMAND_DATABASE_URL, TA_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
 
 // End-to-end proof (real spawned process, not just the unit-level function)
 // that the runtime safety gate runs before any PostgreSQL connection attempt
@@ -163,6 +163,8 @@ test(
       PORT: String(testPort),
       NODE_ENV: 'development',
       DATABASE_URL: API_DATABASE_URL,
+      LEASEMIND_COMMAND_DATABASE_URL: COMMAND_DATABASE_URL,
+      LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL: TA_DATABASE_URL,
       LEASEMIND_RUNTIME_MODE: 'synthetic',
       LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
       LEASEMIND_ALLOW_REAL_PII: 'false',

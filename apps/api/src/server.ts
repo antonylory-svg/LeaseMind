@@ -1,8 +1,14 @@
-import { loadConfig } from './config.js';
+import { loadConfig, loadCommandDatabaseUrl, loadTechnicalAssignmentDatabaseUrl } from './config.js';
 import { createPool } from './db.js';
 import { buildApp } from './app.js';
 import { enforceRuntimeSafetyGate, RuntimeSafetyViolation } from './runtimePolicy.js';
-import { verifyRuntimeDatabasePrivileges, DatabasePrivilegeViolation, DATABASE_PRIVILEGE_VIOLATION_CODE } from './dbPrivilegePolicy.js';
+import {
+  verifyRuntimeDatabasePrivileges,
+  verifyRuntimeCommandPrivileges,
+  verifyRuntimeTechnicalAssignmentPrivileges,
+  DatabasePrivilegeViolation,
+  DATABASE_PRIVILEGE_VIOLATION_CODE
+} from './dbPrivilegePolicy.js';
 
 // Structured JSON for the pre-Fastify lifecycle, before the allowlisted,
 // server-owned-request-id logger (apps/api/src/observability/logging.ts)
@@ -28,10 +34,16 @@ async function main(): Promise<void> {
   }
 
   const config = loadConfig();
+  const commandDatabaseUrl = loadCommandDatabaseUrl();
+  const technicalAssignmentDatabaseUrl = loadTechnicalAssignmentDatabaseUrl();
   const pool = createPool(config.databaseUrl);
+  const commandPool = createPool(commandDatabaseUrl);
+  const technicalAssignmentPool = createPool(technicalAssignmentDatabaseUrl);
 
   try {
     await verifyRuntimeDatabasePrivileges(pool);
+    await verifyRuntimeCommandPrivileges(commandPool);
+    await verifyRuntimeTechnicalAssignmentPrivileges(technicalAssignmentPool);
   } catch (error) {
     // Never log the pool, config or the underlying error: only the stable
     // code is safe to print. The port must never open after this point.
@@ -41,10 +53,12 @@ async function main(): Promise<void> {
       error instanceof DatabasePrivilegeViolation ? error.message : DATABASE_PRIVILEGE_VIOLATION_CODE
     );
     await pool.end().catch(() => {});
+    await commandPool.end().catch(() => {});
+    await technicalAssignmentPool.end().catch(() => {});
     process.exit(1);
   }
 
-  const app = buildApp({ pool });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool });
 
   let shuttingDown = false;
   const shutdown = (signal: 'SIGINT' | 'SIGTERM'): void => {
