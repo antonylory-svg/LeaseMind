@@ -35,3 +35,17 @@ export async function fetchCampaigns(): Promise<CampaignsState> {
     return { kind: 'error' };
   }
 }
+
+/** Returns null on any error, 400 or 404 alike -- callers only need to know
+ * whether a displayable Campaign came back. */
+export async function fetchCampaignById(campaignId: string): Promise<Campaign | null> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/campaigns/${encodeURIComponent(campaignId)}`);
+    if (!response.ok) {
+      return null;
+    }
+    return (await response.json()) as Campaign;
+  } catch {
+    return null;
+  }
+}

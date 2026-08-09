@@ -4,7 +4,7 @@ import App from './App';
 
 const container = document.getElementById('root');
 if (!container) {
-  throw new Error('Root container not found');
+  throw new Error('Не найден корневой контейнер (#root)');
 }
 
 createRoot(container).render(

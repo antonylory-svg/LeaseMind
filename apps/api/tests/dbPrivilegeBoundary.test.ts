@@ -5,14 +5,21 @@ import { spawn } from 'node:child_process';
 import net from 'node:net';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { verifyRuntimeDatabasePrivileges, DatabasePrivilegeViolation } from '../src/dbPrivilegePolicy.js';
-import { MIGRATOR_ROLE, MAINTAINER_ROLE, API_READER_ROLE } from '../src/db/provisionRoles.js';
+import {
+  verifyRuntimeDatabasePrivileges,
+  verifyRuntimeCommandPrivileges,
+  verifyRuntimeTechnicalAssignmentPrivileges,
+  DatabasePrivilegeViolation
+} from '../src/dbPrivilegePolicy.js';
+import { MIGRATOR_ROLE, MAINTAINER_ROLE, API_READER_ROLE, CAMPAIGN_WRITER_ROLE, TA_WRITER_ROLE } from '../src/db/provisionRoles.js';
 import { migrateUp } from '../src/db/migrate.js';
 import { appendCampaignStatusEvent, rebuildCampaignProjection, rebuildAllCampaignProjections } from '../src/db/campaignEvents.js';
 import {
   MIGRATION_DATABASE_URL,
   MAINTENANCE_DATABASE_URL,
   API_DATABASE_URL,
+  COMMAND_DATABASE_URL,
+  TA_DATABASE_URL,
   BOOTSTRAP_DATABASE_URL,
   hasDatabase
 } from './testDatabaseUrls.js';
@@ -230,6 +237,7 @@ test('the runtime privilege check passes for the real API reader connection', { 
 for (const [label, urlGetter] of [
   ['migrator', () => MIGRATION_DATABASE_URL],
   ['maintainer', () => MAINTENANCE_DATABASE_URL],
+  ['campaign writer', () => COMMAND_DATABASE_URL],
   ['bootstrap/admin', () => BOOTSTRAP_DATABASE_URL]
 ] as const) {
   test(`the runtime privilege check rejects the ${label} connection`, { skip: !hasDatabase }, async () => {
@@ -350,6 +358,274 @@ test('Maintainer: DELETE/TRUNCATE on application tables are denied', { skip: !ha
 });
 
 // ---------------------------------------------------------------------------
+// Campaign writer (ADR-0007): the dedicated command-boundary identity for
+// POST /api/v1/campaigns. Same positive/negative shape as the maintainer
+// probes above -- proves the real lmapp_campaign_writer connection can do
+// exactly what apps/api/src/db/createCampaign.ts needs and nothing else.
+// ---------------------------------------------------------------------------
+
+const WRITER_PROBE_CAMPAIGN = '00000000-0000-4000-9200-000000000001';
+
+test('campaign writer: can append a synthetic Created event through the real connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 1 });
+  try {
+    const result = await appendCampaignStatusEvent(pool, {
+      campaignId: WRITER_PROBE_CAMPAIGN,
+      status: 'Created',
+      idempotencyKey: 'db-privilege-boundary:campaign-writer-probe'
+    });
+    assert.equal(result.isReplay, false);
+    assert.equal(result.status, 'Created');
+  } finally {
+    await pool.end();
+  }
+});
+
+test('campaign writer: DELETE/TRUNCATE/DDL/ledger access are all denied', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 1 });
+  try {
+    await assert.rejects(pool.query('DELETE FROM leasemind_app.campaign_current_state_projection'), /permission denied/);
+    await assert.rejects(pool.query('TRUNCATE leasemind_app.campaign_current_state_projection'), /permission denied/);
+    await assert.rejects(
+      pool.query('DELETE FROM leasemind_app.campaign_event_log'),
+      /permission denied|CAMPAIGN_EVENT_LOG_IMMUTABLE/
+    );
+    await assert.rejects(pool.query('CREATE TABLE leasemind_app.probe_writer (id int)'), /permission denied/);
+    await assert.rejects(pool.query('CREATE ROLE probe_writer_role'), /permission denied/);
+    await assert.rejects(pool.query('SELECT 1 FROM leasemind_app.schema_migrations'), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${MIGRATOR_ROLE}`), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${MAINTAINER_ROLE}`), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${API_READER_ROLE}`), /permission denied/);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('cleanup: remove the campaign-writer-probe campaign projection (Event Log rows remain, immutably)', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 1 });
+  try {
+    await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1', [
+      WRITER_PROBE_CAMPAIGN
+    ]);
+    await pool.query('DELETE FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1', [WRITER_PROBE_CAMPAIGN]);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('migration 004 grants exactly the expected privileges to the campaign writer', { skip: !hasDatabase }, async () => {
+  const priv = async (table: string) =>
+    (
+      await query(
+        BOOTSTRAP_DATABASE_URL,
+        `SELECT
+           has_table_privilege($1, $2, 'SELECT') AS sel,
+           has_table_privilege($1, $2, 'INSERT') AS ins,
+           has_table_privilege($1, $2, 'UPDATE') AS upd,
+           has_table_privilege($1, $2, 'DELETE') AS del`,
+        [CAMPAIGN_WRITER_ROLE, table]
+      )
+    ).rows[0];
+
+  assert.deepEqual(await priv('leasemind_app.campaign_event_log'), { sel: true, ins: true, upd: false, del: false });
+  assert.deepEqual(await priv('leasemind_app.campaign_stream_head'), { sel: true, ins: true, upd: true, del: false });
+  assert.deepEqual(await priv('leasemind_app.campaign_current_state_projection'), {
+    sel: true,
+    ins: true,
+    upd: true,
+    del: false
+  });
+
+  const ledgerAccess = (
+    await query(
+      BOOTSTRAP_DATABASE_URL,
+      "SELECT has_table_privilege($1, 'leasemind_app.schema_migrations', 'SELECT') AS sel",
+      [CAMPAIGN_WRITER_ROLE]
+    )
+  ).rows[0];
+  assert.equal(ledgerAccess.sel, false);
+});
+
+test('the runtime command privilege check passes for the real campaign writer connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 1 });
+  try {
+    await assert.doesNotReject(verifyRuntimeCommandPrivileges(pool));
+  } finally {
+    await pool.end();
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Technical Assignment writer (ADR-0008): the dedicated command-boundary
+// identity for POST /api/v1/technical-assignments. Same positive/negative
+// shape as the maintainer/campaign-writer probes above.
+// ---------------------------------------------------------------------------
+
+test('the runtime Technical Assignment privilege check passes for the real ta writer connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 1 });
+  try {
+    await assert.doesNotReject(verifyRuntimeTechnicalAssignmentPrivileges(pool));
+  } finally {
+    await pool.end();
+  }
+});
+
+for (const [label, urlGetter] of [
+  ['migrator', () => MIGRATION_DATABASE_URL],
+  ['maintainer', () => MAINTENANCE_DATABASE_URL],
+  ['api reader', () => API_DATABASE_URL],
+  ['campaign writer', () => COMMAND_DATABASE_URL],
+  ['bootstrap/admin', () => BOOTSTRAP_DATABASE_URL]
+] as const) {
+  test(`the runtime Technical Assignment privilege check rejects the ${label} connection`, { skip: !hasDatabase }, async () => {
+    const pool = new pg.Pool({ connectionString: urlGetter(), max: 1 });
+    try {
+      await assert.rejects(verifyRuntimeTechnicalAssignmentPrivileges(pool), DatabasePrivilegeViolation);
+    } finally {
+      await pool.end();
+    }
+  });
+}
+
+test('the runtime command privilege check rejects the ta writer connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 1 });
+  try {
+    await assert.rejects(verifyRuntimeCommandPrivileges(pool), DatabasePrivilegeViolation);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('the runtime API reader privilege check rejects the ta writer connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 1 });
+  try {
+    await assert.rejects(verifyRuntimeDatabasePrivileges(pool), DatabasePrivilegeViolation);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('ta writer: can write Property, TenantRequest and the protected address table through the real connection', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 1 });
+  const propertyId = '00000000-0000-4000-9300-000000000001';
+  try {
+    await pool.query(
+      `INSERT INTO leasemind_app.property
+         (property_id, idempotency_key, lifecycle_status, property_type, property_country_code, property_region,
+          property_city, property_area_sqm, property_condition, property_available_from, property_monthly_rent_rub,
+          property_operating_expenses_included, property_utilities_included, property_allowed_business_categories,
+          property_deal_priority)
+       VALUES ($1, 'db-privilege-boundary:ta-writer-probe', 'ready_for_analysis', 'office', 'RU', 'Region', 'City', 100,
+               'ready_to_use', CURRENT_DATE + 10, 100000, true, true, ARRAY['office'], 'balanced')`,
+      [propertyId]
+    );
+    await pool.query(
+      `INSERT INTO leasemind_app.property_protected_address (property_id, exact_address) VALUES ($1, 'Synthetic address')`,
+      [propertyId]
+    );
+    const row = await pool.query('SELECT exact_address FROM leasemind_app.property_protected_address WHERE property_id = $1', [propertyId]);
+    assert.equal(row.rows[0].exact_address, 'Synthetic address');
+  } finally {
+    await pool.query('DELETE FROM leasemind_app.property_protected_address WHERE property_id = $1', [propertyId]).catch(() => {});
+    await pool.query('DELETE FROM leasemind_app.property WHERE property_id = $1', [propertyId]).catch(() => {});
+    await pool.end();
+  }
+});
+
+test('ta writer: DELETE/TRUNCATE/DDL and Campaign Event Log access are all denied', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 1 });
+  try {
+    await assert.rejects(pool.query('DELETE FROM leasemind_app.property'), /permission denied/);
+    await assert.rejects(pool.query('TRUNCATE leasemind_app.property'), /permission denied/);
+    await assert.rejects(pool.query('DELETE FROM leasemind_app.tenant_request'), /permission denied/);
+    await assert.rejects(pool.query('CREATE TABLE leasemind_app.probe_ta_writer (id int)'), /permission denied/);
+    await assert.rejects(pool.query('SELECT 1 FROM leasemind_app.campaign_event_log'), /permission denied/);
+    await assert.rejects(pool.query('SELECT 1 FROM leasemind_app.campaign_stream_head'), /permission denied/);
+    await assert.rejects(pool.query('SELECT 1 FROM leasemind_app.campaign_current_state_projection'), /permission denied/);
+    await assert.rejects(pool.query('SELECT 1 FROM leasemind_app.schema_migrations'), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${MIGRATOR_ROLE}`), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${MAINTAINER_ROLE}`), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${API_READER_ROLE}`), /permission denied/);
+    await assert.rejects(pool.query(`SET ROLE ${CAMPAIGN_WRITER_ROLE}`), /permission denied/);
+  } finally {
+    await pool.end();
+  }
+});
+
+test('migrations 005/007 grant exactly the expected privileges to the ta writer, campaign writer and api reader', { skip: !hasDatabase }, async () => {
+  const query = async (connectionString: string | undefined, sql: string, params: unknown[] = []): Promise<pg.QueryResult> => {
+    const pool = new pg.Pool({ connectionString, max: 1 });
+    try {
+      return await pool.query(sql, params);
+    } finally {
+      await pool.end();
+    }
+  };
+
+  const priv = async (role: string, table: string) =>
+    (
+      await query(
+        BOOTSTRAP_DATABASE_URL,
+        `SELECT
+           has_table_privilege($1, $2, 'SELECT') AS sel,
+           has_table_privilege($1, $2, 'INSERT') AS ins,
+           has_table_privilege($1, $2, 'UPDATE') AS upd,
+           has_table_privilege($1, $2, 'DELETE') AS del`,
+        [role, table]
+      )
+    ).rows[0];
+
+  assert.deepEqual(await priv(TA_WRITER_ROLE, 'leasemind_app.property'), { sel: true, ins: true, upd: true, del: false });
+  assert.deepEqual(await priv(TA_WRITER_ROLE, 'leasemind_app.tenant_request'), { sel: true, ins: true, upd: true, del: false });
+  assert.deepEqual(await priv(TA_WRITER_ROLE, 'leasemind_app.property_protected_address'), { sel: true, ins: true, upd: true, del: false });
+
+  assert.deepEqual(await priv(CAMPAIGN_WRITER_ROLE, 'leasemind_app.property'), { sel: true, ins: false, upd: false, del: false });
+  assert.deepEqual(await priv(API_READER_ROLE, 'leasemind_app.property'), { sel: true, ins: false, upd: false, del: false });
+
+  const columnUpd = (
+    await query(
+      BOOTSTRAP_DATABASE_URL,
+      `SELECT
+         has_column_privilege($1, 'leasemind_app.property', 'lifecycle_status', 'UPDATE') AS lifecycle_ok,
+         has_column_privilege($1, 'leasemind_app.property', 'property_monthly_rent_rub', 'UPDATE') AS commercial_fact_forbidden,
+         has_column_privilege($1, 'leasemind_app.tenant_request', 'request_monthly_rent_rate_max_rub_per_sqm', 'UPDATE') AS rent_rate_forbidden`,
+      [CAMPAIGN_WRITER_ROLE]
+    )
+  ).rows[0];
+  assert.equal(columnUpd.lifecycle_ok, true, 'campaign writer must be able to update lifecycle_status');
+  assert.equal(columnUpd.commercial_fact_forbidden, false, 'campaign writer must not be able to update a commercial-fact column');
+  assert.equal(columnUpd.rent_rate_forbidden, false, 'campaign writer must not be able to update the tenant rent-rate constraint');
+
+  const protectedAddressAccess = (
+    await query(
+      BOOTSTRAP_DATABASE_URL,
+      `SELECT
+         has_table_privilege($1, 'leasemind_app.property_protected_address', 'SELECT') AS reader_sel,
+         has_table_privilege($2, 'leasemind_app.property_protected_address', 'SELECT') AS writer_sel`,
+      [API_READER_ROLE, CAMPAIGN_WRITER_ROLE]
+    )
+  ).rows[0];
+  assert.equal(protectedAddressAccess.reader_sel, false);
+  assert.equal(protectedAddressAccess.writer_sel, false);
+});
+
+for (const [label, urlGetter] of [
+  ['migrator', () => MIGRATION_DATABASE_URL],
+  ['maintainer', () => MAINTENANCE_DATABASE_URL],
+  ['api reader', () => API_DATABASE_URL],
+  ['bootstrap/admin', () => BOOTSTRAP_DATABASE_URL]
+] as const) {
+  test(`the runtime command privilege check rejects the ${label} connection`, { skip: !hasDatabase }, async () => {
+    const pool = new pg.Pool({ connectionString: urlGetter(), max: 1 });
+    try {
+      await assert.rejects(verifyRuntimeCommandPrivileges(pool), DatabasePrivilegeViolation);
+    } finally {
+      await pool.end();
+    }
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Fail-closed startup probes: spawn the real server.ts with DATABASE_URL
 // pointed at each wrong identity and prove the port never opens.
 // ---------------------------------------------------------------------------
@@ -365,6 +641,14 @@ function buildChildEnv(databaseUrl: string, port: number): NodeJS.ProcessEnv {
   base.PORT = String(port);
   base.NODE_ENV = 'development';
   base.DATABASE_URL = databaseUrl;
+  // Never actually reached: verifyRuntimeDatabasePrivileges on the wrong
+  // read identity always fails first (see main() in server.ts), before
+  // verifyRuntimeCommandPrivileges runs -- this only needs to be present so
+  // loadCommandDatabaseUrl() doesn't throw its own, different error first.
+  base.LEASEMIND_COMMAND_DATABASE_URL = COMMAND_DATABASE_URL;
+  // Same reasoning as LEASEMIND_COMMAND_DATABASE_URL above, for the
+  // Technical Assignment pool.
+  base.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL = TA_DATABASE_URL;
   base.LEASEMIND_RUNTIME_MODE = 'synthetic';
   base.LEASEMIND_PRODUCTION_LAUNCH_GATE = 'blocked';
   base.LEASEMIND_ALLOW_REAL_PII = 'false';
@@ -429,6 +713,27 @@ async function assertStartupBlocked(databaseUrl: string | undefined, port: numbe
   return result;
 }
 
+// Same as buildChildEnv, but DATABASE_URL stays the correct API reader --
+// only LEASEMIND_COMMAND_DATABASE_URL is wrong. Proves
+// verifyRuntimeCommandPrivileges independently blocks startup, not merely
+// that verifyRuntimeDatabasePrivileges happens to catch every case.
+function buildCommandChildEnv(commandDatabaseUrl: string, port: number): NodeJS.ProcessEnv {
+  const env = buildChildEnv(API_DATABASE_URL as string, port);
+  env.LEASEMIND_COMMAND_DATABASE_URL = commandDatabaseUrl;
+  return env;
+}
+
+async function assertCommandStartupBlocked(commandDatabaseUrl: string | undefined, port: number): Promise<RunResult> {
+  const env = buildCommandChildEnv(commandDatabaseUrl as string, port);
+  const result = await runServerOnce(env);
+  assert.equal(result.timedOut, false, 'process must exit promptly');
+  assert.notEqual(result.code, 0);
+  assert.match(result.stderr, /DATABASE_PRIVILEGE_VIOLATION/);
+  const portOpen = await isPortOpen(port);
+  assert.equal(portOpen, false, 'the port must never have been opened');
+  return result;
+}
+
 test('superuser/bootstrap DATABASE_URL blocks startup before the port opens', { skip: !hasDatabase }, async () => {
   await assertStartupBlocked(BOOTSTRAP_DATABASE_URL, 34580);
 });
@@ -440,6 +745,90 @@ test('migrator DATABASE_URL blocks startup before the port opens', { skip: !hasD
 test('maintainer DATABASE_URL blocks startup before the port opens', { skip: !hasDatabase }, async () => {
   await assertStartupBlocked(MAINTENANCE_DATABASE_URL, 34582);
 });
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_COMMAND_DATABASE_URL (migrator) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertCommandStartupBlocked(MIGRATION_DATABASE_URL, 34590);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_COMMAND_DATABASE_URL (maintainer) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertCommandStartupBlocked(MAINTENANCE_DATABASE_URL, 34591);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_COMMAND_DATABASE_URL (the read-only API reader itself) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertCommandStartupBlocked(API_DATABASE_URL, 34592);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_COMMAND_DATABASE_URL (bootstrap/admin) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertCommandStartupBlocked(BOOTSTRAP_DATABASE_URL, 34593);
+  }
+);
+
+// Same as buildCommandChildEnv, but only
+// LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL is wrong -- proves
+// verifyRuntimeTechnicalAssignmentPrivileges independently blocks startup.
+function buildTaChildEnv(technicalAssignmentDatabaseUrl: string, port: number): NodeJS.ProcessEnv {
+  const env = buildChildEnv(API_DATABASE_URL as string, port);
+  env.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL = technicalAssignmentDatabaseUrl;
+  return env;
+}
+
+async function assertTaStartupBlocked(technicalAssignmentDatabaseUrl: string | undefined, port: number): Promise<RunResult> {
+  const env = buildTaChildEnv(technicalAssignmentDatabaseUrl as string, port);
+  const result = await runServerOnce(env);
+  assert.equal(result.timedOut, false, 'process must exit promptly');
+  assert.notEqual(result.code, 0);
+  assert.match(result.stderr, /DATABASE_PRIVILEGE_VIOLATION/);
+  const portOpen = await isPortOpen(port);
+  assert.equal(portOpen, false, 'the port must never have been opened');
+  return result;
+}
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL (migrator) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertTaStartupBlocked(MIGRATION_DATABASE_URL, 34594);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL (maintainer) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertTaStartupBlocked(MAINTENANCE_DATABASE_URL, 34595);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL (campaign writer) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertTaStartupBlocked(COMMAND_DATABASE_URL, 34596);
+  }
+);
+
+test(
+  'a valid API reader DATABASE_URL with a wrong LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL (bootstrap/admin) still blocks startup',
+  { skip: !hasDatabase },
+  async () => {
+    await assertTaStartupBlocked(BOOTSTRAP_DATABASE_URL, 34597);
+  }
+);
 
 test(
   'an underprivileged role without SELECT on the projection also blocks startup before the port opens',

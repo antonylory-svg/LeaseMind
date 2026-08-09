@@ -14,8 +14,17 @@ const addFormats = addFormatsImport as unknown as (instance: Ajv2020) => void;
 import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
+import { deriveCampaignIdFromIdempotencyKey } from '../src/db/createCampaign.js';
+import { saveTechnicalAssignmentDraft } from '../src/db/technicalAssignment.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
-import { MIGRATION_DATABASE_URL, MAINTENANCE_DATABASE_URL, API_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
+import {
+  MIGRATION_DATABASE_URL,
+  MAINTENANCE_DATABASE_URL,
+  API_DATABASE_URL,
+  COMMAND_DATABASE_URL,
+  TA_DATABASE_URL,
+  hasDatabase
+} from './testDatabaseUrls.js';
 
 // This file owns its own complete migration/seed/teardown lifecycle,
 // independent of tests/campaigns.test.ts. Running test FILES sequentially
@@ -90,12 +99,15 @@ test('OpenAPI document is valid OpenAPI 3.1', async () => {
 const EXPECTED_PATH_METHODS: Record<string, string[]> = {
   '/api/v1/health/live': ['get'],
   '/api/v1/health/ready': ['get'],
-  '/api/v1/campaigns': ['get'],
-  '/api/v1/campaigns/{campaignId}': ['get']
+  '/api/v1/campaigns': ['get', 'post'],
+  '/api/v1/campaigns/{campaignId}': ['get'],
+  '/api/v1/technical-assignments': ['post'],
+  '/api/v1/technical-assignments/{technicalAssignmentId}': ['get']
 };
 const ALL_HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
+const WRITE_PATHS = ['/api/v1/campaigns', '/api/v1/technical-assignments'];
 
-test('the contract documents exactly the four allowed read-only operations, nothing else', () => {
+test('the contract documents exactly the seven allowed operations, nothing else', () => {
   assert.deepEqual(Object.keys(api.paths).sort(), Object.keys(EXPECTED_PATH_METHODS).sort());
   for (const [pathKey, allowedMethods] of Object.entries(EXPECTED_PATH_METHODS)) {
     const item = api.paths[pathKey];
@@ -104,10 +116,13 @@ test('the contract documents exactly the four allowed read-only operations, noth
   }
 });
 
-test('no write methods (POST/PUT/PATCH/DELETE) are documented anywhere in the contract', () => {
+test('no write method exists anywhere except the two documented POST operations', () => {
   for (const pathKey of Object.keys(api.paths)) {
-    for (const method of ['post', 'put', 'patch', 'delete']) {
+    for (const method of ['put', 'patch', 'delete']) {
       assert.equal(api.paths[pathKey][method], undefined, `${method.toUpperCase()} must not exist on ${pathKey}`);
+    }
+    if (!WRITE_PATHS.includes(pathKey)) {
+      assert.equal(api.paths[pathKey].post, undefined, `POST must not exist on ${pathKey}`);
     }
   }
 });
@@ -123,8 +138,8 @@ test('every documented operation declares a unique operationId', () => {
       }
     }
   }
-  assert.equal(ids.length, 4);
-  assert.equal(new Set(ids).size, 4, 'operationId values must be unique');
+  assert.equal(ids.length, 7);
+  assert.equal(new Set(ids).size, 7, 'operationId values must be unique');
 });
 
 test('the Campaign schema enumerates exactly the 11 approved statuses', () => {
@@ -356,8 +371,202 @@ test('Campaign and health endpoints: 503 responses match the documented schema a
     assert.equal(readyResponse.statusCode, 503);
     assertMatchesSchema(responseSchema('/api/v1/health/ready', 'get', 503), readyResponse.json(), 'ready 503 body must match contract');
     assertNoLeakedSecrets(readyResponse.body);
+
+    const launchResponse = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: 'openapi-contract-503-probe',
+        technical_assignment_id: '00000000-0000-4000-8000-000000000001',
+        expected_revision: 1,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(launchResponse.statusCode, 503);
+    assertMatchesSchema(
+      responseSchema('/api/v1/campaigns', 'post', 503),
+      launchResponse.json(),
+      'launch-campaign 503 body must match contract'
+    );
+    assertNoLeakedSecrets(launchResponse.body);
   } finally {
     await app.close();
+  }
+});
+
+async function createReadyProperty(technicalAssignmentPool: pg.Pool, idempotencyKey: string): Promise<{ id: string; revision: number }> {
+  // Calls the DB command directly rather than spinning up a second
+  // buildApp() sharing the caller's pool: buildApp's onClose hook ends
+  // every pool it was given, so a nested app.close() here would end the
+  // caller's still-in-use technicalAssignmentPool out from under it
+  // ("Called end on pool more than once" on the caller's own close).
+  const result = await saveTechnicalAssignmentDraft(technicalAssignmentPool, {
+    idempotencyKey,
+    scenario: 'need_tenant',
+    payload: {
+      property_type: 'office',
+      property_country_code: 'RU',
+      property_region: 'Synthetic Region',
+      property_city: 'Synthetic City',
+      property_area_sqm: 100,
+      property_condition: 'ready_to_use',
+      property_available_from: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10),
+      property_monthly_rent_rub: 150000,
+      property_operating_expenses_included: true,
+      property_utilities_included: true,
+      property_allowed_business_categories: ['office'],
+      property_deal_priority: 'balanced'
+    }
+  });
+  assert.equal(result.lifecycle_status, 'ready_for_analysis');
+  return { id: result.technical_assignment_id, revision: result.revision };
+}
+
+test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign matching the documented 201 schema', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  try {
+    const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-201-ta');
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: 'openapi-contract:launch-201-probe',
+        technical_assignment_id: ta.id,
+        expected_revision: ta.revision,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(response.statusCode, 201);
+    const body = response.json();
+    assertMatchesSchema(responseSchema('/api/v1/campaigns', 'post', 201), body, 'launch-campaign 201 body must match contract');
+    assert.equal(body.status, 'Created');
+    assert.equal(body.created_at, body.updated_at);
+
+    const detail = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${body.campaign_id}` });
+    assert.equal(detail.statusCode, 200);
+    assert.deepEqual(detail.json(), body, 'the created Campaign must be immediately visible via GET by id');
+  } finally {
+    await app.close();
+  }
+});
+
+test('POST /api/v1/campaigns: retrying the same idempotency_key returns the same Campaign (200), not a duplicate', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  try {
+    const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-replay-ta');
+    const payload = {
+      idempotency_key: 'openapi-contract:launch-replay-probe',
+      technical_assignment_id: ta.id,
+      expected_revision: ta.revision,
+      contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+    };
+    const first = await app.inject({ method: 'POST', url: '/api/v1/campaigns', payload });
+    assert.equal(first.statusCode, 201);
+
+    const second = await app.inject({ method: 'POST', url: '/api/v1/campaigns', payload });
+    assert.equal(second.statusCode, 200);
+    assertMatchesSchema(responseSchema('/api/v1/campaigns', 'post', 200), second.json(), 'replay body must match contract');
+    assert.deepEqual(second.json(), first.json(), 'a replay must return the exact same Campaign, not a new one');
+
+    const list = await app.inject({ method: 'GET', url: '/api/v1/campaigns' });
+    const matches = (list.json() as { campaigns: Array<{ campaign_id: string }> }).campaigns.filter(
+      c => c.campaign_id === first.json().campaign_id
+    );
+    assert.equal(matches.length, 1, 'exactly one Campaign must exist for this idempotency_key, never a duplicate');
+  } finally {
+    await app.close();
+  }
+});
+
+test('POST /api/v1/campaigns: malformed or unexpected-property bodies match the documented 400 schema', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, logger: false });
+  try {
+    const cases = [
+      {},
+      { idempotency_key: '' },
+      { idempotency_key: 'ok', technical_assignment_id: '00000000-0000-4000-8000-000000000001', expected_revision: 1, contacts_gate_evidence: 'x', phone: '+1-555-0100' },
+      { idempotency_key: 123, technical_assignment_id: '00000000-0000-4000-8000-000000000001', expected_revision: 1, contacts_gate_evidence: 'x' }
+    ];
+    for (const payload of cases) {
+      const response = await app.inject({ method: 'POST', url: '/api/v1/campaigns', payload });
+      assert.equal(response.statusCode, 400, `payload ${JSON.stringify(payload)} must be rejected`);
+      assertMatchesSchema(responseSchema('/api/v1/campaigns', 'post', 400), response.json(), '400 body must match contract');
+      assert.equal(response.body.includes('phone'), false, 'the rejected field name/value must never be echoed back');
+      assert.equal(response.body.includes('555-0100'), false);
+    }
+  } finally {
+    await app.close();
+  }
+});
+
+test('POST /api/v1/technical-assignments: a well-formed draft matches the documented 201 schema', { skip: !hasDatabase }, async () => {
+  const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool: technicalAssignmentPool, technicalAssignmentPool, logger: false });
+  try {
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: {
+        idempotency_key: 'openapi-contract:ta-schema-probe',
+        scenario: 'need_property',
+        payload: {
+          request_business_category: 'office',
+          request_business_stage: 'operating',
+          request_country_code: 'RU',
+          request_region: 'Synthetic Region',
+          request_cities: ['Synthetic City'],
+          request_property_types: ['office'],
+          request_area_min_sqm: 50,
+          request_area_max_sqm: 150,
+          request_monthly_budget_max_rub: 600000,
+          request_monthly_rent_rate_max_rub_per_sqm: 4000,
+          request_budget_includes_operating_expenses: true,
+          request_condition_options: ['ready_to_use'],
+          request_move_in_by: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10),
+          request_deal_priority: 'balanced'
+        }
+      }
+    });
+    assert.equal(response.statusCode, 201);
+    assertMatchesSchema(responseSchema('/api/v1/technical-assignments', 'post', 201), response.json(), 'technical-assignment 201 body must match contract');
+    assert.equal(response.json().payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
+    assert.equal(response.json().payload.request_monthly_budget_max_rub, 600000);
+
+    const fetched = await app.inject({ method: 'GET', url: `/api/v1/technical-assignments/${response.json().technical_assignment_id}` });
+    assertMatchesSchema(
+      responseSchema('/api/v1/technical-assignments/{technicalAssignmentId}', 'get', 200),
+      fetched.json(),
+      'technical-assignment GET 200 body must match contract'
+    );
+    assert.equal(fetched.json().payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
+  } finally {
+    await app.close();
+  }
+});
+
+test('cleanup: remove openapi-contract POST-probe campaigns/technical assignments so later "exactly 11" assertions stay valid', { skip: !hasDatabase }, async () => {
+  const launchIdempotencyKeys = ['openapi-contract:launch-201-probe', 'openapi-contract:launch-replay-probe'];
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
+  try {
+    for (const key of launchIdempotencyKeys) {
+      const campaignId = deriveCampaignIdFromIdempotencyKey(key);
+      await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1', [campaignId]);
+      await pool.query('DELETE FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1', [campaignId]);
+    }
+    await pool.query(
+      "DELETE FROM leasemind_app.property WHERE idempotency_key IN ('openapi-contract:launch-201-ta', 'openapi-contract:launch-replay-ta')"
+    );
+    await pool.query("DELETE FROM leasemind_app.tenant_request WHERE idempotency_key = 'openapi-contract:ta-schema-probe'");
+  } finally {
+    await pool.end();
   }
 });
 
@@ -365,16 +574,28 @@ test('an undocumented endpoint/method is not part of the contract and is not rou
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });
   try {
-    assert.equal(app.hasRoute({ method: 'POST', url: '/api/v1/campaigns' }), false);
+    assert.equal(app.hasRoute({ method: 'POST', url: '/api/v1/campaigns' }), true, 'POST /api/v1/campaigns is the one documented write operation');
     assert.equal(app.hasRoute({ method: 'PUT', url: '/api/v1/campaigns/:campaignId' }), false);
     assert.equal(app.hasRoute({ method: 'PATCH', url: '/api/v1/campaigns/:campaignId' }), false);
     assert.equal(app.hasRoute({ method: 'DELETE', url: '/api/v1/campaigns/:campaignId' }), false);
+    assert.equal(app.hasRoute({ method: 'POST', url: '/api/v1/campaigns/:campaignId' }), false);
     assert.equal(app.hasRoute({ method: 'GET', url: '/api/v1/campaigns/:campaignId/history' }), false);
+    assert.equal(
+      app.hasRoute({ method: 'POST', url: '/api/v1/technical-assignments' }),
+      true,
+      'POST /api/v1/technical-assignments is the one documented technical-assignment write operation'
+    );
+    assert.equal(app.hasRoute({ method: 'GET', url: '/api/v1/technical-assignments/:technicalAssignmentId' }), true);
+    assert.equal(app.hasRoute({ method: 'PUT', url: '/api/v1/technical-assignments' }), false);
+    assert.equal(app.hasRoute({ method: 'PATCH', url: '/api/v1/technical-assignments/:technicalAssignmentId' }), false);
+    assert.equal(app.hasRoute({ method: 'DELETE', url: '/api/v1/technical-assignments/:technicalAssignmentId' }), false);
 
     const attempts = [
-      { method: 'POST' as const, url: '/api/v1/campaigns' },
       { method: 'PUT' as const, url: '/api/v1/campaigns/00000000-0000-4000-8000-000000000001' },
-      { method: 'DELETE' as const, url: '/api/v1/campaigns/00000000-0000-4000-8000-000000000001' }
+      { method: 'DELETE' as const, url: '/api/v1/campaigns/00000000-0000-4000-8000-000000000001' },
+      { method: 'POST' as const, url: '/api/v1/campaigns/00000000-0000-4000-8000-000000000001' },
+      { method: 'PATCH' as const, url: '/api/v1/technical-assignments/00000000-0000-4000-8000-000000000001' },
+      { method: 'DELETE' as const, url: '/api/v1/technical-assignments/00000000-0000-4000-8000-000000000001' }
     ];
     for (const attempt of attempts) {
       const response = await app.inject(attempt);
@@ -385,12 +606,22 @@ test('an undocumented endpoint/method is not part of the contract and is not rou
   }
 });
 
-test('migration down (final teardown) removes the contract-verification schema', { skip: !hasDatabase }, async () => {
+test('migration 006 down is blocked once a subject_linked event exists (cannot discard event data it cannot represent)', { skip: !hasDatabase }, async () => {
+  // The launch-contract tests above created at least one
+  // 'campaign.subject_linked.v1' row via POST /api/v1/campaigns. The Event
+  // Log is immutable (Sprint 0/2 controlled artifact) and 006's down
+  // migration intentionally refuses to run while such a row exists
+  // (ADR-0008), so this file can no longer complete a full down-to-empty
+  // teardown once its own contract probes have launched a Campaign -- that
+  // is the safety mechanism working as designed, not a regression. The
+  // standalone "provision -> up -> down -> empty catalog" pass exercised
+  // elsewhere in this session's regression (no seed, no Campaign launches)
+  // is what proves the migration chain itself round-trips cleanly.
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
-    await migrateDown(pool);
+    await assert.rejects(() => migrateDown(pool), /campaign_event_log_payload_check/);
     const schemaExists = await pool.query("SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists");
-    assert.equal(schemaExists.rows[0].exists, false);
+    assert.equal(schemaExists.rows[0].exists, true);
   } finally {
     await pool.end();
   }

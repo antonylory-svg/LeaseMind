@@ -40,3 +40,30 @@ export function loadMaintenanceDatabaseUrl(env: NodeJS.ProcessEnv = process.env)
   }
   return databaseUrl;
 }
+
+/** server.ts's Campaign creation command path only (apps/api/src/db/
+ * createCampaign.ts) -- never the read-only DATABASE_URL pool, never
+ * migrator/maintainer/bootstrap. No fallback to DATABASE_URL, for the same
+ * reason as loadMigrationDatabaseUrl. See
+ * ADR-0007-synthetic-campaign-creation-command-boundary.md. */
+export function loadCommandDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.LEASEMIND_COMMAND_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing required environment variable: LEASEMIND_COMMAND_DATABASE_URL');
+  }
+  return databaseUrl;
+}
+
+/** server.ts's Technical Assignment draft-save command path only
+ * (apps/api/src/db/technicalAssignment.ts) -- the only pool with any
+ * access to the protected address table. Never the read-only DATABASE_URL
+ * pool, never migrator/maintainer/bootstrap/campaign-writer. No fallback
+ * to DATABASE_URL, for the same reason as loadMigrationDatabaseUrl. See
+ * ADR-0008-technical-assignment-implementation.md. */
+export function loadTechnicalAssignmentDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing required environment variable: LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL');
+  }
+  return databaseUrl;
+}

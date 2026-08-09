@@ -92,20 +92,25 @@ export async function migrateDown(pool: pg.Pool): Promise<MigrateDownResult> {
   const files = (await listMigrationFiles('.down.sql')).reverse();
   const reverted: string[] = [];
 
-  for (const file of files) {
-    const sql = await readFile(path.join(MIGRATIONS_DIR, file), 'utf8');
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
+  // One transaction for the full chain is important when a later down
+  // migration is an intentional safety barrier. For example, 006 refuses
+  // to discard an immutable subject_linked event. Any newer migration
+  // visited before that barrier must be rolled back with it, rather than
+  // leaving the database only partially downgraded.
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    for (const file of files) {
+      const sql = await readFile(path.join(MIGRATIONS_DIR, file), 'utf8');
       await client.query(sql);
-      await client.query('COMMIT');
       reverted.push(file);
-    } catch (error) {
-      await client.query('ROLLBACK');
-      throw error;
-    } finally {
-      client.release();
     }
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
   }
 
   return { reverted };

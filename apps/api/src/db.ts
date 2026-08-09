@@ -3,12 +3,22 @@ import pg from 'pg';
 const { Pool } = pg;
 
 export function createPool(connectionString: string): pg.Pool {
-  return new Pool({
+  const pool = new Pool({
     connectionString,
     max: 5,
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 5_000
   });
+  // node-postgres emits 'error' on the pool whenever an already-idle pooled
+  // client hits a backend-side failure (e.g. the database container
+  // restarts or resets the connection). An EventEmitter 'error' with no
+  // listener is thrown and crashes the whole process -- silently killing
+  // every in-flight request with no response ever sent to the caller.
+  // Never logs the raw error: it may carry connection details.
+  pool.on('error', () => {
+    console.error(JSON.stringify({ event: 'pool_idle_client_error' }));
+  });
+  return pool;
 }
 
 /**
