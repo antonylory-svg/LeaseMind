@@ -5,8 +5,8 @@ import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { MIGRATION_DATABASE_URL, API_DATABASE_URL, COMMAND_DATABASE_URL, TA_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
 
-// All 26 acceptance scenarios from 02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md
-// sections 15-16 (CTA-L-001..010, CTA-T-001..010, CTA-C-001..006), plus
+// All 27 acceptance scenarios from 02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md
+// sections 15-16 (CTA-L-001..010, CTA-T-001..011, CTA-C-001..006), plus
 // negative probes for PII/exact-address leakage. DB-privilege positive/
 // negative probes and startup-gate probes live in
 // tests/dbPrivilegeBoundary.test.ts, next to the equivalent ADR-0005/0007
@@ -491,7 +491,7 @@ test('CTA-L-010: neither the API reader nor the campaign writer can read the pro
 });
 
 // ---------------------------------------------------------------------------
-// need_property / TenantRequest -- CTA-T-001..010 (doc section 16)
+// need_property / TenantRequest -- CTA-T-001..011 (doc section 16)
 // ---------------------------------------------------------------------------
 
 test('CTA-T-001: a minimally valid TenantRequest payload is ready_for_analysis', { skip: !hasDatabase }, async () => {
@@ -731,6 +731,63 @@ test('CTA-T-010: repeating the save command with the same idempotency_key does n
       [key]
     );
     assert.equal(rows.rows[0].count, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test('CTA-T-011: a maximum rent rate is persisted with the derived maximum total budget', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const key = nextKey('cta-t-011');
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: {
+        idempotency_key: key,
+        scenario: 'need_property',
+        payload: minimalTenantRequest({
+          request_monthly_rent_rate_max_rub_per_sqm: 4000,
+          request_monthly_budget_max_rub: 600000
+        })
+      }
+    });
+    assert.equal(response.statusCode, 201);
+    const body = response.json();
+    assert.equal(body.lifecycle_status, 'ready_for_analysis');
+    assert.equal(body.payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
+    assert.equal(body.payload.request_monthly_budget_max_rub, 600000);
+
+    const fetched = await app.inject({ method: 'GET', url: `/api/v1/technical-assignments/${body.technical_assignment_id}` });
+    assert.equal(fetched.statusCode, 200);
+    assert.equal(fetched.json().payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
+    assert.equal(fetched.json().payload.request_monthly_budget_max_rub, 600000);
+
+    const stored = await pools.technicalAssignmentPool.query(
+      `SELECT request_monthly_rent_rate_max_rub_per_sqm, request_monthly_budget_max_rub
+         FROM leasemind_app.tenant_request
+        WHERE idempotency_key = $1`,
+      [key]
+    );
+    assert.equal(Number(stored.rows[0].request_monthly_rent_rate_max_rub_per_sqm), 4000);
+    assert.equal(stored.rows[0].request_monthly_budget_max_rub, 600000);
+
+    const invalid = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: {
+        idempotency_key: nextKey('cta-t-011-invalid'),
+        scenario: 'need_property',
+        payload: minimalTenantRequest({
+          request_monthly_rent_rate_max_rub_per_sqm: 4000.001,
+          request_monthly_budget_max_rub: 600000
+        })
+      }
+    });
+    assert.equal(invalid.statusCode, 400);
+    assert.equal(invalid.json().error, 'TECHNICAL_ASSIGNMENT_FIELD_VALUE_INVALID');
+    assert.equal(invalid.json().field_id, 'request_monthly_rent_rate_max_rub_per_sqm');
   } finally {
     await app.close();
   }
@@ -1163,6 +1220,16 @@ test('migration 006 down is blocked once a subject_linked event exists (cannot d
     await assert.rejects(() => migrateDown(pool), /campaign_event_log_payload_check/);
     const schemaExists = await pool.query("SELECT EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'leasemind_app') AS exists");
     assert.equal(schemaExists.rows[0].exists, true);
+    const rateColumnExists = await pool.query(
+      `SELECT EXISTS (
+         SELECT 1
+           FROM information_schema.columns
+          WHERE table_schema = 'leasemind_app'
+            AND table_name = 'tenant_request'
+            AND column_name = 'request_monthly_rent_rate_max_rub_per_sqm'
+       ) AS exists`
+    );
+    assert.equal(rateColumnExists.rows[0].exists, true, 'a blocked full downgrade must roll back migration 007 too');
   } finally {
     await pool.end();
   }

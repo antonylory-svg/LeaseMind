@@ -240,7 +240,7 @@ export const HEALTH_STATUS_LABELS: Record<string, string> = {
 
 /** Looks up a Russian label for a known value; falls back to the raw value
  * only if something is missing from a dictionary above (should never
- * happen for the 30/29 Technical Assignment fields -- every option in
+ * happen for the 30/30 Technical Assignment fields -- every option in
  * technicalAssignmentFields.ts is covered). */
 export function ruLabel(dictionary: Record<string, string>, value: string): string {
   return dictionary[value] ?? value;

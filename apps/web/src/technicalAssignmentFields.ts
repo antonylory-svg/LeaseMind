@@ -1,7 +1,7 @@
 // Field metadata for the Technical Assignment forms. Mirrors
 // apps/api/src/db/technicalAssignmentValidation.ts field lists (field_id,
 // required-ness, decimal bounds) and apps/api/src/db/technicalAssignmentEnums.ts
-// exactly -- 30 Property fields, 29 TenantRequest fields, no additions, no
+// exactly -- 30 Property fields, 30 TenantRequest fields, no additions, no
 // renames of field_id, no new limits invented here.
 //
 // `label` and `group` are presentation-only (02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md
@@ -201,7 +201,16 @@ export const TENANT_REQUEST_FIELDS: readonly TAFieldDef[] = [
     decimalErrorHint: 'Введите мощность в кВт, например 10'
   },
 
-  { fieldId: 'request_monthly_budget_max_rub', kind: 'integer', label: 'Максимальный бюджет аренды, ₽/мес', group: 'Арендные условия', required: true },
+  { fieldId: 'request_monthly_budget_max_rub', kind: 'integer', label: 'Максимальный бюджет аренды', group: 'Арендные условия', required: true },
+  {
+    fieldId: 'request_monthly_rent_rate_max_rub_per_sqm',
+    kind: 'decimal',
+    label: 'Максимальная ставка аренды, ₽/м²/мес',
+    group: 'Арендные условия',
+    required: false,
+    decimalLimits: { min: 1, max: 100000000, decimals: 2 },
+    decimalErrorHint: 'Введите ставку в рублях за м², например 4000'
+  },
   { fieldId: 'request_budget_includes_operating_expenses', kind: 'boolean', label: 'Бюджет включает эксплуатационные расходы?', group: 'Арендные условия', required: true },
   { fieldId: 'request_condition_options', kind: 'enum_array', options: PROPERTY_CONDITIONS, optionLabels: PROPERTY_CONDITION_LABELS, label: 'Приемлемые состояния объекта', group: 'Арендные условия', required: true },
   { fieldId: 'request_move_in_by', kind: 'date', label: 'Крайняя дата въезда', group: 'Арендные условия', required: true },
@@ -218,8 +227,8 @@ export const TENANT_REQUEST_FIELDS: readonly TAFieldDef[] = [
   { fieldId: 'request_additional_requirements', kind: 'free_text', label: 'Дополнительные требования', group: 'Оснащение и доступ', required: false }
 ];
 
-if (TENANT_REQUEST_FIELDS.length !== 29) {
-  throw new Error(`TENANT_REQUEST_FIELDS must have exactly 29 fields, has ${TENANT_REQUEST_FIELDS.length}`);
+if (TENANT_REQUEST_FIELDS.length !== 30) {
+  throw new Error(`TENANT_REQUEST_FIELDS must have exactly 30 fields, has ${TENANT_REQUEST_FIELDS.length}`);
 }
 
 /** The field list for a given scenario, keyed the same way the backend

@@ -334,7 +334,7 @@ export function validatePropertyCrossFieldRules(payload: PropertyPayload): Field
 }
 
 // ---------------------------------------------------------------------------
-// TenantRequest (need_property) -- exactly 29 fields, doc section 8.2
+// TenantRequest (need_property) -- exactly 30 fields, doc section 8.2
 // ---------------------------------------------------------------------------
 
 export const TENANT_REQUEST_FIELD_SPECS: readonly FieldSpec[] = [
@@ -352,6 +352,7 @@ export const TENANT_REQUEST_FIELD_SPECS: readonly FieldSpec[] = [
   { fieldId: 'request_area_min_sqm', kind: 'decimal', min: 5, max: 100000, decimals: 2 },
   { fieldId: 'request_area_max_sqm', kind: 'decimal', min: 5, max: 100000, decimals: 2 },
   { fieldId: 'request_monthly_budget_max_rub', kind: 'integer', min: 1000, max: 100000000 },
+  { fieldId: 'request_monthly_rent_rate_max_rub_per_sqm', kind: 'decimal', min: 1, max: 100000000, decimals: 2 },
   { fieldId: 'request_budget_includes_operating_expenses', kind: 'boolean' },
   { fieldId: 'request_condition_options', kind: 'enum_array', options: PROPERTY_CONDITIONS, min: 1, max: 4 },
   { fieldId: 'request_move_in_by', kind: 'date', minOffsetDays: 0, maxOffsetDays: 730 },
@@ -369,8 +370,8 @@ export const TENANT_REQUEST_FIELD_SPECS: readonly FieldSpec[] = [
   { fieldId: 'request_additional_requirements', kind: 'free_text', maxLen: 2000 }
 ] as const;
 
-if (TENANT_REQUEST_FIELD_SPECS.length !== 29) {
-  throw new Error(`TENANT_REQUEST_FIELD_SPECS must have exactly 29 fields, has ${TENANT_REQUEST_FIELD_SPECS.length}`);
+if (TENANT_REQUEST_FIELD_SPECS.length !== 30) {
+  throw new Error(`TENANT_REQUEST_FIELD_SPECS must have exactly 30 fields, has ${TENANT_REQUEST_FIELD_SPECS.length}`);
 }
 
 export const TENANT_REQUEST_REQUIRED_FIELDS: readonly string[] = [

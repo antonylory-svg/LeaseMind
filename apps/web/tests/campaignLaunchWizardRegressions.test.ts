@@ -116,3 +116,28 @@ test('handleLaunch never sends anything but the server-defined synthetic Contact
   const body = functionBody(SOURCE, 'const handleLaunch = async () => {');
   assert.ok(body.includes('launchCampaign('), 'handleLaunch must call the launchCampaign command');
 });
+
+// ---------------------------------------------------------------------------
+// Tenant rent-rate constraint
+// ---------------------------------------------------------------------------
+
+test('TenantRequest rent-rate mode persists the rate and derives the total budget from maximum area', () => {
+  assert.ok(SOURCE.includes("const REQUEST_RENT_RATE_FIELD_ID = 'request_monthly_rent_rate_max_rub_per_sqm'"));
+  const effectStart = SOURCE.indexOf('// TenantRequest keeps both constraints:');
+  assert.ok(effectStart >= 0, 'TenantRequest rate derivation effect not found');
+  const effectEnd = SOURCE.indexOf('const handleDecimalChange', effectStart);
+  const effect = SOURCE.slice(effectStart, effectEnd);
+  assert.ok(effect.includes('formValues.request_area_max_sqm'), 'must calculate against the requested maximum area');
+  assert.ok(effect.includes('[REQUEST_RENT_RATE_FIELD_ID]: result.value'), 'must persist the entered maximum rate');
+  assert.ok(effect.includes('request_monthly_budget_max_rub:'), 'must derive and persist the compatible maximum total');
+  assert.ok(effect.includes('computeTotalRentFromRate(result.value, area)'), 'must use the shared fixed rent formula');
+});
+
+test('the raw TenantRequest rate field is represented only by the combined rate/total control', () => {
+  assert.ok(
+    SOURCE.includes('field.fieldId !== REQUEST_RENT_RATE_FIELD_ID'),
+    'the rate must not be rendered a second time as a disconnected raw field'
+  );
+  assert.ok(SOURCE.includes('context="request"'), 'the tenant-specific combined rent control must be rendered');
+  assert.ok(SOURCE.includes('mode={requestBudgetMode}'), 'the combined control must expose the tenant mode');
+});

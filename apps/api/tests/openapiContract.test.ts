@@ -526,7 +526,8 @@ test('POST /api/v1/technical-assignments: a well-formed draft matches the docume
           request_property_types: ['office'],
           request_area_min_sqm: 50,
           request_area_max_sqm: 150,
-          request_monthly_budget_max_rub: 200000,
+          request_monthly_budget_max_rub: 600000,
+          request_monthly_rent_rate_max_rub_per_sqm: 4000,
           request_budget_includes_operating_expenses: true,
           request_condition_options: ['ready_to_use'],
           request_move_in_by: new Date(Date.now() + 10 * 86400000).toISOString().slice(0, 10),
@@ -536,6 +537,8 @@ test('POST /api/v1/technical-assignments: a well-formed draft matches the docume
     });
     assert.equal(response.statusCode, 201);
     assertMatchesSchema(responseSchema('/api/v1/technical-assignments', 'post', 201), response.json(), 'technical-assignment 201 body must match contract');
+    assert.equal(response.json().payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
+    assert.equal(response.json().payload.request_monthly_budget_max_rub, 600000);
 
     const fetched = await app.inject({ method: 'GET', url: `/api/v1/technical-assignments/${response.json().technical_assignment_id}` });
     assertMatchesSchema(
@@ -543,6 +546,7 @@ test('POST /api/v1/technical-assignments: a well-formed draft matches the docume
       fetched.json(),
       'technical-assignment GET 200 body must match contract'
     );
+    assert.equal(fetched.json().payload.request_monthly_rent_rate_max_rub_per_sqm, 4000);
   } finally {
     await app.close();
   }

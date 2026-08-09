@@ -5,7 +5,7 @@
 **Статус:** Proposal for cross-functional review and approval  
 **Владелец:** PRODUCT / Lead Product Architect  
 **Тип документа:** Product data contract  
-**Дата последней редакции:** 2026-08-01
+**Дата последней редакции:** 2026-08-09
 
 ---
 
@@ -420,6 +420,7 @@ Payload описывает коммерческую потребность по�
 | `request_area_min_sqm` | Минимальная площадь | decimal | Да | м² | 5..100000; <= area_max; максимум 2 знака | Нет | commercial_data |
 | `request_area_max_sqm` | Максимальная площадь | decimal | Да | м² | 5..100000; >= area_min; максимум 2 знака | Нет | commercial_data |
 | `request_monthly_budget_max_rub` | Максимальный бюджет базовой аренды | integer | Да | ₽/месяц | 1000..100000000; целое | Нет | commercial_data |
+| `request_monthly_rent_rate_max_rub_per_sqm` | Максимальная ставка базовой аренды за единицу площади | decimal | Нет | ₽/м²/месяц | 1..100000000; максимум 2 знака; при вводе ставки стандартная форма также рассчитывает обязательный общий бюджет по `request_area_max_sqm` | Нет | commercial_data |
 | `request_budget_includes_operating_expenses` | Включает ли бюджет эксплуатационные расходы | boolean | Да | — | `true` или `false` | Нет | commercial_data |
 | `request_condition_options` | Приемлемые состояния объекта | array<enum> | Да | — | `property_condition`; 1..4; без дублей | Да | commercial_data |
 | `request_move_in_by` | Крайняя желаемая дата въезда | date | Да | дата | ISO date; при вводе не раньше текущей даты; не позднее +730 дней | Нет | commercial_data |
@@ -467,6 +468,7 @@ request_deal_priority
 5. Значение `other` требует соответствующего `*_other` уточнения.
 6. `request_loading_access_required=true` является самостоятельным hard constraint; дублировать `loading_zone` в required features не требуется.
 7. Истёкшая после сохранения `request_move_in_by` не делает исторический payload невалидным; AI Manager фиксирует просроченное ограничение и запрашивает решение пользователя, а не меняет дату самостоятельно.
+8. Если пользователь выбирает ввод ставки за м², форма сохраняет `request_monthly_rent_rate_max_rub_per_sqm` как самостоятельный hard constraint и рассчитывает `request_monthly_budget_max_rub = round(request_monthly_rent_rate_max_rub_per_sqm × request_area_max_sqm)`. Оба максимума применяются при поиске. При вводе только общей суммы поле ставки остаётся `null`.
 
 ---
 
@@ -591,6 +593,7 @@ protected_refs: object
 | `hard_constraints.area_min_sqm` | `request_area_min_sqm` |
 | `hard_constraints.area_max_sqm` | `request_area_max_sqm` |
 | `hard_constraints.monthly_budget_max_rub` | `request_monthly_budget_max_rub` |
+| `hard_constraints.monthly_rent_rate_max_rub_per_sqm` | `request_monthly_rent_rate_max_rub_per_sqm`, если задано |
 | `hard_constraints.budget_includes_operating_expenses` | `request_budget_includes_operating_expenses` |
 | `hard_constraints.condition_options` | `request_condition_options` |
 | `hard_constraints.move_in_by` | `request_move_in_by` |
@@ -879,6 +882,12 @@ Error response MUST NOT повторять запрещённое входное
 
 **When:** повторяется преобразование с тем же idempotency key.  
 **Then:** второй TenantRequest не создаётся.
+
+### `CTA-T-011` — максимальная ставка за м²
+
+**Given:** пользователь ищет помещение площадью 50–150 м².
+**When:** он выбирает ставку 4 000 ₽/м²/месяц.
+**Then:** сохраняются `request_monthly_rent_rate_max_rub_per_sqm=4000` и рассчитанный `request_monthly_budget_max_rub=600000`; оба значения остаются hard constraints поиска.
 
 ### `CTA-C-001` — сохранение неполного черновика
 

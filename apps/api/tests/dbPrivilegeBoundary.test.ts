@@ -552,7 +552,7 @@ test('ta writer: DELETE/TRUNCATE/DDL and Campaign Event Log access are all denie
   }
 });
 
-test('migration 005 grants exactly the expected privileges to the ta writer, campaign writer and api reader', { skip: !hasDatabase }, async () => {
+test('migrations 005/007 grant exactly the expected privileges to the ta writer, campaign writer and api reader', { skip: !hasDatabase }, async () => {
   const query = async (connectionString: string | undefined, sql: string, params: unknown[] = []): Promise<pg.QueryResult> => {
     const pool = new pg.Pool({ connectionString, max: 1 });
     try {
@@ -587,12 +587,14 @@ test('migration 005 grants exactly the expected privileges to the ta writer, cam
       BOOTSTRAP_DATABASE_URL,
       `SELECT
          has_column_privilege($1, 'leasemind_app.property', 'lifecycle_status', 'UPDATE') AS lifecycle_ok,
-         has_column_privilege($1, 'leasemind_app.property', 'property_monthly_rent_rub', 'UPDATE') AS commercial_fact_forbidden`,
+         has_column_privilege($1, 'leasemind_app.property', 'property_monthly_rent_rub', 'UPDATE') AS commercial_fact_forbidden,
+         has_column_privilege($1, 'leasemind_app.tenant_request', 'request_monthly_rent_rate_max_rub_per_sqm', 'UPDATE') AS rent_rate_forbidden`,
       [CAMPAIGN_WRITER_ROLE]
     )
   ).rows[0];
   assert.equal(columnUpd.lifecycle_ok, true, 'campaign writer must be able to update lifecycle_status');
   assert.equal(columnUpd.commercial_fact_forbidden, false, 'campaign writer must not be able to update a commercial-fact column');
+  assert.equal(columnUpd.rent_rate_forbidden, false, 'campaign writer must not be able to update the tenant rent-rate constraint');
 
   const protectedAddressAccess = (
     await query(

@@ -145,6 +145,13 @@ test('rent formulas are exact inverses of each other for a round-trip value', ()
   assert.equal(computeRatePerSqmFromTotal(total, area), rate);
 });
 
+test('tenant rate mode derives the backward-compatible total from the maximum requested area', () => {
+  // 4 000 ₽/м²/мес x maximum 150 м² = 600 000 ₽/мес.
+  const derivedBudget = computeTotalRentFromRate(4000, 150);
+  assert.equal(derivedBudget, 600000);
+  assert.equal(computeRatePerSqmFromTotal(derivedBudget, 150), 4000);
+});
+
 test('formatThousands: Russian thousands grouping with a non-breaking space', () => {
   assert.equal(formatThousands(400000), '400 000');
   assert.equal(formatThousands(4000), '4 000');

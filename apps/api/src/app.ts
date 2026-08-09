@@ -176,7 +176,7 @@ const createCampaignResponseSchema = {
 // ---------------------------------------------------------------------------
 // Technical Assignment (ADR-0008). additionalProperties: false at every
 // level makes it structurally impossible to submit a name, phone, email or
-// any other field outside the 30 (Property) / 29 (TenantRequest) approved
+// any other field outside the 30 (Property) / 30 (TenantRequest) approved
 // field_ids -- an unknown key is a schema-validation failure, not a
 // silently-ignored extra property.
 // ---------------------------------------------------------------------------
@@ -404,7 +404,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
   // technicalAssignmentPool (lmapp_ta_writer) -- the only identity with any
   // access to the protected address table. additionalProperties: false at
   // every level (including the per-scenario payload) makes it structurally
-  // impossible to submit any field outside the 30/29 approved field_ids.
+  // impossible to submit any field outside the 30/30 approved field_ids.
   app.post(
     '/api/v1/technical-assignments',
     { schema: { body: saveTechnicalAssignmentBodySchema, response: saveTechnicalAssignmentResponseSchema }, attachValidation: true },

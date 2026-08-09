@@ -208,15 +208,17 @@ function renderField(field: TAFieldDef, ctx: RenderFieldContext) {
   }
 }
 
-// UI-only entry mode for `property_monthly_rent_rub` (ADR-0008 field_id,
-// unchanged). Not a contract field, never sent on its own -- only the
-// resulting total (rounded rub/month) is ever written into formValues and
-// submitted. See technicalAssignmentFormLogic.ts for the fixed formulas.
+// Shared rate/total entry UI. For Property the rate remains a UI-only helper
+// because the object's area is fixed. For TenantRequest the maximum rate is
+// also persisted as its own hard constraint, while the required total budget
+// is derived from the maximum requested area (ADR-0008 section 1.2).
 const RENT_RATE_LIMITS = { min: 1, max: 100000000, decimals: 2 };
+const REQUEST_RENT_RATE_FIELD_ID = 'request_monthly_rent_rate_max_rub_per_sqm';
 
 type RentMode = 'rate' | 'total';
 
 interface RentFieldProps {
+  context: 'property' | 'request';
   mode: RentMode;
   onModeChange: (mode: RentMode) => void;
   totalValue: number | undefined;
@@ -230,7 +232,8 @@ interface RentFieldProps {
 }
 
 function RentField(props: RentFieldProps) {
-  const { mode, onModeChange, totalValue, onTotalChange, areaSqm, rateText, rateInvalid, rateTouched, onRateChange, onRateBlur } = props;
+  const { context, mode, onModeChange, totalValue, onTotalChange, areaSqm, rateText, rateInvalid, rateTouched, onRateChange, onRateBlur } = props;
+  const isRequest = context === 'request';
   const hasArea = typeof areaSqm === 'number';
   const showRateError = rateTouched && rateInvalid && rateText.trim() !== '';
 
@@ -238,16 +241,16 @@ function RentField(props: RentFieldProps) {
     <span>
       <span style={{ display: 'block', marginBottom: '0.25em' }}>
         <label style={{ marginRight: '1em' }}>
-          <input type="radio" name="ta-rent-mode" checked={mode === 'rate'} onChange={() => onModeChange('rate')} /> Ставка за м²
+          <input type="radio" name={`ta-${context}-rent-mode`} checked={mode === 'rate'} onChange={() => onModeChange('rate')} /> Ставка за м²
         </label>
         <label>
-          <input type="radio" name="ta-rent-mode" checked={mode === 'total'} onChange={() => onModeChange('total')} /> Общая сумма
+          <input type="radio" name={`ta-${context}-rent-mode`} checked={mode === 'total'} onChange={() => onModeChange('total')} /> {isRequest ? 'Общий бюджет' : 'Общая сумма'}
         </label>
       </span>
       {mode === 'rate' ? (
         <span>
           <label>
-            Ставка аренды, ₽/м²/мес{' '}
+            {isRequest ? 'Максимальная ставка аренды' : 'Ставка аренды'}, ₽/м²/мес{' '}
             <input
               type="text"
               inputMode="decimal"
@@ -262,30 +265,31 @@ function RentField(props: RentFieldProps) {
               Введите ставку в рублях за м², например 4000
             </span>
           )}
-          <p>Вы указали ставку</p>
+          <p>{isRequest ? 'Вы указали максимальную ставку' : 'Вы указали ставку'}</p>
           {hasArea && typeof totalValue === 'number' ? (
             <p>
-              Расчётная общая аренда: ≈ {formatThousands(totalValue)} ₽/мес за {formatDecimalForDisplay(areaSqm as number)} м²
+              {isRequest ? 'Расчётный максимальный общий бюджет' : 'Расчётная общая аренда'}: ≈ {formatThousands(totalValue)} ₽/мес за{' '}
+              {isRequest ? 'максимальные ' : ''}{formatDecimalForDisplay(areaSqm as number)} м²
             </p>
           ) : (
-            !hasArea && <p>Укажите площадь, чтобы увидеть расчётную общую аренду.</p>
+            !hasArea && <p>Укажите {isRequest ? 'максимальную площадь' : 'площадь'}, чтобы увидеть расчётную общую сумму.</p>
           )}
         </span>
       ) : (
         <span>
           <label>
-            Общая аренда, ₽/мес{' '}
+            {isRequest ? 'Максимальный общий бюджет' : 'Общая аренда'}, ₽/мес{' '}
             <input
               type="number"
               value={totalValue === undefined ? '' : totalValue}
               onChange={e => onTotalChange(e.target.value === '' ? undefined : Number(e.target.value))}
             />
           </label>
-          <p>Вы указали общую сумму</p>
+          <p>{isRequest ? 'Вы указали максимальный общий бюджет' : 'Вы указали общую сумму'}</p>
           {hasArea && typeof totalValue === 'number' ? (
-            <p>Расчётная ставка: ≈ {formatThousands(computeRatePerSqmFromTotal(totalValue, areaSqm as number))} ₽/м²/мес</p>
+            <p>Расчётная ставка{isRequest ? ' по максимальной площади' : ''}: ≈ {formatThousands(computeRatePerSqmFromTotal(totalValue, areaSqm as number))} ₽/м²/мес</p>
           ) : (
-            !hasArea && <p>Укажите площадь, чтобы увидеть расчётную ставку.</p>
+            !hasArea && <p>Укажите {isRequest ? 'максимальную площадь' : 'площадь'}, чтобы увидеть расчётную ставку.</p>
           )}
         </span>
       )}
@@ -304,6 +308,10 @@ export default function CampaignLaunchWizard() {
   const [rentRateText, setRentRateText] = useState('');
   const [rentRateInvalid, setRentRateInvalid] = useState(false);
   const [rentRateTouched, setRentRateTouched] = useState(false);
+  const [requestBudgetMode, setRequestBudgetMode] = useState<RentMode>('total');
+  const [requestRentRateText, setRequestRentRateText] = useState('');
+  const [requestRentRateInvalid, setRequestRentRateInvalid] = useState(false);
+  const [requestRentRateTouched, setRequestRentRateTouched] = useState(false);
   const [assignment, setAssignment] = useState<TechnicalAssignment | null>(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -394,6 +402,11 @@ export default function CampaignLaunchWizard() {
       setAssignment(found);
       setFormValues({ ...found.payload });
       setDecimalState(hydrateDecimalState(restoredFields, found.payload));
+      const restoredRequestRate = found.payload[REQUEST_RENT_RATE_FIELD_ID];
+      setRequestBudgetMode(typeof restoredRequestRate === 'number' ? 'rate' : 'total');
+      setRequestRentRateText(typeof restoredRequestRate === 'number' ? formatDecimalForDisplay(restoredRequestRate) : '');
+      setRequestRentRateInvalid(false);
+      setRequestRentRateTouched(false);
       setMissingFields(isReadyForAnalysis(found.lifecycle_status) ? [] : computeMissingRequiredFields(restoredFields, found.payload));
       setHasUnsavedChanges(false);
       setStep('ta');
@@ -425,6 +438,28 @@ export default function CampaignLaunchWizard() {
     setRentRateText(rawText);
   };
 
+  const handleRequestBudgetModeChange = (mode: RentMode) => {
+    if (mode === 'rate' && requestBudgetMode !== 'rate') {
+      const total = formValues.request_monthly_budget_max_rub;
+      const area = formValues.request_area_max_sqm;
+      if (typeof total === 'number' && typeof area === 'number' && area > 0) {
+        setRequestRentRateText(formatDecimalForDisplay(computeRatePerSqmFromTotal(total, area)));
+      }
+    }
+    if (mode === 'total') {
+      setFormValues(prev => ({ ...prev, [REQUEST_RENT_RATE_FIELD_ID]: undefined }));
+    }
+    setRequestBudgetMode(mode);
+    setRequestRentRateInvalid(false);
+    setRequestRentRateTouched(false);
+    setHasUnsavedChanges(true);
+  };
+
+  const handleRequestRentRateChange = (rawText: string) => {
+    setRequestRentRateText(rawText);
+    setHasUnsavedChanges(true);
+  };
+
   // Single source of truth for `property_monthly_rent_rub` while in rate
   // mode: recomputes total = rate * area (the fixed formula) whenever the
   // rate text, the mode, or the area itself changes -- so a later edit to
@@ -442,6 +477,30 @@ export default function CampaignLaunchWizard() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rentRateText, rentMode, formValues.property_area_sqm]);
+
+  // TenantRequest keeps both constraints: the entered max rate and a
+  // backward-compatible max total derived from the requested max area.
+  useEffect(() => {
+    if (requestBudgetMode !== 'rate') return;
+    const result = parseDecimalInput(requestRentRateText, RENT_RATE_LIMITS);
+    const area = formValues.request_area_max_sqm;
+    if (result.kind === 'value') {
+      setRequestRentRateInvalid(false);
+      setFormValues(prev => ({
+        ...prev,
+        [REQUEST_RENT_RATE_FIELD_ID]: result.value,
+        request_monthly_budget_max_rub:
+          typeof area === 'number' && area > 0 ? computeTotalRentFromRate(result.value, area) : undefined
+      }));
+    } else {
+      setRequestRentRateInvalid(result.kind === 'invalid');
+      setFormValues(prev => ({
+        ...prev,
+        [REQUEST_RENT_RATE_FIELD_ID]: undefined,
+        request_monthly_budget_max_rub: undefined
+      }));
+    }
+  }, [requestRentRateText, requestBudgetMode, formValues.request_area_max_sqm]);
 
   const handleDecimalChange = (field: TAFieldDef, rawText: string) => {
     const limits = field.decimalLimits;
@@ -646,7 +705,7 @@ export default function CampaignLaunchWizard() {
         </p>
         <p>* — обязательное поле</p>
         {FIELD_GROUPS.map(group => {
-          const groupFields = fields.filter(field => field.group === group);
+          const groupFields = fields.filter(field => field.group === group && field.fieldId !== REQUEST_RENT_RATE_FIELD_ID);
           if (groupFields.length === 0) return null;
           return (
             <fieldset key={group} style={{ marginBottom: '1em' }}>
@@ -670,6 +729,7 @@ export default function CampaignLaunchWizard() {
                         <td>
                           {field.fieldId === 'property_monthly_rent_rub' ? (
                             <RentField
+                              context="property"
                               mode={rentMode}
                               onModeChange={setRentMode}
                               totalValue={formValues.property_monthly_rent_rub as number | undefined}
@@ -680,6 +740,20 @@ export default function CampaignLaunchWizard() {
                               rateTouched={rentRateTouched}
                               onRateChange={handleRentRateChange}
                               onRateBlur={() => setRentRateTouched(true)}
+                            />
+                          ) : field.fieldId === 'request_monthly_budget_max_rub' ? (
+                            <RentField
+                              context="request"
+                              mode={requestBudgetMode}
+                              onModeChange={handleRequestBudgetModeChange}
+                              totalValue={formValues.request_monthly_budget_max_rub as number | undefined}
+                              onTotalChange={value => handleFieldChange('request_monthly_budget_max_rub', value)}
+                              areaSqm={formValues.request_area_max_sqm as number | undefined}
+                              rateText={requestRentRateText}
+                              rateInvalid={requestRentRateInvalid}
+                              rateTouched={requestRentRateTouched}
+                              onRateChange={handleRequestRentRateChange}
+                              onRateBlur={() => setRequestRentRateTouched(true)}
                             />
                           ) : (
                             renderField(field, renderCtx)

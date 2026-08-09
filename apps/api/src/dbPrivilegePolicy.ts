@@ -184,6 +184,7 @@ interface CommandPrivilegeCheckRow {
   can_update_tenant_request_lifecycle_only: boolean;
   can_update_property_commercial_fact: boolean;
   can_update_tenant_request_commercial_fact: boolean;
+  can_update_tenant_request_rent_rate: boolean;
   can_insert_or_delete_property: boolean;
   can_insert_or_delete_tenant_request: boolean;
   can_access_protected_address: boolean;
@@ -236,6 +237,7 @@ const COMMAND_PRIVILEGE_CHECK_QUERY = `
     has_column_privilege('leasemind_app.tenant_request', 'lifecycle_status', 'UPDATE') AS can_update_tenant_request_lifecycle_only,
     has_column_privilege('leasemind_app.property', 'property_monthly_rent_rub', 'UPDATE') AS can_update_property_commercial_fact,
     has_column_privilege('leasemind_app.tenant_request', 'request_monthly_budget_max_rub', 'UPDATE') AS can_update_tenant_request_commercial_fact,
+    has_column_privilege('leasemind_app.tenant_request', 'request_monthly_rent_rate_max_rub_per_sqm', 'UPDATE') AS can_update_tenant_request_rent_rate,
     (
       has_table_privilege('leasemind_app.property', 'INSERT')
       OR has_table_privilege('leasemind_app.property', 'DELETE')
@@ -306,6 +308,7 @@ export async function verifyRuntimeCommandPrivileges(pool: pg.Pool): Promise<voi
     row.can_access_ledger ||
     row.can_update_property_commercial_fact ||
     row.can_update_tenant_request_commercial_fact ||
+    row.can_update_tenant_request_rent_rate ||
     row.can_insert_or_delete_property ||
     row.can_insert_or_delete_tenant_request ||
     row.can_access_protected_address ||
