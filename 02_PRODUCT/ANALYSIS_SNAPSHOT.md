@@ -1,6 +1,6 @@
 # Analysis Snapshot v1 — контракт предварительного анализа
 
-**Версия:** 0.2
+**Версия:** 0.3
 **Статус:** Proposal for Founder and cross-functional review
 **Объём:** Sprint 5, synthetic-only
 **Первый рынок:** Россия
@@ -37,7 +37,7 @@ Snapshot заменяет информационный экран Sprint 4 на 
 
 - серверное создание и чтение Analysis Snapshot;
 - `pre_launch` до Contacts;
-- `post_launch_refresh` не позднее 15 минут после запуска Campaign;
+- `post_launch_refresh` — durable серверное намерение, зафиксированное атомарно с запуском Campaign и выполняемое сервером at-least-once и идемпотентно не позднее 15 минут после запуска (§11.3);
 - детерминированные расчёты по разрешённым структурированным synthetic-only данным;
 - оценка цены или бюджета относительно доступной синтетической выборки;
 - количество аналогичных объектов или аналогичного спроса;
@@ -85,7 +85,7 @@ Snapshot заменяет информационный экран Sprint 4 на 
 ## 5. Неизменяемые принципы
 
 1. Snapshot строится только по серверно прочитанной текущей revision; клиент не передаёт значения для расчёта.
-2. Результат terminal Snapshot неизменяем. Новый расчёт создаёт новый Snapshot.
+2. Результат terminal Snapshot неизменяем. Новый расчёт создаёт новый Snapshot (правила идентичности логического запроса, идемпотентности разных ключей и retry — §6.1).
 3. Отсутствие доказательств возвращается как `insufficient_data`, а техническая ошибка — как `failed`.
 4. Snapshot не содержит и не использует `property_exact_address`, контакты, платежные данные или свободный текст.
 5. Каждый числовой вывод имеет машиночитаемую методику, evidence и размер выборки.
@@ -98,10 +98,33 @@ Snapshot заменяет информационный экран Sprint 4 на 
 ### 6.1. Ключи
 
 - `analysis_snapshot_id` — UUID v4 или v7, создаётся сервером.
-- Логическая уникальность: `technical_assignment_id + source_revision + analysis_kind`.
-- Для `post_launch_refresh` дополнительно обязателен `campaign_id`, связанный с этим Technical Assignment.
-- Повторная команда с тем же idempotency key и тем же логическим запросом возвращает тот же Snapshot.
-- Тот же idempotency key с другим логическим запросом отклоняется без частичной записи.
+- Логический запрос определяется отдельно по виду анализа:
+  - `pre_launch`: `technical_assignment_id + source_revision + analysis_kind`;
+  - `post_launch_refresh`: `technical_assignment_id + source_revision + analysis_kind + campaign_id` — здесь `campaign_id` часть логической идентичности запроса, а не только дополнительное обязательное поле: один и тот же `technical_assignment_id + source_revision` не может иметь более одного логического `post_launch_refresh`-запроса на каждый связанный `campaign_id`.
+- В рамках одного логического запроса может существовать более одной попытки (Snapshot). Попытки нумеруются `calculation_attempt` — целым, монотонно возрастающим от 1: первая попытка логического запроса получает `calculation_attempt=1`; следующая — только как явный retry после terminal `failed` предыдущей (правила retry — ниже), с `calculation_attempt`, увеличенным на 1. Текущей детерминированно считается попытка с максимальным `calculation_attempt` в рамках логического запроса — не «последняя по времени».
+- «Нормализованная команда» — логический запрос (выше) плюс `retry_of_analysis_snapshot_id` (`null` — тоже значение). Две команды с одним и тем же `idempotency_key` считаются «той же самой» только если совпадает вся нормализованная команда.
+
+**Приоритет обработки: сначала durable mapping по `idempotency_key`, затем правила текущей попытки.** Сервер обрабатывает каждую команду строго в этом порядке:
+
+1. Проверяет, существует ли долговременный (durable) mapping для переданного `idempotency_key`.
+2. Если ключ уже был принят ранее:
+   - та же самая нормализованная команда возвращает `200` и ровно тот Snapshot, с которым этот ключ был первоначально связан — **независимо от текущего статуса** этого Snapshot и **независимо от того**, появилась ли позднее новая попытка с большим `calculation_attempt`; старый ключ **никогда** не переназначается на текущую или более новую попытку;
+   - тот же ключ, переданный для другой нормализованной команды или другого логического запроса, отклоняется `ANALYSIS_IDEMPOTENCY_CONFLICT` (§12.1) без частичной записи;
+   - в частности, повтор ранее принятой retry-команды тем же ключом возвращает попытку, созданную этим retry (`200`), а не отклоняется как `ANALYSIS_RETRY_NOT_ALLOWED` — это replay уже выполненной команды, а не новая проверка допустимости retry.
+3. Только если `idempotency_key` ранее не использовался, сервер применяет правила текущей попытки логического запроса (§11.1): схождение к существующей `pending`/`completed`/`insufficient_data`, либо создание первой попытки, либо проверку explicit retry после terminal `failed`.
+
+Платформа обязана долговременно и атомарно хранить сопоставление каждого принятого `idempotency_key` с его нормализованной командой и итоговым Snapshot, чтобы один и тот же `idempotency_key` нельзя было впоследствии переиспользовать для другой команды или другого логического запроса.
+
+**Технический повтор выполнения — не retry.** Пока текущая попытка логического запроса остаётся `pending`, платформа вправе автоматически повторять её техническое выполнение (тот же durable intent, тот же `analysis_snapshot_id`, тот же `calculation_attempt`) — например, после сбоя worker'а или рестарта процесса (правила — §11.3). Такие технические повторы не создают новый Snapshot, не увеличивают `calculation_attempt` и не относятся к правилам retry ниже.
+
+**Retry.** Единственный способ создать новую попытку (увеличить `calculation_attempt`) для уже существующего логического запроса — одинаково для `pre_launch` и `post_launch_refresh`:
+
+- разрешён только если текущая попытка этого логического запроса перешла в terminal `failed`, и только если её `failure.retryable = true`;
+- инициируется только явным действием пользователя («Повторить», §15.1) — автоматическое создание новой попытки после terminal `failed` запрещено; сервер никогда не создаёт новую попытку самостоятельно;
+- retry-команда передаёт новый `idempotency_key` и обязательное поле `retry_of_analysis_snapshot_id`, равное `analysis_snapshot_id` последней `failed`-попытки; несовпадение или отсутствие отклоняется без создания записи (§11.1, §12.1);
+- создаёт новый, самостоятельный immutable Snapshot (новую попытку, `calculation_attempt + 1`) для того же логического запроса; предыдущая `failed`-попытка не изменяется и остаётся доступной для чтения (§5, пункт 2);
+- `completed`/`insufficient_data` не пересчитываются повторно для одного и того же логического запроса — retry применим только к terminal `failed`;
+- stale Snapshot не retry-ится: изменение Технического задания (новая `revision`) образует новый логический запрос (`source_revision` — часть логического запроса), для которого создаётся новый, независимый Analysis с `calculation_attempt=1`, а не retry предыдущего.
 
 ### 6.2. Виды
 
@@ -123,12 +146,25 @@ Snapshot заменяет информационный экран Sprint 4 на 
 
 ### 6.4. Актуальность
 
-`freshness_status` вычисляется сервером при чтении:
+`freshness_status` вычисляется сервером при чтении. Причина отражается в публичном `freshness_reason` (§7) — единственном значении, видимом пользователю.
 
-- `current` — `source_revision` равна текущей revision Технического задания и связь Campaign корректна;
-- `stale` — revision изменилась, связь Campaign больше не соответствует или доказательная выборка помечена отозванной.
+- `current` — `source_revision` равна текущей revision Технического задания, связь Campaign корректна, и `evidence_dataset_revision` этого Snapshot не отозвана; `freshness_reason=null`.
+- `stale` — Snapshot устарел по одной или нескольким причинам одновременно. Поскольку `freshness_reason` — одиночное значение, применяется фиксированный приоритет: `evidence_revoked` → `campaign_mismatch` → `revision_changed`. `null` разрешён только когда ни одна причина устаревания не применима (то есть только при `current`).
 
 Terminal Snapshot не изменяется при переходе в `stale`; меняется только вычисляемая проекция актуальности.
+
+**Отзыв evidence dataset.**
+
+- Отозвать можно только конкретную, ненулевую `evidence_dataset_revision` — отозвать «ничего» или `null` нельзя.
+- Платформа может отозвать `evidence_dataset_revision` только через авторизованную операционную команду — не через обычный пользовательский путь и не через AI Manager.
+- Операционный `evidence_revocation_reason_code` (§12.3), время отзыва и инициатор в privacy-safe audit-представлении хранятся в защищённом audit trail (§14) — это внутреннее, контролируемое значение, отдельное от публичного `freshness_reason`.
+- Raw `evidence_revocation_reason_code` и сведения об инициаторе обычному пользователю не выдаются — ни в API-ответе Snapshot, ни в UI. Пользователь получает только публичный `freshness_reason=evidence_revoked` и утверждённое локализованное отображение (§15.2); этот документ не определяет сам локализованный текст.
+- Отзыв необратим для конкретной `evidence_dataset_revision`: он не отменяется и не редактируется. Если доказательная база впоследствии исправлена, исправленные данные получают новую `evidence_dataset_revision` (новый hash), а не реабилитацию отозванной.
+- Terminal Snapshot, чья `evidence_dataset_revision` отозвана, физически не изменяется и не удаляется — он остаётся доступным для чтения как исторический факт.
+- При чтении любой Snapshot, чья `evidence_dataset_revision` отозвана, получает `freshness_status=stale`, `freshness_reason=evidence_revoked` (приоритет выше), независимо от совпадения `source_revision`.
+- Такой Snapshot не открывает Contacts и не разрешает запуск Campaign (§4, §11.3) — те же ограничения, что и для любой другой причины `stale`.
+- Единственный путь для пользователя — создать новый Snapshot, рассчитанный на текущей (неотозванной) evidence revision; отозванный Snapshot не «реанимируется».
+- Synthetic-записи, вовлечённые в отзыв или замену evidence dataset, по-прежнему не становятся реальной историей исходов и не участвуют в подсчёте порогов `AS-C-021`–`AS-C-026` (§9.8).
 
 ## 7. Контракт ответа
 
@@ -140,8 +176,10 @@ source_revision: integer
 scenario: need_tenant | need_property
 analysis_kind: pre_launch | post_launch_refresh
 campaign_id: uuid | null
+calculation_attempt: integer
 status: pending | completed | insufficient_data | failed
 freshness_status: current | stale
+freshness_reason: revision_changed | campaign_mismatch | evidence_revoked | null
 method_version: synthetic_ru_v1
 market_context:
   country_code: RU
@@ -154,7 +192,7 @@ evidence_dataset_revision: sha256 | null
 evidence_as_of: datetime | null
 generated_at: datetime | null
 created_at: datetime
-failure: null | object
+failure: null | { code: string, retryable: boolean }
 results:
   price_adequacy: metric
   competition: metric
@@ -169,12 +207,14 @@ results:
 | `schema_version` | Только `1.0` для этого контракта |
 | `source_revision` | Revision, прочитанная сервером и совпавшая с `expected_revision` при создании |
 | `method_version` | Версия алгоритмов; изменение порогов или формул требует нового значения |
+| `calculation_attempt` | Целое, начинается с 1 для первой попытки логического запроса (§6.1); увеличивается на 1 только при создании новой попытки после terminal `failed` через explicit retry — не при техническом повторе выполнения `pending`-попытки |
+| `freshness_reason` | `null` только при `current`; иначе одна причина `stale` по приоритету `evidence_revoked` → `campaign_mismatch` → `revision_changed` (§6.4) — не локализованный текст |
 | `market_context` | Явные единицы и рынок; бизнес-логика не выводит их из locale клиента |
 | `input_fingerprint` | SHA-256 канонического allowlist-входа без точного адреса и свободного текста |
 | `evidence_dataset_revision` | SHA-256 отсортированного набора `(entity_type, entity_id, revision, updated_at)`, прочитанного для расчёта |
 | `evidence_as_of` | Серверное время согласованного чтения доказательной выборки |
 | `generated_at` | Время завершения; `null` только для `pending` |
-| `failure` | Присутствует только при `failed`; не содержит raw SQL, stack trace или payload |
+| `failure` | `null` для `pending`/`completed`/`insufficient_data`; для `failed` — ровно `{code, retryable}`: `code` — стабильный машинный error code, `retryable` — boolean; не содержит raw SQL, stack trace, payload или пользовательский текст |
 
 ### 7.2. Общий metric envelope
 
@@ -422,17 +462,24 @@ technical_assignment_id: uuid
 expected_revision: integer
 analysis_kind: pre_launch | post_launch_refresh
 campaign_id: uuid | null
+retry_of_analysis_snapshot_id: uuid | null
 ```
 
 Правила:
 
 - payload Технического задания клиентом не принимается;
-- `pre_launch` требует `campaign_id=null` и текущий статус `ready_for_analysis`;
-- `post_launch_refresh` требует Campaign, связанную с этим Technical Assignment и revision;
+- `pre_launch` требует `campaign_id=null` и текущий статус `ready_for_analysis`; логический запрос — `technical_assignment_id + source_revision + analysis_kind` (§6.1);
+- `post_launch_refresh` требует Campaign, связанную с этим Technical Assignment и revision; логический запрос — `technical_assignment_id + source_revision + analysis_kind + campaign_id` (§6.1) — `campaign_id` часть логической идентичности, а не только дополнительное обязательное поле;
 - revision mismatch возвращает conflict без создания Snapshot;
-- новый terminal Snapshot: `201`;
-- новый асинхронный `pending`: `202`;
-- идемпотентный replay: `200` с тем же `analysis_snapshot_id`.
+- обработка идёт по приоритету §6.1: сначала сервер проверяет durable mapping для `idempotency_key`; правила ниже про текущую попытку применяются только если этот `idempotency_key` ранее не использовался;
+- если `idempotency_key` уже использовался: та же нормализованная команда (логический запрос + `retry_of_analysis_snapshot_id`, включая `null`) возвращает `200` с телом Snapshot, изначально связанного с этим ключом — независимо от его текущего статуса и от появления более новой попытки; тот же ключ для другой нормализованной команды или другого логического запроса отклоняется `ANALYSIS_IDEMPOTENCY_CONFLICT` (§12.1, §6.1);
+- если `idempotency_key` ранее не использовался и текущая попытка логического запроса — `pending`, `completed` или `insufficient_data`, команда без `retry_of_analysis_snapshot_id` не создаёт новый Snapshot: сопоставление этого ранее не использованного `idempotency_key` с логическим запросом и его `analysis_snapshot_id` сохраняется атомарно и долговременно (§6.1), сервер возвращает `200` с телом этой же попытки — для `pending` тело отражает её текущий статус;
+- если текущая попытка — `failed`, но `failure.retryable=false`, либо `retry_of_analysis_snapshot_id` передан при попытке, отличной от `failed` — команда отклоняется `ANALYSIS_RETRY_NOT_ALLOWED` (§12.1);
+- если текущая попытка — `failed` и `retryable=true`, но `retry_of_analysis_snapshot_id` не передан или не совпадает с `analysis_snapshot_id` этой попытки — команда отклоняется `ANALYSIS_RETRY_TARGET_MISMATCH` (§12.1);
+- корректный retry (ранее не использованный `idempotency_key`, текущая попытка `failed`+`retryable=true`, `retry_of_analysis_snapshot_id` совпадает) создаёт новую попытку с `calculation_attempt`, увеличенным на 1 (§6.1);
+- новая попытка логического запроса, завершившаяся синхронно (первая либо через retry): `201`;
+- новая попытка логического запроса, запущенная асинхронно (`pending`): `202`;
+- любой ответ, сходящийся к уже существующей попытке — replay ранее использованного `idempotency_key` (шаг durable mapping) либо схождение ранее не использованного ключа к `pending`/`completed`/`insufficient_data`: `200` с телом соответствующего Snapshot и его `analysis_snapshot_id`.
 
 ### 11.2. Чтение
 
@@ -454,6 +501,24 @@ Launch command дополнительно принимает `analysis_snapshot_
 
 Несовпадение блокирует запуск без частичной Campaign.
 
+**Durable post-launch refresh.** Успешный запуск Campaign атомарно, в той же транзакционной границе, что и сам launch, фиксирует серверное намерение (durable intent) выполнить `post_launch_refresh` для логического запроса `campaign_id + technical_assignment_id + source_revision + analysis_kind` (§6.1) — Campaign не может быть успешно запущена без зафиксированного намерения выполнить refresh.
+
+- Намерение идентифицируется этим логическим запросом; повторная фиксация того же намерения не создаёт дубликата.
+- Выполнение — ответственность сервера, а не клиента: платформа выполняет `post_launch_refresh` at-least-once и идемпотентно.
+- Вызов с frontend может ускорить отображение результата пользователю, но не является источником гарантии выполнения и не единственный триггер.
+- Закрытая вкладка, потеря сетевого соединения или перезапуск серверного процесса не приводят к потере зафиксированного намерения.
+- Срок `≤15 минут` (§3.1, §4) измеряется от момента успешного запуска Campaign, а не от момента, когда клиент впервые обратился за refresh.
+- Превышение срока — наблюдаемое нарушение SLA независимо от исхода: платформа обязана сделать его видимым (алерт/метрика, §14) и не засчитывает его как выполнение требования, даже если Snapshot впоследствии успешно завершается.
+
+**Технический повтор выполнения — не то же самое, что новая попытка Analysis (§6.1).** Пока текущая попытка (текущий `calculation_attempt`) этого логического запроса остаётся `pending`, платформа вправе автоматически повторять её техническое выполнение — тот же durable intent, тот же логический запрос, тот же `analysis_snapshot_id`, тот же `calculation_attempt` — например, после сбоя worker'а или рестарта процесса.
+
+- Такие технические повторы не создают новый Snapshot и не увеличивают `calculation_attempt`.
+- Они продолжаются только до одного из двух исходов: успешного terminal результата (`completed`/`insufficient_data`), либо terminal `failed` — который фиксируется после исчерпания разрешённых технических повторов, либо немедленно при non-retryable ошибке.
+- После того как попытка перешла в terminal `failed`, сервер **не создаёт автоматически новую попытку** — ни для `pre_launch`, ни для `post_launch_refresh`, правило одинаково для обоих `analysis_kind`. Единственный путь к новой попытке — explicit retry пользователя (§6.1, §15.1): новый `idempotency_key` и обязательный `retry_of_analysis_snapshot_id`, увеличивающие `calculation_attempt` на 1.
+- Уже успешно запущенная Campaign не откатывается и не аннулируется из-за terminal `failed` `post_launch_refresh`; пользователь видит `failed` для refresh отдельно от статуса самой Campaign (§15.3).
+
+Точный механизм фиксации намерения и технических повторов (хранилище, роль, планировщик/worker) — решение отдельного DEVELOPMENT ADR; здесь фиксируется только нормативное поведение, наблюдаемое пользователем и API.
+
 ## 12. Ошибки и reason codes
 
 ### 12.1. API errors
@@ -470,7 +535,9 @@ Launch command дополнительно принимает `analysis_snapshot_
 | `ANALYSIS_MARKET_UNSUPPORTED` | Для страны/валюты нет утверждённого метода | Нет до появления конфигурации |
 | `ANALYSIS_DATASET_UNAVAILABLE` | Доказательная БД временно недоступна | Да |
 | `ANALYSIS_GENERATION_FAILED` | Внутренняя ошибка расчёта | Да |
-| `ANALYSIS_IDEMPOTENCY_CONFLICT` | Ключ переиспользован для другой команды | Нет |
+| `ANALYSIS_IDEMPOTENCY_CONFLICT` | Тот же `idempotency_key` использован для другой команды или другого логического запроса (§6.1) | Нет |
+| `ANALYSIS_RETRY_NOT_ALLOWED` | Текущая попытка логического запроса не находится в `failed` с `retryable=true` (§6.1, §11.1) | Нет |
+| `ANALYSIS_RETRY_TARGET_MISMATCH` | `retry_of_analysis_snapshot_id` отсутствует либо не совпадает с текущей retryable `failed`-попыткой (§6.1, §11.1) | Нет |
 
 Error response содержит `code`, безопасное `message`, `request_id` и `retryable`. Raw SQL, stack trace и исходные значения запрещены.
 
@@ -481,6 +548,16 @@ Error response содержит `code`, безопасное `message`, `request
 - `NO_COMPATIBLE_SYNTHETIC_RECORDS`;
 - `REQUIRED_STRUCTURED_INPUT_MISSING`;
 - `UNSUPPORTED_FILTERS_PRESENT`.
+
+### 12.3. Freshness reason codes v1
+
+Значения публичного поля `freshness_reason` (§6.4, §7) — стабильные коды, не локализованный текст; локализованный текст строится frontend (§15.2). При нескольких применимых причинах действует приоритет `evidence_revoked` → `campaign_mismatch` → `revision_changed` (§6.4):
+
+- `revision_changed` — Техническое задание изменилось после расчёта Snapshot;
+- `campaign_mismatch` — связь Campaign с Technical Assignment/revision больше не соответствует;
+- `evidence_revoked` — `evidence_dataset_revision`, использованная для расчёта, отозвана авторизованной операционной командой (§6.4).
+
+Отдельно от `freshness_reason` существует `evidence_revocation_reason_code` — внутренний операционный код причины отзыва конкретной `evidence_dataset_revision`, хранимый только в защищённом audit trail (§6.4, §14). Он не публикуется в API-ответе Snapshot, не отображается пользователю и не входит в перечень выше; конкретные значения и владение этим кодом — вне объёма этого документа (операционный runbook / отдельное DEVELOPMENT-решение).
 
 ## 13. Persistence и least privilege
 
@@ -508,7 +585,9 @@ Error response содержит `code`, безопасное `message`, `request
 - `technical_assignment_id` в принятом проектом privacy-safe представлении;
 - `source_revision`, `analysis_kind`, `status`, `method_version`;
 - длительность и количество обработанных записей;
-- error/reason codes.
+- error/reason codes;
+- нарушение SLA `post_launch_refresh` (превышение 15 минут, §11.3) как отдельное структурированное событие со стабильным кодом и `analysis_snapshot_id`/`campaign_id`;
+- событие отзыва `evidence_dataset_revision`: `evidence_revocation_reason_code` (§12.3), время отзыва и инициатор в принятом проектом privacy-safe представлении (§6.4) — только в защищённый audit trail, не пользователю.
 
 Запрещено логировать:
 
@@ -517,7 +596,8 @@ Error response содержит `code`, безопасное `message`, `request
 - контакты и пользовательский ввод;
 - массив исходных entity IDs;
 - ставки, бюджеты и свободный текст в raw form;
-- stack trace в HTTP response.
+- stack trace в HTTP response;
+- raw идентичность инициатора отзыва evidence dataset (только privacy-safe представление, §6.4).
 
 Метрики не содержат высококардинальные пользовательские labels.
 
@@ -537,18 +617,23 @@ Error response содержит `code`, безопасное `message`, `request
 8. `Далее` к Contacts только для актуального `completed|insufficient_data`;
 9. безопасный `Повторить` для retryable failure.
 
+`Повторить` виден только когда текущая попытка перешла в terminal `failed` с `failure.retryable=true`; нажатие отправляет новую команду с новым `idempotency_key` и `retry_of_analysis_snapshot_id`, равным этой `failed`-попытке, создавая новую попытку с `calculation_attempt`, увеличенным на 1 (§6.1, §11.1). Сервер никогда не создаёт новую попытку самостоятельно — ни при `pending`, ни после terminal `failed`; технический повтор выполнения ещё не завершённой `pending`-попытки (§11.3) не относится к этой кнопке и не меняет `calculation_attempt`.
+
 Для вероятности сделки v1 показывает: «Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней». Процент не отображается.
 
 ### 15.2. Stale и reload
 
-- При `stale`: «Техническое задание изменилось. Обновите анализ для текущей версии».
-- Старые результаты не показываются как актуальные и не открывают Contacts/Launch.
+- При `stale` с `freshness_reason=revision_changed` или `campaign_mismatch`: «Техническое задание изменилось. Обновите анализ для текущей версии».
+- При `stale` с `freshness_reason=evidence_revoked`: отдельное стабильное сообщение о том, что доказательная база этого расчёта отозвана и требуется новый анализ — без `evidence_revocation_reason_code`, времени отзыва, сведений об инициаторе или иных внутренних деталей платформы (§6.4); UI использует только публичный `freshness_reason` и утверждённое локализованное отображение.
+- Старые результаты не показываются как актуальные и не открывают Contacts/Launch независимо от причины `stale`.
 - После reload frontend получает ТЗ и текущий Snapshot с сервера; сетевой вызов не дублирует terminal Snapshot.
 - Temporary error не удаляет recovery URL.
 
 ### 15.3. Post-launch
 
 Campaign detail показывает время последнего refresh и те же четыре блока. `pending` сопровождается сроком «не позднее 15 минут после запуска». Refresh не возвращает кнопку запуска.
+
+Статус `post_launch_refresh` (`pending`/`completed`/`insufficient_data`/`failed`) отображается отдельно от статуса самой Campaign (§11.3): ошибка refresh не откатывает и не аннулирует уже успешно запущенную Campaign. Пока попытка `pending`, сервер может автоматически повторять её техническое выполнение без действий пользователя и без создания новой попытки (§11.3) — UI показывает её как тот же `pending`, тот же `calculation_attempt`. После перехода в terminal `failed` сервер новую попытку самостоятельно не создаёт — как и для `pre_launch` (§6.1), для новой попытки требуется explicit retry.
 
 ### 15.4. Международная готовность
 
@@ -572,17 +657,17 @@ Campaign detail показывает время последнего refresh и 
 **When:** запрошен Analysis.
 **Then:** Snapshot не создаётся; возвращается `ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_READY`.
 
-### `AS-C-003` — идемпотентный повтор
+### `AS-C-003` — идемпотентный повтор, включая повтор старого ключа после более новой попытки
 
-**Given:** команда уже создала Snapshot.
-**When:** та же логическая команда и idempotency key повторены после потерянного ответа.
-**Then:** возвращается тот же `analysis_snapshot_id`; дубликата нет.
+**Given:** команда с `idempotency_key=K1` уже создала Snapshot (`calculation_attempt=1`, terminal `failed`, `retryable=true`); явный retry с новым `idempotency_key=K2` и `retry_of_analysis_snapshot_id`, равным этому Snapshot, создал новую попытку (`calculation_attempt=2`).
+**When:** `K1` повторён снова (та же нормализованная команда: тот же логический запрос, `retry_of_analysis_snapshot_id=null`) после потерянного ответа или спустя время, уже после появления попытки 2.
+**Then:** возвращается Snapshot `calculation_attempt=1` — тот, с которым `K1` был изначально связан, — с HTTP `200`, а не `calculation_attempt=2`; `K1` не переназначается на более новую попытку (§6.1); дубликата нет; это не `ANALYSIS_IDEMPOTENCY_CONFLICT`, так как нормализованная команда для `K1` идентична исходной (§6.1, §12.1).
 
-### `AS-C-004` — конкурентные одинаковые запросы
+### `AS-C-004` — конкурентные запросы одного логического запроса
 
-**Given:** два запроса одновременно создают один `pre_launch`.
+**Given:** два запроса одновременно создают один и тот же логический запрос `pre_launch` (`technical_assignment_id` + `source_revision` + `analysis_kind`), с одинаковым или с разными `idempotency_key`.
 **When:** транзакции выполняются параллельно.
-**Then:** обе сходятся к одному Snapshot и одному terminal result.
+**Then:** ровно один из двух запросов физически создаёт попытку и получает `201` (если Snapshot завершился синхронно) либо `202` (если создан `pending`); второй запрос, обнаруживший уже существующую попытку, получает `200`; второй Snapshot не создаётся; оба ответа содержат один и тот же `analysis_snapshot_id` и один и тот же `calculation_attempt` (§6.1). При одинаковом `idempotency_key` второй ответ — обычный replay с одним сохранённым durable mapping; при разных `idempotency_key` durable mapping сохраняется для каждого из них по отдельности, но оба указывают на одну и ту же попытку (§6.1, §11.1).
 
 ### `AS-C-005` — ставка собственника
 
@@ -638,11 +723,11 @@ Campaign detail показывает время последнего refresh и 
 **When:** расчёт завершается.
 **Then:** общий status `insufficient_data`; пользователь видит причины и может перейти к Contacts.
 
-### `AS-C-014` — техническая ошибка
+### `AS-C-014` — техническая ошибка, terminal failed и explicit retry
 
-**Given:** доказательная БД временно недоступна.
-**When:** расчёт не может завершиться.
-**Then:** status `failed`, retryable error показан; Contacts закрыт; вымышленного результата нет.
+**Given:** доказательная БД временно недоступна; разрешённые технические повторы выполнения этой попытки (§11.3) исчерпаны.
+**When:** попытка переходит в terminal `failed` с `failure.retryable=true`.
+**Then:** status `failed` показан как retryable; Contacts закрыт; вымышленного результата нет; сервер не создаёт новую попытку автоматически. Явное нажатие «Повторить» с новым `idempotency_key` и `retry_of_analysis_snapshot_id`, равным этому Snapshot, создаёт новую попытку с `calculation_attempt`, увеличенным на 1 (§6.1); исходная `failed`-попытка не изменяется. Retry с отсутствующим или неверным `retry_of_analysis_snapshot_id` отклоняется `ANALYSIS_RETRY_TARGET_MISMATCH`; попытка retry, когда текущий Snapshot не `failed`/`retryable`, отклоняется `ANALYSIS_RETRY_NOT_ALLOWED` (§12.1).
 
 ### `AS-C-015` — запуск требует Snapshot
 
@@ -650,11 +735,11 @@ Campaign detail показывает время последнего refresh и 
 **When:** запрошен запуск.
 **Then:** Campaign не создаётся и ни одна частичная запись не фиксируется.
 
-### `AS-C-016` — post-launch refresh
+### `AS-C-016` — durable post-launch refresh: технические повторы vs terminal failed
 
-**Given:** Campaign успешно запущена.
-**When:** создаётся `post_launch_refresh`.
-**Then:** он связан с Campaign/TA/revision, завершается ≤15 минут и не создаёт новый Contacts Gate.
+**Given:** Campaign успешно запущена; клиент закрывает вкладку сразу после получения ответа на launch; во время выполнения `post_launch_refresh` происходит технический сбой (например, рестарт worker'а).
+**When:** проходит время до истечения 15 минут после запуска.
+**Then:** сервер самостоятельно, без участия клиента, повторяет техническое выполнение той же попытки (`pending`, тот же `calculation_attempt`, тот же durable intent) — это не создаёт новый Snapshot; попытка, связанная с Campaign/TA/revision/`campaign_id`, либо успешно завершается (`completed`/`insufficient_data`) не позднее 15 минут после запуска, либо переходит в terminal `failed` после исчерпания разрешённых технических повторов — в этом случае сервер не создаёт новую попытку автоматически, а требует explicit retry пользователя (§6.1), как и для `pre_launch`; превышение 15 минут в любом случае остаётся наблюдаемым нарушением SLA (§11.3), даже если Snapshot впоследствии успешно завершается; отдельный Contacts Gate не создаётся.
 
 ### `AS-C-017` — восстановление после reload
 
@@ -716,6 +801,12 @@ Campaign detail показывает время последнего refresh и 
 **When:** пользователь просматривает Analysis Snapshot для конкретной Campaign.
 **Then:** персональная числовая, процентная, диапазонная или словесная «вероятность сделки за 30 дней» не показывается; `deal_probability_30d` остаётся `insufficient_data`; UI отображает формулировку из 15.1.
 
+### `AS-C-027` — отзыв evidence dataset: приоритет причины и audit-изоляция
+
+**Given:** terminal Snapshot рассчитан на ненулевой `evidence_dataset_revision=X`; авторизованная операционная команда отзывает `X`, фиксируя `evidence_revocation_reason_code`, время и privacy-safe инициатора в audit trail; для этого же Snapshot независимо также верно `campaign_mismatch`.
+**When:** Snapshot читается любой ролью, доступной обычному пользователю, после отзыва.
+**Then:** `freshness_status=stale`, публичный `freshness_reason=evidence_revoked` — приоритет `evidence_revoked` → `campaign_mismatch` → `revision_changed` (§6.4) выбирает именно эту причину, даже при одновременной `campaign_mismatch`; ответ и UI не содержат `evidence_revocation_reason_code`, время отзыва или сведения об инициаторе — они остаются только в защищённом audit trail (§6.4, §14); Snapshot не открывает Contacts и не разрешает запуск Campaign; сам Snapshot (включая `results`) физически не изменяется; создание нового Snapshot использует текущую (неотозванную) evidence revision.
+
 ## 17. Проверки перед реализацией
 
 До изменения application code должны быть подтверждены:
@@ -730,7 +821,7 @@ Campaign detail показывает время последнего refresh и 
 
 ## 18. Definition of Done Sprint 5 Analysis Snapshot
 
-- все `AS-C-001`–`AS-C-020` относятся к synthetic-only реализации Sprint 5 и автоматизированы на synthetic fixtures;
+- все `AS-C-001`–`AS-C-020` и `AS-C-027` относятся к synthetic-only реализации Sprint 5 и автоматизированы на synthetic fixtures;
 - `AS-C-021`–`AS-C-026` — будущие policy gates для реальной истории исходов и не расширяют объём реализации Sprint 5; их логику допустимо проверять тестовыми fixtures, но записи с runtime mode `synthetic` никогда не учитываются как реальная история;
 - миграция up/down и least-privilege проверки проходят в PostgreSQL CI;
 - OpenAPI и runtime schema совпадают;
