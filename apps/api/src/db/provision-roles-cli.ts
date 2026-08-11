@@ -18,6 +18,9 @@ async function main(): Promise<void> {
   let apiReaderPassword: string;
   let campaignWriterPassword: string;
   let taWriterPassword: string;
+  let analysisWriterPassword: string;
+  let analysisWorkerPassword: string;
+  let evidenceRevocationWriterPassword: string;
   try {
     bootstrapUrl = requireEnv('LEASEMIND_BOOTSTRAP_DATABASE_URL');
     migratorPassword = requireEnv('LEASEMIND_MIGRATOR_PASSWORD');
@@ -25,6 +28,9 @@ async function main(): Promise<void> {
     apiReaderPassword = requireEnv('LEASEMIND_API_READER_PASSWORD');
     campaignWriterPassword = requireEnv('LEASEMIND_CAMPAIGN_WRITER_PASSWORD');
     taWriterPassword = requireEnv('LEASEMIND_TA_WRITER_PASSWORD');
+    analysisWriterPassword = requireEnv('LEASEMIND_ANALYSIS_WRITER_PASSWORD');
+    analysisWorkerPassword = requireEnv('LEASEMIND_ANALYSIS_WORKER_PASSWORD');
+    evidenceRevocationWriterPassword = requireEnv('LEASEMIND_EVIDENCE_REVOCATION_WRITER_PASSWORD');
   } catch (error) {
     console.error(error instanceof Error ? error.message : 'provisioning configuration error');
     process.exitCode = 1;
@@ -38,7 +44,10 @@ async function main(): Promise<void> {
       maintainerPassword,
       apiReaderPassword,
       campaignWriterPassword,
-      taWriterPassword
+      taWriterPassword,
+      analysisWriterPassword,
+      analysisWorkerPassword,
+      evidenceRevocationWriterPassword
     });
     console.log(JSON.stringify(result));
   } catch {

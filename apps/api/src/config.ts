@@ -67,3 +67,30 @@ export function loadTechnicalAssignmentDatabaseUrl(env: NodeJS.ProcessEnv = proc
   }
   return databaseUrl;
 }
+
+/** server.ts's synchronous Analysis command path only. */
+export function loadAnalysisDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.LEASEMIND_ANALYSIS_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing required environment variable: LEASEMIND_ANALYSIS_DATABASE_URL');
+  }
+  return databaseUrl;
+}
+
+/** Dedicated post-launch refresh worker process only; never server.ts. */
+export function loadAnalysisWorkerDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.LEASEMIND_ANALYSIS_WORKER_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing required environment variable: LEASEMIND_ANALYSIS_WORKER_DATABASE_URL');
+  }
+  return databaseUrl;
+}
+
+/** Evidence-revocation operational CLI only; never an HTTP process. */
+export function loadEvidenceRevocationDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
+  const databaseUrl = env.LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL;
+  if (!databaseUrl) {
+    throw new Error('Missing required environment variable: LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL');
+  }
+  return databaseUrl;
+}

@@ -1,5 +1,6 @@
 import type pg from 'pg';
 import { MIGRATOR_ROLE, MAINTAINER_ROLE, API_READER_ROLE, CAMPAIGN_WRITER_ROLE, TA_WRITER_ROLE } from './db/provisionRoles.js';
+import { verifyAnalysisPrivilegeProfile } from './analysisDbPrivilegePolicy.js';
 
 // Pre-launch database-boundary gate. See
 // 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md.
@@ -148,6 +149,12 @@ export async function verifyRuntimeDatabasePrivileges(pool: pg.Pool): Promise<vo
     !row.can_select_tenant_request;
 
   if (isViolation) {
+    throw new DatabasePrivilegeViolation();
+  }
+
+  try {
+    await verifyAnalysisPrivilegeProfile(pool, 'api_reader');
+  } catch {
     throw new DatabasePrivilegeViolation();
   }
 }
@@ -332,6 +339,12 @@ export async function verifyRuntimeCommandPrivileges(pool: pg.Pool): Promise<voi
   if (isViolation) {
     throw new DatabasePrivilegeViolation();
   }
+
+  try {
+    await verifyAnalysisPrivilegeProfile(pool, 'campaign_writer');
+  } catch {
+    throw new DatabasePrivilegeViolation();
+  }
 }
 
 // Technical Assignment command boundary. See
@@ -492,4 +505,36 @@ export async function verifyRuntimeTechnicalAssignmentPrivileges(pool: pg.Pool):
   if (isViolation) {
     throw new DatabasePrivilegeViolation();
   }
+
+  try {
+    await verifyAnalysisPrivilegeProfile(pool, 'ta_writer');
+  } catch {
+    throw new DatabasePrivilegeViolation();
+  }
+}
+
+async function verifyAnalysisBoundary(
+  pool: pg.Pool,
+  profile: 'analysis_writer' | 'analysis_worker' | 'evidence_revocation_writer'
+): Promise<void> {
+  try {
+    await verifyAnalysisPrivilegeProfile(pool, profile);
+  } catch {
+    throw new DatabasePrivilegeViolation();
+  }
+}
+
+/** Startup gate for the synchronous Analysis command pool. */
+export async function verifyRuntimeAnalysisPrivileges(pool: pg.Pool): Promise<void> {
+  await verifyAnalysisBoundary(pool, 'analysis_writer');
+}
+
+/** Startup gate for the dedicated durable post-launch refresh worker. */
+export async function verifyRuntimeAnalysisWorkerPrivileges(pool: pg.Pool): Promise<void> {
+  await verifyAnalysisBoundary(pool, 'analysis_worker');
+}
+
+/** Startup gate for the evidence-revocation operational CLI. */
+export async function verifyRuntimeEvidenceRevocationPrivileges(pool: pg.Pool): Promise<void> {
+  await verifyAnalysisBoundary(pool, 'evidence_revocation_writer');
 }

@@ -7,7 +7,7 @@
 
 ## Контекст
 
-`02_PRODUCT/ANALYSIS_SNAPSHOT.md` v0.2 определяет контракт Analysis Snapshot
+`02_PRODUCT/ANALYSIS_SNAPSHOT.md` v0.3 определяет контракт Analysis Snapshot
 (§1–§18): серверное хранение, идемпотентность, актуальность/`stale`,
 атомарную связь с запуском Campaign и least-privilege роль. До этого решения
 Analysis не персистится — ADR-0008, раздел 1, фиксирует его как
@@ -291,8 +291,8 @@ closed при отсутствующей/противоречивой связи
   BEGIN
     -- Фаза 0a: payload обязан быть JSON object -- проверяется первой и
     -- отдельно, останавливая миграцию до того, как любая последующая
-    -- проверка вызовет jsonb_object_length/`?` на потенциально не-object
-    -- значении (jsonb_object_length на скаляре/массиве -- ошибка
+    -- проверка вызовет jsonb_object_keys/`?` на потенциально не-object
+    -- значении (jsonb_object_keys на скаляре/массиве -- ошибка
     -- PostgreSQL, а не NULL/FALSE; последовательные RAISE EXCEPTION в этом
     -- DO-блоке гарантируют, что фаза 0b выполняется только если 0a уже
     -- подтвердила нулевое число не-object payload).
@@ -307,13 +307,13 @@ closed при отсутствующей/противоречивой связи
     END IF;
 
     -- Фаза 0b: ровно пять обязательных ключей и их присутствие. Безопасно
-    -- вызывать jsonb_object_length/`?` здесь -- фаза 0a уже гарантировала,
+    -- вызывать jsonb_object_keys/`?` здесь -- фаза 0a уже гарантировала,
     -- что каждый оставшийся payload -- JSON object.
     SELECT count(*) INTO invalid_count
     FROM leasemind_app.campaign_event_log e
     WHERE e.event_type = 'campaign.subject_linked.v1'
       AND (
-        jsonb_object_length(e.payload) <> 5
+        leasemind_app.jsonb_object_key_count(e.payload) <> 5
         OR NOT (
           e.payload ? 'entity_type' AND e.payload ? 'entity_id'
           AND e.payload ? 'source_technical_assignment_id'
@@ -504,7 +504,7 @@ CONSTRAINT analysis_snapshot_failure_shape_check CHECK (
   failure IS NULL OR COALESCE(
     CASE
       WHEN jsonb_typeof(failure) <> 'object' THEN FALSE
-      WHEN jsonb_object_length(failure) <> 2 THEN FALSE
+      WHEN leasemind_app.jsonb_object_key_count(failure) <> 2 THEN FALSE
       WHEN NOT (failure ? 'code' AND failure ? 'retryable') THEN FALSE
       WHEN jsonb_typeof(failure->'code') <> 'string' THEN FALSE
       WHEN (failure->>'code') = '' THEN FALSE
@@ -1219,12 +1219,18 @@ authorization-поля — `NULL`, и MATCH SIMPLE пропускает пров
 вычисления ветвей, в отличие от `AND`) и финальный `COALESCE(..., FALSE)`:
 
 ```
+CREATE FUNCTION leasemind_app.jsonb_object_key_count(value jsonb) RETURNS integer AS $$
+  SELECT count(*)::integer FROM jsonb_object_keys(value);
+$$ LANGUAGE sql IMMUTABLE STRICT;
+
+REVOKE EXECUTE ON FUNCTION leasemind_app.jsonb_object_key_count(jsonb) FROM PUBLIC;
+
 CREATE FUNCTION leasemind_app.is_valid_metric_envelope(envelope jsonb) RETURNS boolean AS $$
   SELECT COALESCE(
     CASE
       WHEN envelope IS NULL THEN FALSE
       WHEN jsonb_typeof(envelope) <> 'object' THEN FALSE
-      WHEN jsonb_object_length(envelope) <> 7 THEN FALSE
+      WHEN leasemind_app.jsonb_object_key_count(envelope) <> 7 THEN FALSE
       WHEN NOT (
         envelope ? 'metric_status' AND envelope ? 'confidence' AND envelope ? 'value'
         AND envelope ? 'sample_size' AND envelope ? 'evidence'
@@ -1241,7 +1247,7 @@ CREATE FUNCTION leasemind_app.is_valid_metric_envelope(envelope jsonb) RETURNS b
       WHEN jsonb_typeof(envelope->'sample_size') <> 'number' THEN FALSE
       WHEN (envelope->>'sample_size') !~ '^(0|[1-9][0-9]*)$' THEN FALSE
       WHEN jsonb_typeof(envelope->'evidence') <> 'object' THEN FALSE
-      WHEN jsonb_object_length(envelope->'evidence') <> 3 THEN FALSE
+      WHEN leasemind_app.jsonb_object_key_count(envelope->'evidence') <> 3 THEN FALSE
       WHEN NOT (
         (envelope->'evidence') ? 'method' AND (envelope->'evidence') ? 'filters_applied'
         AND (envelope->'evidence') ? 'dataset_revision'
@@ -1269,7 +1275,7 @@ ALTER TABLE leasemind_app.analysis_snapshot ADD CONSTRAINT analysis_snapshot_res
     AND results ? 'competition'
     AND results ? 'deal_probability_30d'
     AND results ? 'candidate_categories'
-    AND jsonb_object_length(results) = 4
+    AND leasemind_app.jsonb_object_key_count(results) = 4
     AND leasemind_app.is_valid_metric_envelope(results->'price_adequacy')
     AND leasemind_app.is_valid_metric_envelope(results->'competition')
     AND leasemind_app.is_valid_metric_envelope(results->'deal_probability_30d')
@@ -1282,7 +1288,7 @@ ALTER TABLE leasemind_app.analysis_snapshot ADD CONSTRAINT analysis_snapshot_res
 останавливается на первой истинной — каждая risky операция защищена более
 ранней веткой, уже подтвердившей тип. Каждый из семи ключей верхнего уровня
 `envelope` проверяется на присутствие через `?` **и** через
-`jsonb_object_length(envelope) = 7`, доказывая точный набор без единого
+`jsonb_object_key_count(envelope) = 7`, доказывая точный набор без единого
 subquery. `value` при `metric_status='assessed'` обязан быть JSON object;
 при `metric_status='insufficient_data'` обязан быть буквально JSON `null`.
 `sample_size` проверяется как целое неотрицательное число через
@@ -1444,7 +1450,9 @@ CREATE TABLE leasemind_app.post_launch_refresh_intent (
   current_analysis_snapshot_id    uuid NULL,
 
   launched_at                     timestamptz NOT NULL,
-  sla_deadline_at                 timestamptz NOT NULL GENERATED ALWAYS AS (launched_at + interval '15 minutes') STORED,
+  sla_deadline_at                 timestamptz NOT NULL GENERATED ALWAYS AS (
+    timezone('UTC', timezone('UTC', launched_at) + interval '15 minutes')
+  ) STORED,
   finished_at                     timestamptz NULL,
   sla_breach_reported_at          timestamptz NULL,
 
@@ -1989,12 +1997,12 @@ Snapshot перед requeue: новая попытка создаётся `pendi
 уже ненулевому `current_analysis_snapshot_id`, записанному этой функцией)
 пойдёт сразу к execution flow для неё, минуя команду и initial key (выше).
 
-**Не `SELECT *` по внешним таблицам — только перечисленные колонки**
+**Без `SELECT *` — только перечисленные колонки**
 (исправление повторного SQL-аудита: `analysis_snapshot` не принадлежит
 `lmapp_post_launch_refresh_owner`, поэтому `SELECT *` по ней потребовал бы
-table-wide `SELECT`-гранта, противоречащего least privilege; `SELECT *` по
-самому `post_launch_refresh_intent` безопасен — этой таблицей владелец
-владеет напрямую, любой её `SELECT` уже покрыт владением):
+table-wide `SELECT`-гранта, противоречащего least privilege; по собственной
+таблице `post_launch_refresh_intent` функция также читает только два реально
+нужных поля, чтобы код и проверяемый allowlist оставались явными):
 
 ```
 CREATE FUNCTION leasemind_app.request_post_launch_refresh_retry(
@@ -2006,7 +2014,8 @@ SECURITY DEFINER
 SET search_path = pg_catalog, leasemind_app
 AS $$
 DECLARE
-  v_intent                        leasemind_app.post_launch_refresh_intent%ROWTYPE;
+  v_intent_status                 text;
+  v_current_analysis_snapshot_id  uuid;
   v_prior_status                  text;
   v_prior_failure                 jsonb;
   v_prior_technical_assignment_id uuid;
@@ -2020,19 +2029,22 @@ DECLARE
   v_new_campaign_id               uuid;
   v_new_calculation_attempt       integer;
 BEGIN
-  SELECT * INTO v_intent FROM leasemind_app.post_launch_refresh_intent
-   WHERE campaign_id = p_campaign_id FOR UPDATE;
+  SELECT status, current_analysis_snapshot_id
+    INTO v_intent_status, v_current_analysis_snapshot_id
+    FROM leasemind_app.post_launch_refresh_intent
+   WHERE campaign_id = p_campaign_id
+   FOR UPDATE;
   IF NOT FOUND THEN
     RAISE EXCEPTION 'POST_LAUNCH_REFRESH_INTENT_NOT_FOUND: %', p_campaign_id;
   END IF;
-  IF v_intent.status <> 'failed' THEN
-    RAISE EXCEPTION 'POST_LAUNCH_REFRESH_INTENT_NOT_FAILED: campaign_id % is % not failed', p_campaign_id, v_intent.status;
+  IF v_intent_status <> 'failed' THEN
+    RAISE EXCEPTION 'POST_LAUNCH_REFRESH_INTENT_NOT_FAILED: campaign_id % is % not failed', p_campaign_id, v_intent_status;
   END IF;
 
   SELECT status, failure, technical_assignment_id, source_revision, calculation_attempt
     INTO v_prior_status, v_prior_failure, v_prior_technical_assignment_id, v_prior_source_revision, v_prior_calculation_attempt
     FROM leasemind_app.analysis_snapshot
-   WHERE analysis_snapshot_id = v_intent.current_analysis_snapshot_id;
+   WHERE analysis_snapshot_id = v_current_analysis_snapshot_id;
   IF NOT FOUND OR v_prior_status <> 'failed'
      OR (v_prior_failure->>'retryable')::boolean IS NOT TRUE THEN
     RAISE EXCEPTION 'POST_LAUNCH_REFRESH_INTENT_PRIOR_NOT_RETRYABLE: %', p_campaign_id;
@@ -2057,7 +2069,7 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM leasemind_app.analysis_snapshot_idempotency_mapping m
      WHERE m.analysis_snapshot_id = p_new_analysis_snapshot_id
-       AND m.retry_of_analysis_snapshot_id = v_intent.current_analysis_snapshot_id
+       AND m.retry_of_analysis_snapshot_id = v_current_analysis_snapshot_id
   ) THEN
     RAISE EXCEPTION 'POST_LAUNCH_REFRESH_INTENT_RETRY_MAPPING_MISSING: %', p_campaign_id;
   END IF;
@@ -2081,9 +2093,9 @@ REVOKE ALL ON FUNCTION leasemind_app.request_post_launch_refresh_retry(uuid, uui
 
 Внешние column-level `SELECT`, которые эта функция требует от владельца
 (выданы `lmapp_migrator` до передачи владения, доп. §12, §13):
-`analysis_snapshot(status, failure, technical_assignment_id,
+`analysis_snapshot(analysis_snapshot_id, status, failure, technical_assignment_id,
 source_revision, analysis_kind, campaign_id, calculation_attempt)` —
-семь колонок, ни одной лишней относительно того, что реально читают три
+восемь колонок, ни одной лишней относительно того, что реально читают три
 `SELECT` выше — и `analysis_snapshot_idempotency_mapping(analysis_snapshot_id,
 retry_of_analysis_snapshot_id)` — обе колонки, участвующие в `EXISTS`.
 
@@ -2143,7 +2155,7 @@ REVOKE ALL ON FUNCTION leasemind_app.mark_post_launch_refresh_intent_sla_breach(
 GRANT CREATE, USAGE ON SCHEMA leasemind_app TO lmapp_post_launch_refresh_owner;
 
 -- шаг 4: точечный колоночный SELECT на внешние таблицы, нужные функциям
-GRANT SELECT (status, failure, technical_assignment_id, source_revision, analysis_kind, campaign_id, calculation_attempt)
+GRANT SELECT (analysis_snapshot_id, status, failure, technical_assignment_id, source_revision, analysis_kind, campaign_id, calculation_attempt)
   ON leasemind_app.analysis_snapshot TO lmapp_post_launch_refresh_owner;
 GRANT SELECT (analysis_snapshot_id, retry_of_analysis_snapshot_id)
   ON leasemind_app.analysis_snapshot_idempotency_mapping TO lmapp_post_launch_refresh_owner;
@@ -2418,10 +2430,14 @@ runtime-ролью в смысле обслуживания HTTP/worker-траф
 ```
 -- (008)
 GRANT USAGE ON SCHEMA leasemind_app TO lmapp_analysis_writer;
+GRANT EXECUTE ON FUNCTION leasemind_app.jsonb_object_key_count(jsonb) TO lmapp_analysis_writer;
+GRANT EXECUTE ON FUNCTION leasemind_app.is_valid_metric_envelope(jsonb) TO lmapp_analysis_writer;
 -- (010)
 GRANT USAGE ON SCHEMA leasemind_app TO lmapp_evidence_revocation_writer;
 -- (009)
 GRANT USAGE ON SCHEMA leasemind_app TO lmapp_analysis_worker;
+GRANT EXECUTE ON FUNCTION leasemind_app.jsonb_object_key_count(jsonb) TO lmapp_analysis_worker;
+GRANT EXECUTE ON FUNCTION leasemind_app.is_valid_metric_envelope(jsonb) TO lmapp_analysis_worker;
 
 -- (008)
 GRANT SELECT (
@@ -2595,9 +2611,12 @@ GRANT EXECUTE ON FUNCTION leasemind_app.request_post_launch_refresh_retry(uuid, 
 доступом) — единственный способ прочитать/изменить intent из worker'а —
 пять `EXECUTE`-грантов выше, каждый из которых внутри себя жёстко
 ограничен одним конкретным переходом и fencing-проверкой (§10).
-`lmapp_analysis_writer` получает `EXECUTE` только на
+Среди command-функций `lmapp_analysis_writer` получает `EXECUTE` только на
 `request_post_launch_refresh_retry` — ни на одну из пяти
-worker-функций, ни на саму таблицу. Ни одна из шести функций не выдана
+worker-функций, ни на саму таблицу. Отдельно writer/worker имеют `EXECUTE`
+на две чистые immutable validation-функции §9: это необходимо PostgreSQL
+для выполнения `CHECK` при разрешённом `INSERT`/`UPDATE` Snapshot и не даёт
+доступа к данным или изменению состояния. Ни одна из шести command-функций не выдана
 `PUBLIC` (`REVOKE ALL ... FROM PUBLIC`, §10, повторено при каждой функции,
 выполнено ещё до передачи владения — владелец на момент `REVOKE` был
 `lmapp_migrator`, что для `REVOKE ... FROM PUBLIC` не имеет значения).
@@ -2610,7 +2629,7 @@ runtime-роль, но не «ноль входящих грантов», исп
 ```
 GRANT USAGE ON SCHEMA leasemind_app TO lmapp_post_launch_refresh_owner;  -- постоянный
 
-GRANT SELECT (status, failure, technical_assignment_id, source_revision, analysis_kind, campaign_id, calculation_attempt)
+GRANT SELECT (analysis_snapshot_id, status, failure, technical_assignment_id, source_revision, analysis_kind, campaign_id, calculation_attempt)
   ON leasemind_app.analysis_snapshot TO lmapp_post_launch_refresh_owner;
 GRANT SELECT (analysis_snapshot_id, retry_of_analysis_snapshot_id)
   ON leasemind_app.analysis_snapshot_idempotency_mapping TO lmapp_post_launch_refresh_owner;
@@ -2619,7 +2638,7 @@ GRANT SELECT (analysis_snapshot_id, retry_of_analysis_snapshot_id)
 -- выдан и отозван в рамках одной и той же миграции 009 (§10, §13) — не сохраняется
 ```
 
-Ровно семь внешних колонок (`analysis_snapshot`) плюс две (`mapping`) —
+Ровно восемь внешних колонок (`analysis_snapshot`) плюс две (`mapping`) —
 не больше, чем реально читают три `SELECT`-запроса внутри
 `request_post_launch_refresh_retry` (§10) и два `EXISTS`-условия внутри
 `complete`/`fail_post_launch_refresh_intent`; `property`/`tenant_request`/
@@ -2767,7 +2786,7 @@ column-based: `has_function_privilege(current_user, '<function signature>',
   и шесть command-функций §10) — не семью, точный подсчёт: 1 таблица + 1
   transition-trigger function + 6 command-функций; имеет ровно
   документированный минимальный набор входящих грантов (`USAGE` на схему,
-  колоночный `SELECT` на `analysis_snapshot`(7 колонок)/
+  колоночный `SELECT` на `analysis_snapshot`(8 колонок)/
   `analysis_snapshot_idempotency_mapping`(2 колонки), без временного
   `CREATE` на схему после завершения миграции) — не «ноль грантов»; не
   выдала ни одного `GRANT` другим ролям вне явного `SET ROLE`-контекста
@@ -2868,10 +2887,13 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
 и не получает ни одного гранта — её собственные core-table права выданы в
 009 (correction 8, ниже):**
 
-1. `CREATE FUNCTION leasemind_app.is_valid_metric_envelope` (§9).
-2. `CREATE TABLE leasemind_app.campaign_subject_link_projection` (§3) —
+1. `CREATE FUNCTION leasemind_app.jsonb_object_key_count` (§9) и отзыв
+   `PUBLIC EXECUTE`; это совместимый с PostgreSQL 18.4 helper для точного
+   подсчёта ключей JSON object без запрещённого subquery внутри `CHECK`.
+2. `CREATE FUNCTION leasemind_app.is_valid_metric_envelope` (§9).
+3. `CREATE TABLE leasemind_app.campaign_subject_link_projection` (§3) —
    без FK на `analysis_snapshot` (она ещё не существует).
-3. `CREATE TABLE leasemind_app.analysis_snapshot` (§4) — включая составной
+4. `CREATE TABLE leasemind_app.analysis_snapshot` (§4) — включая составной
    FK на `campaign_subject_link_projection`, опорные `UNIQUE`
    `analysis_snapshot_pre_launch_authorization_unique` и
    `analysis_snapshot_post_launch_identity_unique` (последний — опора для
@@ -2880,30 +2902,32 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
    таблицы 008, никакой зависимости от 009 не создаёт), все `CHECK`
    (включая `failure`-shape и `results`-shape), `calculation_attempt`, **без**
    `idempotency_key`/`command_hash` (отсутствуют в этой версии, §4).
-4. `ALTER TABLE leasemind_app.campaign_subject_link_projection ADD CONSTRAINT
+5. `ALTER TABLE leasemind_app.campaign_subject_link_projection ADD CONSTRAINT
    campaign_subject_link_projection_analysis_snapshot_fk ...` — отложенная
    составная cross-table FK (§8), теперь обе таблицы существуют.
-5. `CREATE TABLE leasemind_app.analysis_snapshot_idempotency_mapping` (§5).
-6. `CREATE FUNCTION leasemind_app.reject_analysis_snapshot_immutable_mutation`
+6. `CREATE TABLE leasemind_app.analysis_snapshot_idempotency_mapping` (§5).
+7. `CREATE FUNCTION leasemind_app.reject_analysis_snapshot_immutable_mutation`
    + триггеры на `analysis_snapshot` (§4).
-7. `CREATE FUNCTION leasemind_app.reject_analysis_snapshot_idempotency_mapping_mutation`
+8. `CREATE FUNCTION leasemind_app.reject_analysis_snapshot_idempotency_mapping_mutation`
    + триггеры на `analysis_snapshot_idempotency_mapping` (§5).
-8. Частичные уникальные индексы: `analysis_snapshot_pre_launch_attempt_unique`,
+9. Частичные уникальные индексы: `analysis_snapshot_pre_launch_attempt_unique`,
    `analysis_snapshot_post_launch_attempt_unique`,
    `analysis_snapshot_pre_launch_single_pending`,
    `analysis_snapshot_post_launch_single_pending` (§4), плюс вспомогательный
    индекс на `campaign_id`.
-9. Backfill: явная fail-closed validation-фаза, затем безусловный
+10. Backfill: явная fail-closed validation-фаза, затем безусловный
    `INSERT ... SELECT` в `campaign_subject_link_projection` (§3).
-10. `GRANT USAGE ON SCHEMA leasemind_app TO lmapp_analysis_writer;`
+11. `GRANT USAGE ON SCHEMA leasemind_app TO lmapp_analysis_writer;`
     `REVOKE ALL ON leasemind_app.analysis_snapshot,
     leasemind_app.campaign_subject_link_projection,
     leasemind_app.analysis_snapshot_idempotency_mapping FROM PUBLIC;`
     `REVOKE EXECUTE ON FUNCTION ... FROM PUBLIC` для всех функций этого
-    шага; точечные колоночные `GRANT` **только** `lmapp_analysis_writer`,
+    шага; две validation-функции §9 получают точечный `EXECUTE` только у
+    `lmapp_analysis_writer`, поскольку их вызывает `CHECK`; точечные колоночные
+    `GRANT` **только** `lmapp_analysis_writer`,
     `lmapp_campaign_writer`, `lmapp_api_reader` (§12, "(008)"-помеченные
     операторы). **Без** `ALTER DEFAULT PRIVILEGES`.
-11. Startup gates для core-ролей (§12) — реализуются в коде отдельно от
+12. Startup gates для core-ролей (§12) — реализуются в коде отдельно от
     миграции, но зависят от точного состава грантов этого шага.
 
 **`008_analysis_snapshot.down.sql`** (детерминированный порядок, без
@@ -2912,7 +2936,8 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
 1. Отозвать у `lmapp_analysis_writer` колоночный `SELECT` на `property`/
    `tenant_request` (единственные изменения ACL этой миграции на
    **существующих** таблицах 001–007).
-2. Отозвать у трёх ролей все точные `GRANT`, выданные на шаге 10 up.sql.
+2. Отозвать у трёх ролей все точные `GRANT`, выданные на шаге 11 up.sql,
+   включая два `EXECUTE` validation-функций у `lmapp_analysis_writer`.
 3. `REVOKE USAGE ON SCHEMA leasemind_app FROM lmapp_analysis_writer;`
 4. `REVOKE EXECUTE ... FROM PUBLIC` — избыточно относительно `DROP
    FUNCTION` ниже, перечисляется для полноты симметрии.
@@ -2930,6 +2955,7 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
    на этот `UNIQUE`, уже не существует — `DROP TABLE` не требует `CASCADE`.
 9. `DROP TABLE leasemind_app.campaign_subject_link_projection;`
 10. `DROP FUNCTION leasemind_app.is_valid_metric_envelope(jsonb);`
+11. `DROP FUNCTION leasemind_app.jsonb_object_key_count(jsonb);`
 
 `lmapp_analysis_writer` не сохраняет ни одного объектного/схемного права,
 выданного migration 008; provisioning-level `CONNECT` и сама LOGIN-роль не
@@ -2957,10 +2983,10 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
    (008, correction 4). Владелец сразу после `CREATE TABLE` — исполнитель
    команды, `lmapp_migrator` (ownership transfer — шаг 6 ниже, не сразу).
 3. `CREATE FUNCTION leasemind_app.enforce_post_launch_refresh_intent_transition`
-   + триггеры `BEFORE DELETE`/`BEFORE UPDATE` (§10) — с self-transition
-   веткой для SLA breach marking, без column-level проверки для
-   `claimed→claimed` (структурная граница — fencing внутри самих
-   `SECURITY DEFINER` функций, не триггер). `REVOKE EXECUTE ... FROM
+   + триггеры `BEFORE DELETE`/`BEFORE UPDATE` (§10) — с отдельными точными
+   self-transition-ветками для lease renewal/re-claim и SLA breach
+   marking; fencing внутри `SECURITY DEFINER` функций остаётся основной
+   runtime-границей. `REVOKE EXECUTE ... FROM
    PUBLIC` сразу (владелец на этот момент — `lmapp_migrator`, для `REVOKE
    FROM PUBLIC` не имеет значения).
 4. `CREATE FUNCTION leasemind_app.claim_post_launch_refresh_intent`,
@@ -2978,13 +3004,15 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
    (§12, "(009)"-помеченные операторы) — **это и есть суть correction 8**:
    008 не знает о существовании worker'а вовсе; именно эта миграция, а не
    008, впервые даёт worker'у доступ к core-таблицам. `GRANT USAGE ON
-   SCHEMA leasemind_app TO lmapp_analysis_worker;` (`lmapp_analysis_writer`
-   уже имеет `USAGE` с migration 008).
+   SCHEMA leasemind_app TO lmapp_analysis_worker;` и точечный `EXECUTE` на
+   две validation-функции §9, вызываемые `CHECK` (`lmapp_analysis_writer`
+   уже имеет `USAGE` и те же два validation-гранта с migration 008).
 6. **Консолидированная передача владения** (§10, точный порядок и
    обоснование там): `lmapp_migrator` выдаёт
    `lmapp_post_launch_refresh_owner` временный `CREATE` и постоянный
    `USAGE` на схему; выдаёт ей точечный колоночный `SELECT` на
-   `analysis_snapshot`(7 колонок)/`analysis_snapshot_idempotency_mapping`(2
+   `analysis_snapshot`(8 колонок, включая `analysis_snapshot_id` как ключ
+   точного сопоставления)/`analysis_snapshot_idempotency_mapping`(2
    колонки); выполняет `ALTER TABLE`/`ALTER FUNCTION ... OWNER TO
    lmapp_post_launch_refresh_owner` для всех восьми объектов шагов 2–4;
    отзывает временный `CREATE ON SCHEMA` у владельца (объект уже передан).
@@ -3019,7 +3047,8 @@ core-роли (`lmapp_analysis_writer`, `lmapp_campaign_writer`,
    **новый шаг относительно предыдущей версии**: поскольку эти гранты
    теперь выдаются в 009 (а не в 008, correction 8), именно down 009, а не
    down 008, обязан их отзывать; down 008 их больше не касается. Отозвать
-   у `lmapp_analysis_worker` `USAGE ON SCHEMA`.
+   у `lmapp_analysis_worker` два `EXECUTE` validation-функций §9 и
+   `USAGE ON SCHEMA`.
 2. `SET ROLE lmapp_post_launch_refresh_owner;` — отозвать у трёх ролей все
    точные `GRANT`, выданные на шаге 7 up.sql (`INSERT`
    `lmapp_campaign_writer`, `EXECUTE` на пяти worker-функциях
@@ -3618,7 +3647,8 @@ synthetic-only Property/TenantRequest/Campaign данными, что и ост�
   `SECURITY DEFINER` функций §10 (для `lmapp_analysis_worker` — пять из
   шести, без `request_post_launch_refresh_retry`; для
   `lmapp_analysis_writer` — ровно одна, `request_post_launch_refresh_retry`,
-  без остальных пяти).
+  без остальных пяти), по двум immutable validation-функциям §9 (только
+  writer/worker) и по всем внутренним trigger-функциям (ни у одной LOGIN-роли).
 - **Отдельный тест владения и bootstrap-контракта** (не `dbPrivilegePolicy.ts`,
   а тест миграций, §13; исправление повторного SQL-аудита — счёт объектов
   и утверждение об отсутствии грантов у владельца оба были неверны в
@@ -3635,7 +3665,7 @@ synthetic-only Property/TenantRequest/Campaign данными, что и ост�
     `lmapp_migrator` с `admin_option = false`, `inherit_option = false`,
     `set_option = true`.
   - **Не** «ноль входящих грантов» — точный allowlist: `USAGE` на схему,
-    колоночный `SELECT` на `analysis_snapshot`(7 колонок, §10)/
+    колоночный `SELECT` на `analysis_snapshot`(8 колонок, §10)/
     `analysis_snapshot_idempotency_mapping`(2 колонки), без `CREATE` на
     схему (временный грант отозван после передачи владения, §10) и без
     table-wide `SELECT` где-либо.

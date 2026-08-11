@@ -8,6 +8,10 @@ export const MAINTAINER_ROLE = 'lmapp_maintainer';
 export const API_READER_ROLE = 'lmapp_api_reader';
 export const CAMPAIGN_WRITER_ROLE = 'lmapp_campaign_writer';
 export const TA_WRITER_ROLE = 'lmapp_ta_writer';
+export const ANALYSIS_WRITER_ROLE = 'lmapp_analysis_writer';
+export const ANALYSIS_WORKER_ROLE = 'lmapp_analysis_worker';
+export const EVIDENCE_REVOCATION_WRITER_ROLE = 'lmapp_evidence_revocation_writer';
+export const POST_LAUNCH_REFRESH_OWNER_ROLE = 'lmapp_post_launch_refresh_owner';
 
 export interface ProvisionRolesInput {
   migratorPassword: string;
@@ -15,6 +19,9 @@ export interface ProvisionRolesInput {
   apiReaderPassword: string;
   campaignWriterPassword: string;
   taWriterPassword: string;
+  analysisWriterPassword: string;
+  analysisWorkerPassword: string;
+  evidenceRevocationWriterPassword: string;
 }
 
 export interface ProvisionRolesResult {
@@ -39,7 +46,8 @@ async function ensureRoleExists(client: pg.PoolClient, roleName: string): Promis
 }
 
 /**
- * Idempotently provisions the five fixed, least-privilege LOGIN roles.
+ * Idempotently provisions the eight fixed, least-privilege LOGIN roles
+ * and the bootstrap-owned NOLOGIN role required by ADR-0009.
  * Must be run via a bootstrap/admin connection (LEASEMIND_BOOTSTRAP_DATABASE_URL)
  * -- never via the application's own DATABASE_URL/migration/maintenance
  * connections. Every run resets dangerous role attributes unconditionally,
@@ -53,7 +61,10 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
     { name: MAINTAINER_ROLE, password: input.maintainerPassword },
     { name: API_READER_ROLE, password: input.apiReaderPassword },
     { name: CAMPAIGN_WRITER_ROLE, password: input.campaignWriterPassword },
-    { name: TA_WRITER_ROLE, password: input.taWriterPassword }
+    { name: TA_WRITER_ROLE, password: input.taWriterPassword },
+    { name: ANALYSIS_WRITER_ROLE, password: input.analysisWriterPassword },
+    { name: ANALYSIS_WORKER_ROLE, password: input.analysisWorkerPassword },
+    { name: EVIDENCE_REVOCATION_WRITER_ROLE, password: input.evidenceRevocationWriterPassword }
   ];
 
   const client = await pool.connect();
@@ -78,8 +89,32 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
       );
     }
 
+    // Owns the durable post-launch-refresh state machine and its SECURITY
+    // DEFINER functions. It never participates in the password/LOGIN cycle
+    // above and never receives CONNECT. Re-provisioning resets every
+    // dangerous attribute and clears any historical password.
+    await ensureRoleExists(client, POST_LAUNCH_REFRESH_OWNER_ROLE);
+    await client.query(
+      `ALTER ROLE ${POST_LAUNCH_REFRESH_OWNER_ROLE}
+         WITH NOLOGIN
+         PASSWORD NULL
+         NOSUPERUSER
+         NOCREATEDB
+         NOCREATEROLE
+         NOREPLICATION
+         NOBYPASSRLS
+         NOINHERIT`
+    );
+
+    // PostgreSQL 16+ stores ADMIN/INHERIT/SET as independent membership
+    // options. Separate GRANT statements converge an existing membership
+    // to the exact fail-closed contract required by migration 009.
+    await client.query(`GRANT ${POST_LAUNCH_REFRESH_OWNER_ROLE} TO ${MIGRATOR_ROLE} WITH ADMIN FALSE`);
+    await client.query(`GRANT ${POST_LAUNCH_REFRESH_OWNER_ROLE} TO ${MIGRATOR_ROLE} WITH INHERIT FALSE`);
+    await client.query(`GRANT ${POST_LAUNCH_REFRESH_OWNER_ROLE} TO ${MIGRATOR_ROLE} WITH SET TRUE`);
+
     // Allow-list CONNECT: PUBLIC loses every database-level default
-    // (CONNECT, TEMP, CREATE); only the three named roles get CONNECT back,
+    // (CONNECT, TEMP, CREATE); only the eight LOGIN roles get CONNECT back,
     // and only lmapp_migrator additionally gets CREATE (needed once, to
     // create the leasemind_app schema the first time migrate:up runs).
     // GRANT/REVOKE ON DATABASE requires an identifier, not an expression --
@@ -101,5 +136,5 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
     client.release();
   }
 
-  return { provisioned: roles.map(r => r.name) };
+  return { provisioned: [...roles.map(r => r.name), POST_LAUNCH_REFRESH_OWNER_ROLE] };
 }
