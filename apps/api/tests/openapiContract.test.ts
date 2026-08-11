@@ -38,7 +38,11 @@ import {
 // actual production-shaped roles serve the documented contract, not an
 // omnipotent connection standing in for them.
 
-const OPENAPI_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'openapi', 'openapi.yaml');
+const TEST_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const API_ROOT = path.basename(path.dirname(TEST_DIRECTORY)) === 'dist'
+  ? path.join(TEST_DIRECTORY, '..', '..')
+  : path.join(TEST_DIRECTORY, '..');
+const OPENAPI_PATH = path.join(API_ROOT, 'openapi', 'openapi.yaml');
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -102,12 +106,15 @@ const EXPECTED_PATH_METHODS: Record<string, string[]> = {
   '/api/v1/campaigns': ['get', 'post'],
   '/api/v1/campaigns/{campaignId}': ['get'],
   '/api/v1/technical-assignments': ['post'],
-  '/api/v1/technical-assignments/{technicalAssignmentId}': ['get']
+  '/api/v1/technical-assignments/{technicalAssignmentId}': ['get'],
+  '/api/v1/analysis-snapshots': ['post'],
+  '/api/v1/analysis-snapshots/{analysisSnapshotId}': ['get'],
+  '/api/v1/technical-assignments/{technicalAssignmentId}/analysis-snapshots/current': ['get']
 };
 const ALL_HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
-const WRITE_PATHS = ['/api/v1/campaigns', '/api/v1/technical-assignments'];
+const WRITE_PATHS = ['/api/v1/campaigns', '/api/v1/technical-assignments', '/api/v1/analysis-snapshots'];
 
-test('the contract documents exactly the seven allowed operations, nothing else', () => {
+test('the contract documents exactly the ten allowed operations, nothing else', () => {
   assert.deepEqual(Object.keys(api.paths).sort(), Object.keys(EXPECTED_PATH_METHODS).sort());
   for (const [pathKey, allowedMethods] of Object.entries(EXPECTED_PATH_METHODS)) {
     const item = api.paths[pathKey];
@@ -116,7 +123,7 @@ test('the contract documents exactly the seven allowed operations, nothing else'
   }
 });
 
-test('no write method exists anywhere except the two documented POST operations', () => {
+test('no write method exists anywhere except the three documented POST operations', () => {
   for (const pathKey of Object.keys(api.paths)) {
     for (const method of ['put', 'patch', 'delete']) {
       assert.equal(api.paths[pathKey][method], undefined, `${method.toUpperCase()} must not exist on ${pathKey}`);
@@ -138,8 +145,61 @@ test('every documented operation declares a unique operationId', () => {
       }
     }
   }
-  assert.equal(ids.length, 7);
-  assert.equal(new Set(ids).size, 7, 'operationId values must be unique');
+  assert.equal(ids.length, 10);
+  assert.equal(new Set(ids).size, 10, 'operationId values must be unique');
+});
+
+test('the Analysis Snapshot schema accepts the approved envelope and rejects extra fields', () => {
+  const schema = responseSchema('/api/v1/analysis-snapshots/{analysisSnapshotId}', 'get', 200);
+  const metric = {
+    metric_status: 'insufficient_data',
+    confidence: null,
+    value: null,
+    sample_size: 0,
+    evidence: {
+      method: 'synthetic_ru_v1',
+      filters_applied: [],
+      dataset_revision: null
+    },
+    reason_codes: ['CALIBRATED_OUTCOME_HISTORY_REQUIRED'],
+    assumptions: []
+  };
+  const validSnapshot = {
+    schema_version: '1.0',
+    analysis_snapshot_id: '00000000-0000-4000-8000-000000000001',
+    technical_assignment_id: '00000000-0000-7000-8000-000000000002',
+    source_revision: 1,
+    scenario: 'need_property',
+    analysis_kind: 'pre_launch',
+    campaign_id: null,
+    calculation_attempt: 1,
+    status: 'insufficient_data',
+    freshness_status: 'current',
+    freshness_reason: null,
+    method_version: 'synthetic_ru_v1',
+    market_context: {
+      country_code: 'RU',
+      currency: 'RUB',
+      locale: 'ru-RU',
+      area_unit: 'sqm',
+      rent_period: 'month'
+    },
+    input_fingerprint: 'a'.repeat(64),
+    evidence_dataset_revision: null,
+    evidence_as_of: null,
+    generated_at: '2026-08-11T10:00:00.000Z',
+    created_at: '2026-08-11T10:00:00.000Z',
+    failure: null,
+    results: {
+      price_adequacy: metric,
+      competition: metric,
+      deal_probability_30d: metric,
+      candidate_categories: metric
+    }
+  };
+
+  assertMatchesSchema(schema, validSnapshot, 'approved Analysis Snapshot fixture must pass');
+  assertViolatesSchema(schema, { ...validSnapshot, extra_field: 'unexpected' }, 'extra fields must be rejected');
 });
 
 test('the Campaign schema enumerates exactly the 11 approved statuses', () => {

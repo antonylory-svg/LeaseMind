@@ -6,13 +6,24 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 import { migrateUp } from '../src/db/migrate.js';
-import { API_DATABASE_URL, MIGRATION_DATABASE_URL, COMMAND_DATABASE_URL, TA_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
+import {
+  API_DATABASE_URL,
+  MIGRATION_DATABASE_URL,
+  COMMAND_DATABASE_URL,
+  TA_DATABASE_URL,
+  ANALYSIS_DATABASE_URL,
+  hasDatabase,
+  hasAnalysisDatabase
+} from './testDatabaseUrls.js';
 
 // End-to-end proof (real spawned process, not just the unit-level function)
 // that the runtime safety gate runs before any PostgreSQL connection attempt
 // and before the HTTP port is bound.
 
-const API_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TEST_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const RUNNING_COMPILED = path.basename(path.dirname(TEST_DIRECTORY)) === 'dist';
+const API_ROOT = RUNNING_COMPILED ? path.join(TEST_DIRECTORY, '..', '..') : path.join(TEST_DIRECTORY, '..');
+const SERVER_ARGS = RUNNING_COMPILED ? ['dist/src/server.js'] : ['--import', 'tsx', 'src/server.ts'];
 const UNREACHABLE_DATABASE_URL = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 
 function buildChildEnv(overrides: Record<string, string | undefined>): NodeJS.ProcessEnv {
@@ -42,7 +53,7 @@ interface RunResult {
 
 function runServerOnce(env: NodeJS.ProcessEnv, timeoutMs = 8000): Promise<RunResult> {
   return new Promise(resolve => {
-    const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+    const child = spawn(process.execPath, SERVER_ARGS, {
       cwd: API_ROOT,
       env,
       windowsHide: true
@@ -155,7 +166,7 @@ test('migration up (fresh) prepares the schema for the safe-startup probe', { sk
 
 test(
   'the server starts normally (no runtime safety or database privilege violation) with a fully safe explicit environment',
-  { skip: !hasDatabase },
+  { skip: !hasAnalysisDatabase },
   async () => {
     const testPort = 34569;
     const env = buildChildEnv({
@@ -165,6 +176,7 @@ test(
       DATABASE_URL: API_DATABASE_URL,
       LEASEMIND_COMMAND_DATABASE_URL: COMMAND_DATABASE_URL,
       LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL: TA_DATABASE_URL,
+      LEASEMIND_ANALYSIS_DATABASE_URL: ANALYSIS_DATABASE_URL,
       LEASEMIND_RUNTIME_MODE: 'synthetic',
       LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
       LEASEMIND_ALLOW_REAL_PII: 'false',
@@ -173,7 +185,7 @@ test(
       LEASEMIND_ALLOW_PRODUCTION_ADAPTERS: 'false'
     });
 
-    const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+    const child = spawn(process.execPath, SERVER_ARGS, {
       cwd: API_ROOT,
       env,
       windowsHide: true

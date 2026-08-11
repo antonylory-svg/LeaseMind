@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
   title: LeaseMind App Foundation API
-  version: 1.2.0
+  version: 1.3.0
   description: >-
-    Synthetic-only contract for the seven HTTP operations that actually
+    Synthetic-only contract for the ten HTTP operations that actually
     exist in apps/api/src/app.ts: two health probes, the Campaign Current
     State Projection read model, the Technical Assignment save-draft and
     read commands, and the atomic Campaign launch command (see
@@ -11,7 +11,8 @@ info:
     ADR-0002-campaign-event-stream.md, ADR-0003-pre-launch-runtime-safety-gate.md,
     ADR-0004-read-only-api-contract.md,
     ADR-0007-synthetic-campaign-creation-command-boundary.md and
-    ADR-0008-technical-assignment-implementation.md). No other write
+    ADR-0008-technical-assignment-implementation.md and
+    ADR-0009-analysis-snapshot-implementation.md). No other write
     operation exists or is documented. PRODUCTION_LAUNCH_GATE remains
     blocked; this document does not authorize any production deployment,
     real personal data, real payments or protected-data disclosure.
@@ -215,6 +216,153 @@ paths:
                   error:
                     type: string
                     enum: [TECHNICAL_ASSIGNMENT_NOT_FOUND]
+
+  /api/v1/analysis-snapshots:
+    post:
+      operationId: createAnalysisSnapshot
+      summary: Create, replay or explicitly retry a synthetic Analysis Snapshot
+      description: >-
+        The synchronous Sprint 5 command currently executes pre_launch
+        synthetic_ru_v1 Analysis. The client supplies identity and revision
+        only; all Technical Assignment fields and evidence are read by the
+        server through the dedicated lmapp_analysis_writer identity. Durable
+        idempotency is checked before current-attempt rules: a known key
+        returns its originally mapped Snapshot, while different new keys for
+        one logical request converge to one current attempt. post_launch_refresh
+        is reserved by this transport contract but remains server-worker-owned.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAnalysisSnapshotRequest'
+      responses:
+        '201':
+          description: A new synchronous pre-launch attempt reached a terminal state.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshot'
+        '202':
+          description: A new asynchronous post-launch attempt remains pending.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshot'
+        '200':
+          description: The command replayed or converged to an existing attempt.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshot'
+        '400':
+          description: The kind/Campaign shape or market is unsupported.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '404':
+          description: The referenced Technical Assignment does not exist.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '409':
+          description: Revision, idempotency or explicit-retry state conflicts.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '503':
+          description: The evidence dataset or Analysis database is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+
+  /api/v1/analysis-snapshots/{analysisSnapshotId}:
+    get:
+      operationId: getAnalysisSnapshotById
+      summary: Read one persisted Analysis Snapshot
+      parameters:
+        - name: analysisSnapshotId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UuidV4OrV7'
+      responses:
+        '200':
+          description: The immutable Snapshot with read-time freshness.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshot'
+        '404':
+          description: Snapshot not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '503':
+          description: The Analysis read model is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+
+  /api/v1/technical-assignments/{technicalAssignmentId}/analysis-snapshots/current:
+    get:
+      operationId: getCurrentAnalysisSnapshot
+      summary: Recover the current Analysis attempt for one logical request
+      parameters:
+        - name: technicalAssignmentId
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/UuidV4OrV7'
+        - name: revision
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+        - name: analysis_kind
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [pre_launch, post_launch_refresh]
+        - name: campaign_id
+          in: query
+          required: false
+          description: Required for post_launch_refresh and forbidden for pre_launch.
+          schema:
+            $ref: '#/components/schemas/UuidV4OrV7'
+      responses:
+        '200':
+          description: Attempt with the maximum calculation_attempt for the full logical key.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisSnapshot'
+        '400':
+          description: analysis_kind and campaign_id are inconsistent.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '404':
+          description: No Snapshot exists for this logical request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
+        '503':
+          description: The Analysis read model is unavailable.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalysisErrorResponse'
 
   /api/v1/campaigns/{campaignId}:
     get:
@@ -485,6 +633,202 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    CreateAnalysisSnapshotRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - idempotency_key
+        - technical_assignment_id
+        - expected_revision
+        - analysis_kind
+        - campaign_id
+        - retry_of_analysis_snapshot_id
+      properties:
+        idempotency_key:
+          type: string
+          minLength: 1
+          maxLength: 200
+        technical_assignment_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+        expected_revision:
+          type: integer
+          minimum: 1
+        analysis_kind:
+          type: string
+          enum: [pre_launch, post_launch_refresh]
+        campaign_id:
+          oneOf:
+            - $ref: '#/components/schemas/UuidV4OrV7'
+            - type: 'null'
+        retry_of_analysis_snapshot_id:
+          oneOf:
+            - $ref: '#/components/schemas/UuidV4OrV7'
+            - type: 'null'
+
+    AnalysisMetricEvidence:
+      type: object
+      additionalProperties: false
+      required: [method, filters_applied, dataset_revision]
+      properties:
+        method:
+          type: string
+        filters_applied:
+          type: array
+          items: { type: string }
+        dataset_revision:
+          type: [string, 'null']
+          pattern: '^[0-9a-f]{64}$'
+
+    AnalysisMetric:
+      type: object
+      additionalProperties: false
+      required: [metric_status, confidence, value, sample_size, evidence, reason_codes, assumptions]
+      properties:
+        metric_status:
+          type: string
+          enum: [assessed, insufficient_data]
+        confidence:
+          type: [string, 'null']
+          enum: [low, medium, high, null]
+        value:
+          description: Metric-specific aggregate object. Decimal monetary rates are fixed two-decimal strings.
+          oneOf:
+            - type: object
+              additionalProperties: true
+            - type: 'null'
+        sample_size:
+          type: integer
+          minimum: 0
+        evidence:
+          $ref: '#/components/schemas/AnalysisMetricEvidence'
+        reason_codes:
+          type: array
+          items: { type: string }
+        assumptions:
+          type: array
+          items: { type: string }
+
+    AnalysisResults:
+      type: object
+      additionalProperties: false
+      required: [price_adequacy, competition, deal_probability_30d, candidate_categories]
+      properties:
+        price_adequacy:
+          $ref: '#/components/schemas/AnalysisMetric'
+        competition:
+          $ref: '#/components/schemas/AnalysisMetric'
+        deal_probability_30d:
+          $ref: '#/components/schemas/AnalysisMetric'
+        candidate_categories:
+          $ref: '#/components/schemas/AnalysisMetric'
+
+    AnalysisFailure:
+      type: object
+      additionalProperties: false
+      required: [code, retryable]
+      properties:
+        code:
+          type: string
+          enum: [ANALYSIS_DATASET_UNAVAILABLE, ANALYSIS_GENERATION_FAILED]
+        retryable:
+          type: boolean
+
+    AnalysisSnapshot:
+      type: object
+      additionalProperties: false
+      required:
+        - schema_version
+        - analysis_snapshot_id
+        - technical_assignment_id
+        - source_revision
+        - scenario
+        - analysis_kind
+        - campaign_id
+        - calculation_attempt
+        - status
+        - freshness_status
+        - freshness_reason
+        - method_version
+        - market_context
+        - input_fingerprint
+        - evidence_dataset_revision
+        - evidence_as_of
+        - generated_at
+        - created_at
+        - failure
+        - results
+      properties:
+        schema_version: { type: string, enum: ['1.0'] }
+        analysis_snapshot_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+        technical_assignment_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+        source_revision: { type: integer, minimum: 1 }
+        scenario: { type: string, enum: [need_tenant, need_property] }
+        analysis_kind: { type: string, enum: [pre_launch, post_launch_refresh] }
+        campaign_id:
+          oneOf:
+            - $ref: '#/components/schemas/UuidV4OrV7'
+            - type: 'null'
+        calculation_attempt: { type: integer, minimum: 1 }
+        status: { type: string, enum: [pending, completed, insufficient_data, failed] }
+        freshness_status: { type: string, enum: [current, stale] }
+        freshness_reason:
+          type: [string, 'null']
+          enum: [revision_changed, campaign_mismatch, evidence_revoked, null]
+        method_version: { type: string, enum: [synthetic_ru_v1] }
+        market_context:
+          type: object
+          additionalProperties: false
+          required: [country_code, currency, locale, area_unit, rent_period]
+          properties:
+            country_code: { type: string, enum: [RU] }
+            currency: { type: string, enum: [RUB] }
+            locale: { type: string, enum: [ru-RU] }
+            area_unit: { type: string, enum: [sqm] }
+            rent_period: { type: string, enum: [month] }
+        input_fingerprint: { type: string, pattern: '^[0-9a-f]{64}$' }
+        evidence_dataset_revision: { type: [string, 'null'], pattern: '^[0-9a-f]{64}$' }
+        evidence_as_of: { type: [string, 'null'], format: date-time }
+        generated_at: { type: [string, 'null'], format: date-time }
+        created_at: { type: string, format: date-time }
+        failure:
+          oneOf:
+            - $ref: '#/components/schemas/AnalysisFailure'
+            - type: 'null'
+        results:
+          oneOf:
+            - $ref: '#/components/schemas/AnalysisResults'
+            - type: 'null'
+
+    AnalysisErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message, request_id, retryable]
+      properties:
+        code:
+          type: string
+          enum:
+            - ANALYSIS_SNAPSHOT_NOT_FOUND
+            - ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_FOUND
+            - ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_READY
+            - ANALYSIS_REVISION_CONFLICT
+            - ANALYSIS_KIND_INVALID
+            - ANALYSIS_CAMPAIGN_REQUIRED
+            - ANALYSIS_CAMPAIGN_MISMATCH
+            - ANALYSIS_MARKET_UNSUPPORTED
+            - ANALYSIS_DATASET_UNAVAILABLE
+            - ANALYSIS_GENERATION_FAILED
+            - ANALYSIS_IDEMPOTENCY_CONFLICT
+            - ANALYSIS_RETRY_NOT_ALLOWED
+            - ANALYSIS_RETRY_TARGET_MISMATCH
+        message:
+          type: string
+        request_id:
+          type: string
+        retryable:
+          type: boolean
 
     PropertyPayload:
       type: object

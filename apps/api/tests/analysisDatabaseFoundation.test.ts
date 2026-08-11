@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import pg from 'pg';
-import { migrateUp } from '../src/db/migrate.js';
+import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import {
   verifyRuntimeDatabasePrivileges,
   verifyRuntimeCommandPrivileges,
@@ -347,5 +347,19 @@ test('snapshot immutability, explicit retry, fencing, SLA and evidence revocatio
       migrationPool.end(), taPool.end(), campaignPool.end(), analysisPool.end(),
       workerPool.end(), evidencePool.end(), apiPool.end()
     ]);
+  }
+});
+
+test('Analysis foundation fixtures are removed before the remaining database regression files run', { skip: !hasAnalysisDatabase }, async () => {
+  const migrationPool = pool(MIGRATION_DATABASE_URL, 2);
+  try {
+    const result = await migrateDown(migrationPool);
+    assert.deepEqual(result.reverted.slice(0, 3), [
+      '010_evidence_dataset_revocation.down.sql',
+      '009_post_launch_refresh_intent.down.sql',
+      '008_analysis_snapshot.down.sql'
+    ]);
+  } finally {
+    await migrationPool.end();
   }
 });
