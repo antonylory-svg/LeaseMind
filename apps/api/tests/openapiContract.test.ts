@@ -14,8 +14,8 @@ const addFormats = addFormatsImport as unknown as (instance: Ajv2020) => void;
 import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
-import { deriveCampaignIdFromIdempotencyKey } from '../src/db/createCampaign.js';
 import { saveTechnicalAssignmentDraft } from '../src/db/technicalAssignment.js';
+import { createOrReplayPreLaunchAnalysisSnapshot } from '../src/db/analysisSnapshot.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
 import {
   MIGRATION_DATABASE_URL,
@@ -23,7 +23,9 @@ import {
   API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   TA_DATABASE_URL,
-  hasDatabase
+  ANALYSIS_DATABASE_URL,
+  hasDatabase,
+  hasAnalysisDatabase
 } from './testDatabaseUrls.js';
 
 // This file owns its own complete migration/seed/teardown lifecycle,
@@ -482,13 +484,37 @@ async function createReadyProperty(technicalAssignmentPool: pg.Pool, idempotency
   return { id: result.technical_assignment_id, revision: result.revision };
 }
 
-test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign matching the documented 201 schema', { skip: !hasDatabase }, async () => {
+async function createPreLaunchAnalysis(
+  analysisPool: pg.Pool,
+  technicalAssignmentId: string,
+  expectedRevision: number,
+  idempotencyKey: string
+): Promise<string> {
+  const result = await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, {
+    idempotencyKey,
+    technicalAssignmentId,
+    expectedRevision,
+    analysisKind: 'pre_launch',
+    campaignId: null,
+    retryOfAnalysisSnapshotId: null
+  });
+  return result.analysisSnapshotId;
+}
+
+test('POST /api/v1/campaigns: an Analysis-authorized launch command creates a Campaign matching the documented 201 schema', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
   const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
-  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, analysisPool, logger: false });
   try {
     const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-201-ta');
+    const analysisSnapshotId = await createPreLaunchAnalysis(
+      analysisPool,
+      ta.id,
+      ta.revision,
+      'openapi-contract:launch-201-analysis'
+    );
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/campaigns',
@@ -496,6 +522,7 @@ test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign ma
         idempotency_key: 'openapi-contract:launch-201-probe',
         technical_assignment_id: ta.id,
         expected_revision: ta.revision,
+        analysis_snapshot_id: analysisSnapshotId,
         contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
       }
     });
@@ -513,17 +540,25 @@ test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign ma
   }
 });
 
-test('POST /api/v1/campaigns: retrying the same idempotency_key returns the same Campaign (200), not a duplicate', { skip: !hasDatabase }, async () => {
+test('POST /api/v1/campaigns: retrying the same Analysis-authorized idempotency_key returns the same Campaign (200)', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
   const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
-  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, analysisPool, logger: false });
   try {
     const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-replay-ta');
+    const analysisSnapshotId = await createPreLaunchAnalysis(
+      analysisPool,
+      ta.id,
+      ta.revision,
+      'openapi-contract:launch-replay-analysis'
+    );
     const payload = {
       idempotency_key: 'openapi-contract:launch-replay-probe',
       technical_assignment_id: ta.id,
       expected_revision: ta.revision,
+      analysis_snapshot_id: analysisSnapshotId,
       contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
     };
     const first = await app.inject({ method: 'POST', url: '/api/v1/campaigns', payload });
@@ -612,20 +647,31 @@ test('POST /api/v1/technical-assignments: a well-formed draft matches the docume
   }
 });
 
-test('cleanup: remove openapi-contract POST-probe campaigns/technical assignments so later "exactly 11" assertions stay valid', { skip: !hasDatabase }, async () => {
-  const launchIdempotencyKeys = ['openapi-contract:launch-201-probe', 'openapi-contract:launch-replay-probe'];
+test('launch contract probes persist their Analysis authorization and post-launch intents durably', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
+  const client = await pool.connect();
   try {
-    for (const key of launchIdempotencyKeys) {
-      const campaignId = deriveCampaignIdFromIdempotencyKey(key);
-      await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1', [campaignId]);
-      await pool.query('DELETE FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1', [campaignId]);
-    }
-    await pool.query(
-      "DELETE FROM leasemind_app.property WHERE idempotency_key IN ('openapi-contract:launch-201-ta', 'openapi-contract:launch-replay-ta')"
+    const links = await client.query<{ campaign_id: string }>(
+      `SELECT campaign_id
+       FROM leasemind_app.campaign_subject_link_projection
+       WHERE authorization_contract_version = 'analysis_v2'
+         AND campaign_id IN (
+         SELECT campaign_id FROM leasemind_app.campaign_event_log
+         WHERE idempotency_key IN ('openapi-contract:launch-201-probe', 'openapi-contract:launch-replay-probe')
+       )`
     );
-    await pool.query("DELETE FROM leasemind_app.tenant_request WHERE idempotency_key = 'openapi-contract:ta-schema-probe'");
+    await client.query('SET ROLE lmapp_post_launch_refresh_owner');
+    const intents = await client.query(
+      `SELECT count(*)::int AS count
+       FROM leasemind_app.post_launch_refresh_intent
+       WHERE campaign_id = ANY($1::uuid[])`,
+      [links.rows.map(row => row.campaign_id)]
+    );
+    assert.equal(links.rowCount, 2);
+    assert.equal(intents.rows[0].count, 2);
   } finally {
+    await client.query('RESET ROLE').catch(() => {});
+    client.release();
     await pool.end();
   }
 });

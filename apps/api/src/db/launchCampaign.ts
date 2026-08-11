@@ -7,7 +7,7 @@ import type { Scenario } from './technicalAssignment.js';
 
 // Atomic Campaign launch from a ready Technical Assignment. See
 // 03_ARCHITECTURE/decisions/ADR-0008-technical-assignment-implementation.md
-// section 1. Runs on the lmapp_campaign_writer pool, which has SELECT
+// section 1 and ADR-0009 section 8. Runs on the lmapp_campaign_writer pool, which has SELECT
 // (read-only) on property/tenant_request in addition to its existing
 // event_log/stream_head/projection grants (migration 005) -- enough to
 // verify Technical Assignment state and perform the whole launch as one
@@ -15,14 +15,26 @@ import type { Scenario } from './technicalAssignment.js';
 
 export const SUBJECT_LINKED_EVENT_TYPE = 'campaign.subject_linked.v1' as const;
 const SUBJECT_LINKED_SCHEMA_VERSION = 1 as const;
-const DOMAIN_SEPARATOR = 'LEASEMIND_CAMPAIGN_LAUNCH_V1';
+const LEGACY_DOMAIN_SEPARATOR = 'LEASEMIND_CAMPAIGN_LAUNCH_V1';
+const ANALYSIS_DOMAIN_SEPARATOR = 'LEASEMIND_CAMPAIGN_LAUNCH_V2';
 
 function sha256Hex(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
 
-function computeLaunchCommandHash(campaignId: string, technicalAssignmentId: string, expectedRevision: number): string {
-  return sha256Hex(`${DOMAIN_SEPARATOR}|COMMAND|${campaignId}|${technicalAssignmentId}|${expectedRevision}`);
+function computeLegacyLaunchCommandHash(campaignId: string, technicalAssignmentId: string, expectedRevision: number): string {
+  return sha256Hex(`${LEGACY_DOMAIN_SEPARATOR}|COMMAND|${campaignId}|${technicalAssignmentId}|${expectedRevision}`);
+}
+
+function computeAnalysisLaunchCommandHash(
+  campaignId: string,
+  technicalAssignmentId: string,
+  expectedRevision: number,
+  analysisSnapshotId: string
+): string {
+  return sha256Hex(
+    `${ANALYSIS_DOMAIN_SEPARATOR}|COMMAND|${campaignId}|${technicalAssignmentId}|${expectedRevision}|${analysisSnapshotId}`
+  );
 }
 
 /** Serializes retries for one deterministic Campaign identity before the
@@ -73,6 +85,7 @@ export interface LaunchCampaignInput {
   technicalAssignmentId: string;
   expectedRevision: number;
   contactsGateEvidence: unknown;
+  analysisSnapshotId?: string;
 }
 
 export interface LaunchCampaignResult {
@@ -89,6 +102,15 @@ interface TaRow {
   scenario: Scenario;
   lifecycle_status: string;
   revision: number;
+}
+
+interface LaunchAuthorizationRow {
+  authorization_contract_version: 'legacy_v1' | 'analysis_v2';
+  analysis_snapshot_id: string | null;
+}
+
+interface LaunchAnalysisRow {
+  status: 'completed' | 'insufficient_data';
 }
 
 async function lockTechnicalAssignment(client: pg.PoolClient, technicalAssignmentId: string): Promise<TaRow | null> {
@@ -114,17 +136,19 @@ async function lockTechnicalAssignment(client: pg.PoolClient, technicalAssignmen
 /**
  * One atomic transaction: lock + verify the Technical Assignment
  * (lifecycle_status=ready_for_analysis, revision matches what the caller
- * last saw, Contacts Gate evidence present), append the provenance event
+ * last saw, Contacts Gate evidence present, current terminal pre-launch
+ * Analysis present and not revoked), append the provenance event
  * (campaign.subject_linked.v1, sequence N) followed by the status event
  * (campaign.status_recorded.v1 status=Created, sequence N+1 -- kept last
  * so tests/db/campaignEvents.ts's rebuildCampaignProjection, which reads
  * the latest event by sequence and expects payload.status, needs no
- * change), update the projection, and mark the Technical Assignment
- * campaign_started. Any failure rolls back every one of these writes.
+ * change), update the projection, persist the permanent Analysis
+ * authorization link and durable post-launch refresh intent, and mark the
+ * Technical Assignment campaign_started. Any failure rolls back every one
+ * of these writes.
  */
 export async function launchCampaignFromTechnicalAssignment(pool: pg.Pool, input: LaunchCampaignInput): Promise<LaunchCampaignResult> {
   const campaignId = deriveCampaignIdFromIdempotencyKey(input.idempotencyKey);
-  const commandHash = computeLaunchCommandHash(campaignId, input.technicalAssignmentId, input.expectedRevision);
 
   const client = await pool.connect();
   try {
@@ -138,7 +162,42 @@ export async function launchCampaignFromTechnicalAssignment(pool: pg.Pool, input
       [campaignId, input.idempotencyKey, CAMPAIGN_EVENT_TYPE]
     );
     if (existingEvent.rowCount && existingEvent.rowCount > 0) {
-      if (existingEvent.rows[0].command_hash !== commandHash) {
+      const authorization = await client.query<LaunchAuthorizationRow>(
+        `SELECT authorization_contract_version, analysis_snapshot_id
+           FROM leasemind_app.campaign_subject_link_projection
+          WHERE campaign_id = $1`,
+        [campaignId]
+      );
+      if (authorization.rowCount !== 1) {
+        await client.query('ROLLBACK');
+        throw new LaunchIdempotencyConflictError();
+      }
+
+      const stored = authorization.rows[0];
+      let replayCommandHash: string;
+      if (stored.authorization_contract_version === 'legacy_v1') {
+        replayCommandHash = computeLegacyLaunchCommandHash(campaignId, input.technicalAssignmentId, input.expectedRevision);
+      } else if (stored.authorization_contract_version === 'analysis_v2') {
+        if (!input.analysisSnapshotId) {
+          await client.query('ROLLBACK');
+          throw new TechnicalAssignmentAnalysisRequiredError();
+        }
+        if (input.analysisSnapshotId !== stored.analysis_snapshot_id) {
+          await client.query('ROLLBACK');
+          throw new LaunchIdempotencyConflictError();
+        }
+        replayCommandHash = computeAnalysisLaunchCommandHash(
+          campaignId,
+          input.technicalAssignmentId,
+          input.expectedRevision,
+          input.analysisSnapshotId
+        );
+      } else {
+        await client.query('ROLLBACK');
+        throw new LaunchIdempotencyConflictError();
+      }
+
+      if (existingEvent.rows[0].command_hash !== replayCommandHash) {
         await client.query('ROLLBACK');
         throw new LaunchIdempotencyConflictError();
       }
@@ -177,6 +236,42 @@ export async function launchCampaignFromTechnicalAssignment(pool: pg.Pool, input
       await client.query('ROLLBACK');
       throw new TechnicalAssignmentAnalysisStaleError();
     }
+
+    if (!input.analysisSnapshotId) {
+      await client.query('ROLLBACK');
+      throw new TechnicalAssignmentAnalysisRequiredError();
+    }
+
+    const analysis = await client.query<LaunchAnalysisRow>(
+      `SELECT s.status
+         FROM leasemind_app.analysis_snapshot s
+        WHERE s.analysis_snapshot_id = $1
+          AND s.analysis_kind = 'pre_launch'
+          AND s.scenario = $2
+          AND s.technical_assignment_id = $3
+          AND s.source_revision = $4
+          AND s.status IN ('completed', 'insufficient_data')
+          AND (
+            s.evidence_dataset_revision IS NULL
+            OR NOT EXISTS (
+              SELECT 1
+                FROM leasemind_app.evidence_dataset_revocation r
+               WHERE r.evidence_dataset_revision = s.evidence_dataset_revision
+            )
+          )`,
+      [input.analysisSnapshotId, ta.scenario, ta.id, ta.revision]
+    );
+    if (analysis.rowCount !== 1) {
+      await client.query('ROLLBACK');
+      throw new TechnicalAssignmentAnalysisRequiredError();
+    }
+    const authorizedAnalysisStatus = analysis.rows[0].status;
+    const commandHash = computeAnalysisLaunchCommandHash(
+      campaignId,
+      input.technicalAssignmentId,
+      input.expectedRevision,
+      input.analysisSnapshotId
+    );
 
     await client.query(
       `INSERT INTO leasemind_app.campaign_stream_head (campaign_id, current_sequence, current_event_hash)
@@ -301,6 +396,34 @@ export async function launchCampaignFromTechnicalAssignment(pool: pg.Pool, input
              aggregate_version = EXCLUDED.aggregate_version,
              updated_at = EXCLUDED.updated_at`,
       [campaignId, statusSequence, occurredAt]
+    );
+
+    const propertyId = ta.scenario === 'need_tenant' ? ta.id : null;
+    const tenantRequestId = ta.scenario === 'need_property' ? ta.id : null;
+    await client.query(
+      `INSERT INTO leasemind_app.campaign_subject_link_projection
+         (campaign_id, scenario, property_id, tenant_request_id, source_revision,
+          source_schema_version, linked_at, authorization_contract_version,
+          analysis_snapshot_id, authorized_analysis_kind, authorized_analysis_status)
+       VALUES ($1, $2, $3, $4, $5, '1.0', $6, 'analysis_v2', $7, 'pre_launch', $8)`,
+      [
+        campaignId,
+        ta.scenario,
+        propertyId,
+        tenantRequestId,
+        ta.revision,
+        occurredAt,
+        input.analysisSnapshotId,
+        authorizedAnalysisStatus
+      ]
+    );
+
+    await client.query(
+      `INSERT INTO leasemind_app.post_launch_refresh_intent
+         (campaign_id, property_id, tenant_request_id, scenario, source_revision,
+          analysis_kind, status, launched_at)
+       VALUES ($1, $2, $3, $4, $5, 'post_launch_refresh', 'pending', $6)`,
+      [campaignId, propertyId, tenantRequestId, ta.scenario, ta.revision, occurredAt]
     );
 
     const table = ta.scenario === 'need_tenant' ? 'leasemind_app.property' : 'leasemind_app.tenant_request';

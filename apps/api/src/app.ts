@@ -142,8 +142,9 @@ const campaignDetailResponseSchema = {
 // Synthetic-only atomic Campaign launch command (ADR-0007/ADR-0008). Never
 // accepts a name, phone, email or any other contact/commercial field --
 // only a reference to an already-saved, already-ready Technical
-// Assignment plus the caller's launch idempotency_key and the synthetic
-// Contacts Gate marker.
+// Assignment plus the caller's launch idempotency_key, optional-at-transport
+// Analysis Snapshot reference (required by application logic for every new
+// launch), and the synthetic Contacts Gate marker.
 const launchCampaignBodySchema = {
   type: 'object',
   additionalProperties: false,
@@ -152,6 +153,7 @@ const launchCampaignBodySchema = {
     idempotency_key: { type: 'string', minLength: 1, maxLength: 200 },
     technical_assignment_id: { type: 'string', format: 'uuid' },
     expected_revision: { type: 'integer', minimum: 1 },
+    analysis_snapshot_id: { type: 'string', format: 'uuid' },
     contacts_gate_evidence: { type: 'string', minLength: 1, maxLength: 100 }
   }
 } as const;
@@ -839,6 +841,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         idempotency_key: string;
         technical_assignment_id: string;
         expected_revision: number;
+        analysis_snapshot_id?: string;
         contacts_gate_evidence: string;
       };
       try {
@@ -846,6 +849,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
           idempotencyKey: body.idempotency_key,
           technicalAssignmentId: body.technical_assignment_id,
           expectedRevision: body.expected_revision,
+          analysisSnapshotId: body.analysis_snapshot_id,
           contactsGateEvidence: body.contacts_gate_evidence
         });
         request.safeErrorCode = null;

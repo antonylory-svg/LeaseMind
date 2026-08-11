@@ -87,18 +87,21 @@ paths:
         The only write operation on this path. One atomic transaction:
         verifies the referenced Technical Assignment is
         `lifecycle_status=ready_for_analysis` at exactly `expected_revision`
-        and that a valid Contacts Gate marker is present, then creates the
-        synthetic Campaign in status `Created`, appends the
-        `campaign.subject_linked.v1` provenance event, and marks the
-        Technical Assignment `campaign_started`
+        and that a valid Contacts Gate marker and current terminal pre-launch
+        Analysis Snapshot are present, then atomically creates the synthetic
+        Campaign in status `Created`, appends the
+        `campaign.subject_linked.v1` provenance event, persists the Analysis
+        authorization link and durable post-launch refresh intent, and marks
+        the Technical Assignment `campaign_started`
         (apps/api/src/db/launchCampaign.ts). campaign_id, aggregate_version,
         created_at and updated_at are always server-generated; campaign_id
         is derived deterministically from idempotency_key, so retrying the
         same command with the same idempotency_key returns the same
         Campaign instead of creating a duplicate (200, not 201). The
         request body accepts no name, phone, email or any other contact
-        field. See ADR-0007-synthetic-campaign-creation-command-boundary.md
-        and ADR-0008-technical-assignment-implementation.md.
+        field. analysis_snapshot_id is optional in the transport schema only
+        so legacy_v1 replays remain possible; every new launch requires it in
+        application logic. See ADR-0007, ADR-0008 and ADR-0009.
       requestBody:
         required: true
         content:
@@ -123,8 +126,9 @@ paths:
         '400':
           description: >-
             The request body is malformed, the Technical Assignment is not
-            ready/found, its revision does not match expected_revision, or
-            the Contacts Gate marker is missing/invalid.
+            ready/found, its revision does not match expected_revision, the
+            Analysis Snapshot is absent/invalid/stale, or the Contacts Gate
+            marker is missing/invalid.
           content:
             application/json:
               schema:
@@ -528,6 +532,13 @@ components:
           type: integer
           minimum: 1
           description: The Technical Assignment revision the caller last observed as ready_for_analysis; a mismatch means the Analysis the caller saw is stale.
+        analysis_snapshot_id:
+          $ref: '#/components/schemas/UuidV4OrV7'
+          description: >-
+            Snapshot that authorizes the launch. Optional only for transport
+            compatibility with legacy_v1 command replays; required by
+            application logic for every new launch and stored permanently in
+            the Campaign subject-link projection.
         contacts_gate_evidence:
           type: string
           minLength: 1
