@@ -160,6 +160,7 @@ test('Analysis screen presents the four approved blocks in order and never inven
     analysisSection.includes('Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней.')
   );
   assert.ok(!analysisSection.includes('%'), 'v1 must not display a deal probability percentage');
+  assert.ok(!analysisSection.toLocaleLowerCase('ru-RU').includes('реальный рынок'));
 });
 
 test('stale Analysis result is explained outside the terminal-results render branch', () => {
@@ -179,6 +180,10 @@ test('Contacts and Launch independently require the same current terminal Analys
   assert.ok(contactsSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
   assert.ok(launchSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
   assert.ok(launchSection.includes('disabled={launching || !analysisAllowsProgress(analysisSnapshot, assignment)}'));
+  assert.ok(
+    SOURCE.includes("snapshot.status === 'completed' || snapshot.status === 'insufficient_data'"),
+    'a current insufficient_data Snapshot must still allow progress to Contacts'
+  );
 });
 
 test('Analysis gate checks scenario and result payload and fails closed after a server refresh error', () => {

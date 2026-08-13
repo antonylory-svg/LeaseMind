@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   calculateSyntheticAnalysis,
   computeAnalysisInputFingerprint,
+  deriveAnalysisStatus,
   prepareSyntheticAnalysis,
   type AnalysisSourceRow
 } from '../src/analysisCalculation.js';
@@ -123,7 +124,32 @@ test('TenantRequest analysis preserves explicit rate basis and stable category o
   });
 });
 
-test('derived TenantRequest rate never writes back and small reference samples remain insufficient_data', () => {
+test('AS-C-007: derived TenantRequest rate uses budget/area_max and never writes back', () => {
+  const subject = tenantRequest(1, {
+    request_monthly_budget_max_rub: 240000,
+    request_area_max_sqm: '120.00',
+    request_monthly_rent_rate_max_rub_per_sqm: null
+  });
+  const properties = [
+    property(1, 1500), property(2, 1600), property(3, 1700),
+    property(4, 1800), property(5, 1900)
+  ];
+  const preparation = prepareSyntheticAnalysis('need_property', subject, properties, [subject]);
+  const results = calculateSyntheticAnalysis({
+    scenario: 'need_property',
+    subject,
+    properties,
+    tenantRequests: [subject],
+    evidenceDatasetRevision: preparation.evidenceDatasetRevision
+  });
+
+  assert.equal(results.price_adequacy.metric_status, 'assessed');
+  assert.equal(results.price_adequacy.value?.subject_rate_rub_per_sqm_month, '2000.00');
+  assert.equal(results.price_adequacy.value?.rate_basis, 'derived_budget_at_max_area');
+  assert.equal(subject.request_monthly_rent_rate_max_rub_per_sqm, null);
+});
+
+test('AS-C-008/009: a small price sample is insufficient while zero competition is assessed', () => {
   const subject = tenantRequest(1, {
     request_monthly_budget_max_rub: 240000,
     request_area_max_sqm: '120.00',
@@ -140,10 +166,63 @@ test('derived TenantRequest rate never writes back and small reference samples r
   });
 
   assert.equal(results.price_adequacy.metric_status, 'insufficient_data');
+  assert.equal(results.price_adequacy.value, null);
   assert.deepEqual(results.price_adequacy.reason_codes, ['REFERENCE_SAMPLE_TOO_SMALL']);
   assert.equal(results.competition.metric_status, 'assessed');
   assert.equal(results.competition.value?.comparable_count, 0);
+  assert.equal(results.competition.value?.population_scanned, 0);
   assert.equal(subject.request_monthly_rent_rate_max_rub_per_sqm, null);
+});
+
+test('AS-C-011: tied candidate category counts are ordered by enum code', () => {
+  const subject = tenantRequest(1, {
+    request_property_types: ['warehouse', 'retail_unit', 'office']
+  });
+  const properties = [
+    property(1, 1000, { property_type: 'warehouse' }),
+    property(2, 1100, { property_type: 'office' }),
+    property(3, 1200, { property_type: 'retail_unit' }),
+    property(4, 1300, { property_type: 'warehouse' }),
+    property(5, 1400, { property_type: 'office' }),
+    property(6, 1500, { property_type: 'retail_unit' })
+  ];
+  const preparation = prepareSyntheticAnalysis('need_property', subject, properties, [subject]);
+  const results = calculateSyntheticAnalysis({
+    scenario: 'need_property',
+    subject,
+    properties,
+    tenantRequests: [subject],
+    evidenceDatasetRevision: preparation.evidenceDatasetRevision
+  });
+
+  assert.deepEqual(results.candidate_categories.value?.items, [
+    { code: 'office', compatible_count: 2 },
+    { code: 'retail_unit', compatible_count: 2 },
+    { code: 'warehouse', compatible_count: 2 }
+  ]);
+});
+
+test('AS-C-013: an otherwise successful result with no assessed metrics has insufficient_data status', () => {
+  const subject = tenantRequest(1);
+  const preparation = prepareSyntheticAnalysis('need_property', subject, [], [subject]);
+  const results = calculateSyntheticAnalysis({
+    scenario: 'need_property',
+    subject,
+    properties: [],
+    tenantRequests: [subject],
+    evidenceDatasetRevision: preparation.evidenceDatasetRevision
+  });
+  const allInsufficient = Object.fromEntries(
+    Object.entries(results).map(([name, metric]) => [name, {
+      ...metric,
+      metric_status: 'insufficient_data',
+      confidence: null,
+      value: null
+    }])
+  ) as typeof results;
+
+  assert.equal(deriveAnalysisStatus(allInsufficient), 'insufficient_data');
+  assert.equal(deriveAnalysisStatus(results), 'completed');
 });
 
 test('input fingerprint excludes protected/free-text values and evidence revision is independent of row order', () => {

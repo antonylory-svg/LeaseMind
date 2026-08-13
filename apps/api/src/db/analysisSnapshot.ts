@@ -3,6 +3,7 @@ import type pg from 'pg';
 import {
   calculateSyntheticAnalysis,
   computeAnalysisInputFingerprint,
+  deriveAnalysisStatus,
   prepareSyntheticAnalysis,
   type AnalysisSourceRow
 } from '../analysisCalculation.js';
@@ -345,9 +346,7 @@ async function calculatePendingAnalysisSnapshot(
       return 'failed';
     }
 
-    const status: AnalysisStatus = Object.values(results).some(metric => metric.metric_status === 'assessed')
-      ? 'completed'
-      : 'insufficient_data';
+    const status: AnalysisStatus = deriveAnalysisStatus(results);
     await client.query(
       `UPDATE leasemind_app.analysis_snapshot
           SET status = $2,

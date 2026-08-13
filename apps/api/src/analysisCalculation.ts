@@ -4,10 +4,19 @@ import type {
   AnalysisMetric,
   AnalysisResults,
   AnalysisScenario,
+  AnalysisStatus,
   CandidateCategoriesValue,
   CompetitionValue,
   PriceAdequacyValue
 } from './analysisTypes.js';
+
+export function deriveAnalysisStatus(
+  results: AnalysisResults
+): Extract<AnalysisStatus, 'completed' | 'insufficient_data'> {
+  return Object.values(results).some(metric => metric.metric_status === 'assessed')
+    ? 'completed'
+    : 'insufficient_data';
+}
 
 export type AnalysisSourceRow = Record<string, unknown>;
 

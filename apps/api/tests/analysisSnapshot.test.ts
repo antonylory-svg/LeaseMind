@@ -315,6 +315,47 @@ test('AS-C-017: both recovery GET endpoints return the same persisted Snapshot',
   }
 });
 
+test('AS-C-012: a persisted Snapshot becomes stale after the Technical Assignment revision changes', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const subjectId = await createReadyProperty(taPool, 1525);
+  const { app } = makeApp();
+  try {
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/v1/analysis-snapshots',
+      payload: {
+        idempotency_key: key('analysis-stale-read-create'),
+        technical_assignment_id: subjectId,
+        expected_revision: 1,
+        analysis_kind: 'pre_launch',
+        campaign_id: null,
+        retry_of_analysis_snapshot_id: null
+      }
+    });
+    assert.equal(created.statusCode, 201, created.body);
+
+    const updated = await saveTechnicalAssignmentDraft(taPool, {
+      idempotencyKey: key('analysis-stale-read-update'),
+      technicalAssignmentId: subjectId,
+      expectedRevision: 1,
+      scenario: 'need_tenant',
+      payload: propertyPayload(1525, { property_area_sqm: 110 })
+    });
+    assert.equal(updated.revision, 2);
+
+    const stale = await app.inject({
+      method: 'GET',
+      url: `/api/v1/analysis-snapshots/${created.json().analysis_snapshot_id}`
+    });
+    assert.equal(stale.statusCode, 200, stale.body);
+    assert.equal(stale.json().freshness_status, 'stale');
+    assert.equal(stale.json().freshness_reason, 'revision_changed');
+  } finally {
+    await taPool.end();
+    await app.close();
+  }
+});
+
 test('AS-C-006: explicit tenant rate basis is persisted without deriving a replacement field', { skip: !hasAnalysisDatabase }, async () => {
   const { app } = makeApp();
   try {
@@ -378,6 +419,39 @@ test('AS-C-002/012: draft and revision mismatch are rejected without a Snapshot'
     assert.equal(staleResponse.statusCode, 409, staleResponse.body);
     assert.equal(staleResponse.json().code, 'ANALYSIS_REVISION_CONFLICT');
   } finally {
+    await app.close();
+  }
+});
+
+test('AS-C-020: synthetic_ru_v1 refuses a Technical Assignment from another market', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const subjectId = await createReadyProperty(taPool, 1500);
+  const { app } = makeApp();
+  try {
+    await taPool.query(
+      'UPDATE leasemind_app.property SET property_country_code = $2 WHERE property_id = $1',
+      [subjectId, 'KZ']
+    );
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/analysis-snapshots',
+      payload: {
+        idempotency_key: key('analysis-unsupported-market'),
+        technical_assignment_id: subjectId,
+        expected_revision: 1,
+        analysis_kind: 'pre_launch',
+        campaign_id: null,
+        retry_of_analysis_snapshot_id: null
+      }
+    });
+    assert.equal(response.statusCode, 400, response.body);
+    assert.equal(response.json().code, 'ANALYSIS_MARKET_UNSUPPORTED');
+  } finally {
+    await taPool.query(
+      'UPDATE leasemind_app.property SET property_country_code = $2 WHERE property_id = $1',
+      [subjectId, 'RU']
+    ).catch(() => {});
+    await taPool.end();
     await app.close();
   }
 });
