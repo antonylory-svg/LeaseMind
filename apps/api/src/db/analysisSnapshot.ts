@@ -110,6 +110,20 @@ export interface GetCurrentAnalysisSnapshotInput {
   campaignId?: string | null;
 }
 
+export interface PostLaunchRefreshIdentity {
+  campaignId: string;
+  propertyId: string | null;
+  tenantRequestId: string | null;
+  technicalAssignmentId: string;
+  scenario: AnalysisScenario;
+  sourceRevision: number;
+}
+
+export interface ExecuteAnalysisSnapshotResult {
+  analysisSnapshotId: string;
+  status: AnalysisStatus;
+}
+
 export function computeAnalysisCommandHash(input: CreateAnalysisSnapshotInput): string {
   return createHash('sha256')
     .update(
@@ -188,17 +202,20 @@ async function readEligibleDataset(client: pg.PoolClient): Promise<{
 async function readCurrentAttempt(
   client: pg.PoolClient,
   technicalAssignmentId: string,
-  sourceRevision: number
+  sourceRevision: number,
+  analysisKind: AnalysisKind,
+  campaignId: string | null
 ): Promise<CurrentAttemptRow | null> {
   const result = await client.query<CurrentAttemptRow>(
     `SELECT analysis_snapshot_id, calculation_attempt, status, failure
        FROM leasemind_app.analysis_snapshot
       WHERE technical_assignment_id = $1
         AND source_revision = $2
-        AND analysis_kind = 'pre_launch'
+        AND analysis_kind = $3
+        AND campaign_id IS NOT DISTINCT FROM $4::uuid
       ORDER BY calculation_attempt DESC
       LIMIT 1`,
-    [technicalAssignmentId, sourceRevision]
+    [technicalAssignmentId, sourceRevision, analysisKind, campaignId]
   );
   return result.rows[0] ?? null;
 }
@@ -277,6 +294,87 @@ async function markFailed(
   );
 }
 
+async function calculatePendingAnalysisSnapshot(
+  client: pg.PoolClient,
+  analysisSnapshotId: string,
+  subject: Subject
+): Promise<AnalysisStatus> {
+  await client.query('SAVEPOINT analysis_calculation');
+  let evidenceAsOf: Date | null = null;
+  let evidenceDatasetRevision: string | null = null;
+  try {
+    const time = await client.query<{ evidence_as_of: Date }>('SELECT transaction_timestamp() AS evidence_as_of');
+    evidenceAsOf = time.rows[0].evidence_as_of;
+    const dataset = await readEligibleDataset(client);
+    const preparation = prepareSyntheticAnalysis(
+      subject.scenario,
+      subject.row,
+      dataset.properties,
+      dataset.tenantRequests
+    );
+    evidenceDatasetRevision = preparation.evidenceDatasetRevision;
+
+    if (await evidenceIsRevoked(client, evidenceDatasetRevision)) {
+      await markFailed(
+        client,
+        analysisSnapshotId,
+        { code: 'ANALYSIS_DATASET_UNAVAILABLE', retryable: true },
+        evidenceAsOf,
+        evidenceDatasetRevision
+      );
+      await client.query('RELEASE SAVEPOINT analysis_calculation');
+      return 'failed';
+    }
+
+    const results = calculateSyntheticAnalysis({
+      scenario: subject.scenario,
+      subject: subject.row,
+      properties: dataset.properties,
+      tenantRequests: dataset.tenantRequests,
+      evidenceDatasetRevision
+    });
+    if (await evidenceIsRevoked(client, evidenceDatasetRevision)) {
+      await markFailed(
+        client,
+        analysisSnapshotId,
+        { code: 'ANALYSIS_DATASET_UNAVAILABLE', retryable: true },
+        evidenceAsOf,
+        evidenceDatasetRevision
+      );
+      await client.query('RELEASE SAVEPOINT analysis_calculation');
+      return 'failed';
+    }
+
+    const status: AnalysisStatus = Object.values(results).some(metric => metric.metric_status === 'assessed')
+      ? 'completed'
+      : 'insufficient_data';
+    await client.query(
+      `UPDATE leasemind_app.analysis_snapshot
+          SET status = $2,
+              generated_at = clock_timestamp(),
+              results = $3::jsonb,
+              failure = NULL,
+              evidence_as_of = $4,
+              evidence_dataset_revision = $5
+        WHERE analysis_snapshot_id = $1 AND status = 'pending'`,
+      [analysisSnapshotId, status, JSON.stringify(results), evidenceAsOf, evidenceDatasetRevision]
+    );
+    await client.query('RELEASE SAVEPOINT analysis_calculation');
+    return status;
+  } catch {
+    await client.query('ROLLBACK TO SAVEPOINT analysis_calculation');
+    await markFailed(
+      client,
+      analysisSnapshotId,
+      { code: 'ANALYSIS_GENERATION_FAILED', retryable: true },
+      evidenceAsOf,
+      evidenceDatasetRevision
+    );
+    await client.query('RELEASE SAVEPOINT analysis_calculation');
+    return 'failed';
+  }
+}
+
 export async function createOrReplayPreLaunchAnalysisSnapshot(
   pool: pg.Pool,
   input: CreateAnalysisSnapshotInput
@@ -331,7 +429,13 @@ export async function createOrReplayPreLaunchAnalysisSnapshot(
       throw new AnalysisRequestError('ANALYSIS_MARKET_UNSUPPORTED', 400, false);
     }
 
-    const current = await readCurrentAttempt(client, input.technicalAssignmentId, input.expectedRevision);
+    const current = await readCurrentAttempt(
+      client,
+      input.technicalAssignmentId,
+      input.expectedRevision,
+      'pre_launch',
+      null
+    );
     const decision = decideAttempt(current, input.retryOfAnalysisSnapshotId);
 
     if (!decision.create) {
@@ -367,74 +471,7 @@ export async function createOrReplayPreLaunchAnalysisSnapshot(
     );
     await insertMapping(client, input, commandHash, analysisSnapshotId);
 
-    await client.query('SAVEPOINT analysis_calculation');
-    let evidenceAsOf: Date | null = null;
-    let evidenceDatasetRevision: string | null = null;
-    try {
-      const time = await client.query<{ evidence_as_of: Date }>('SELECT transaction_timestamp() AS evidence_as_of');
-      evidenceAsOf = time.rows[0].evidence_as_of;
-      const dataset = await readEligibleDataset(client);
-      const preparation = prepareSyntheticAnalysis(
-        subject.scenario,
-        subject.row,
-        dataset.properties,
-        dataset.tenantRequests
-      );
-      evidenceDatasetRevision = preparation.evidenceDatasetRevision;
-
-      if (await evidenceIsRevoked(client, evidenceDatasetRevision)) {
-        await markFailed(
-          client,
-          analysisSnapshotId,
-          { code: 'ANALYSIS_DATASET_UNAVAILABLE', retryable: true },
-          evidenceAsOf,
-          evidenceDatasetRevision
-        );
-      } else {
-        const results = calculateSyntheticAnalysis({
-          scenario: subject.scenario,
-          subject: subject.row,
-          properties: dataset.properties,
-          tenantRequests: dataset.tenantRequests,
-          evidenceDatasetRevision
-        });
-        if (await evidenceIsRevoked(client, evidenceDatasetRevision)) {
-          await markFailed(
-            client,
-            analysisSnapshotId,
-            { code: 'ANALYSIS_DATASET_UNAVAILABLE', retryable: true },
-            evidenceAsOf,
-            evidenceDatasetRevision
-          );
-        } else {
-          const status: AnalysisStatus = Object.values(results).some(metric => metric.metric_status === 'assessed')
-            ? 'completed'
-            : 'insufficient_data';
-          await client.query(
-            `UPDATE leasemind_app.analysis_snapshot
-                SET status = $2,
-                    generated_at = clock_timestamp(),
-                    results = $3::jsonb,
-                    failure = NULL,
-                    evidence_as_of = $4,
-                    evidence_dataset_revision = $5
-              WHERE analysis_snapshot_id = $1 AND status = 'pending'`,
-            [analysisSnapshotId, status, JSON.stringify(results), evidenceAsOf, evidenceDatasetRevision]
-          );
-        }
-      }
-      await client.query('RELEASE SAVEPOINT analysis_calculation');
-    } catch {
-      await client.query('ROLLBACK TO SAVEPOINT analysis_calculation');
-      await markFailed(
-        client,
-        analysisSnapshotId,
-        { code: 'ANALYSIS_GENERATION_FAILED', retryable: true },
-        evidenceAsOf,
-        evidenceDatasetRevision
-      );
-      await client.query('RELEASE SAVEPOINT analysis_calculation');
-    }
+    await calculatePendingAnalysisSnapshot(client, analysisSnapshotId, subject);
 
     await client.query('COMMIT');
     transactionOpen = false;
@@ -458,6 +495,236 @@ export async function createOrReplayPreLaunchAnalysisSnapshot(
     if (keyLocked) {
       try {
         if (!(await releaseSessionLock(client, keyScope))) destroyClient = true;
+      } catch {
+        destroyClient = true;
+      }
+    }
+    client.release(destroyClient);
+  }
+}
+
+export function computeInitialPostLaunchRefreshIdempotencyKey(identity: PostLaunchRefreshIdentity): string {
+  return createHash('sha256')
+    .update(
+      `LEASEMIND_ANALYSIS_POST_LAUNCH_REFRESH_INTENT_V1|${identity.campaignId}|${identity.technicalAssignmentId}|${identity.sourceRevision}|post_launch_refresh`
+    )
+    .digest('hex');
+}
+
+function postLaunchIdentityIsConsistent(identity: PostLaunchRefreshIdentity): boolean {
+  return identity.technicalAssignmentId === (identity.propertyId ?? identity.tenantRequestId)
+    && (
+      (identity.scenario === 'need_tenant' && identity.propertyId === identity.technicalAssignmentId && identity.tenantRequestId === null)
+      || (identity.scenario === 'need_property' && identity.tenantRequestId === identity.technicalAssignmentId && identity.propertyId === null)
+    );
+}
+
+export async function createOrReplayInitialPostLaunchAnalysisSnapshot(
+  pool: pg.Pool,
+  identity: PostLaunchRefreshIdentity
+): Promise<CreateAnalysisSnapshotResult> {
+  if (!postLaunchIdentityIsConsistent(identity)) {
+    throw new AnalysisRequestError('ANALYSIS_CAMPAIGN_MISMATCH', 409, false);
+  }
+
+  const input: CreateAnalysisSnapshotInput = {
+    idempotencyKey: computeInitialPostLaunchRefreshIdempotencyKey(identity),
+    technicalAssignmentId: identity.technicalAssignmentId,
+    expectedRevision: identity.sourceRevision,
+    analysisKind: 'post_launch_refresh',
+    campaignId: identity.campaignId,
+    retryOfAnalysisSnapshotId: null
+  };
+  const commandHash = computeAnalysisCommandHash(input);
+  const fastMapping = await readMapping(pool, input.idempotencyKey);
+  if (fastMapping) return replayOrConflict(fastMapping, commandHash);
+
+  const client = await pool.connect();
+  const keyScope = `analysis-snapshot:idempotency-key:${input.idempotencyKey}`;
+  const logicalScope = `technical-assignment:id:${identity.technicalAssignmentId}`;
+  let keyLocked = false;
+  let logicalLocked = false;
+  let transactionOpen = false;
+  let destroyClient = false;
+
+  try {
+    await acquireSessionLock(client, keyScope);
+    keyLocked = true;
+    const lockedMapping = await readMapping(client, input.idempotencyKey);
+    if (lockedMapping) return replayOrConflict(lockedMapping, commandHash);
+
+    await acquireSessionLock(client, logicalScope);
+    logicalLocked = true;
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+    transactionOpen = true;
+
+    const subject = await readSubject(client, identity.technicalAssignmentId);
+    if (!subject) {
+      throw new AnalysisRequestError('ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_FOUND', 404, false);
+    }
+    if (
+      subject.scenario !== identity.scenario
+      || subject.row.lifecycle_status !== 'campaign_started'
+      || subject.row.revision !== identity.sourceRevision
+    ) {
+      throw new AnalysisRequestError('ANALYSIS_CAMPAIGN_MISMATCH', 409, false);
+    }
+    const countryCode = subject.scenario === 'need_tenant'
+      ? subject.row.property_country_code
+      : subject.row.request_country_code;
+    if (countryCode !== 'RU') {
+      throw new AnalysisRequestError('ANALYSIS_MARKET_UNSUPPORTED', 400, false);
+    }
+
+    const current = await readCurrentAttempt(
+      client,
+      identity.technicalAssignmentId,
+      identity.sourceRevision,
+      'post_launch_refresh',
+      identity.campaignId
+    );
+    const decision = decideAttempt(current, null);
+    if (!decision.create) {
+      await insertMapping(client, input, commandHash, decision.analysisSnapshotId);
+      await client.query('COMMIT');
+      transactionOpen = false;
+      return { analysisSnapshotId: decision.analysisSnapshotId, created: false };
+    }
+
+    const analysisSnapshotId = randomUUID();
+    await client.query(
+      `INSERT INTO leasemind_app.analysis_snapshot (
+         analysis_snapshot_id, property_id, tenant_request_id, source_revision, scenario,
+         analysis_kind, campaign_id, calculation_attempt, status, schema_version,
+         method_version, country_code, currency, locale, area_unit, rent_period, input_fingerprint
+       ) VALUES (
+         $1, $2, $3, $4, $5,
+         'post_launch_refresh', $6, $7, 'pending', $8,
+         $9, 'RU', 'RUB', 'ru-RU', 'sqm', 'month', $10
+       )`,
+      [
+        analysisSnapshotId,
+        identity.propertyId,
+        identity.tenantRequestId,
+        identity.sourceRevision,
+        identity.scenario,
+        identity.campaignId,
+        decision.attempt,
+        ANALYSIS_SCHEMA_VERSION,
+        ANALYSIS_METHOD_VERSION,
+        computeAnalysisInputFingerprint(subject.scenario, subject.row)
+      ]
+    );
+    await insertMapping(client, input, commandHash, analysisSnapshotId);
+    await client.query('COMMIT');
+    transactionOpen = false;
+    return { analysisSnapshotId, created: true };
+  } catch (error) {
+    if (transactionOpen) {
+      await client.query('ROLLBACK').catch(() => {
+        destroyClient = true;
+      });
+      transactionOpen = false;
+    }
+    throw error;
+  } finally {
+    if (logicalLocked) {
+      try {
+        if (!(await releaseSessionLock(client, logicalScope))) destroyClient = true;
+      } catch {
+        destroyClient = true;
+      }
+    }
+    if (keyLocked) {
+      try {
+        if (!(await releaseSessionLock(client, keyScope))) destroyClient = true;
+      } catch {
+        destroyClient = true;
+      }
+    }
+    client.release(destroyClient);
+  }
+}
+
+interface ExecutionSnapshotRow {
+  analysis_snapshot_id: string;
+  technical_assignment_id: string;
+  source_revision: number;
+  scenario: AnalysisScenario;
+  analysis_kind: AnalysisKind;
+  campaign_id: string | null;
+  status: AnalysisStatus;
+  input_fingerprint: string;
+}
+
+export async function executePendingPostLaunchAnalysisSnapshot(
+  pool: pg.Pool,
+  analysisSnapshotId: string
+): Promise<ExecuteAnalysisSnapshotResult> {
+  const client = await pool.connect();
+  const executionScope = `analysis-snapshot:execution:${analysisSnapshotId}`;
+  let executionLocked = false;
+  let transactionOpen = false;
+  let destroyClient = false;
+
+  try {
+    await acquireSessionLock(client, executionScope);
+    executionLocked = true;
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+    transactionOpen = true;
+    const result = await client.query<ExecutionSnapshotRow>(
+      `SELECT analysis_snapshot_id, technical_assignment_id, source_revision, scenario,
+              analysis_kind, campaign_id, status, input_fingerprint
+         FROM leasemind_app.analysis_snapshot
+        WHERE analysis_snapshot_id = $1
+        FOR UPDATE`,
+      [analysisSnapshotId]
+    );
+    const snapshot = result.rows[0];
+    if (!snapshot || snapshot.analysis_kind !== 'post_launch_refresh' || snapshot.campaign_id === null) {
+      throw new AnalysisRequestError('ANALYSIS_KIND_INVALID', 400, false);
+    }
+    if (snapshot.status !== 'pending') {
+      await client.query('COMMIT');
+      transactionOpen = false;
+      return { analysisSnapshotId, status: snapshot.status };
+    }
+
+    const subject = await readSubject(client, snapshot.technical_assignment_id);
+    const subjectMatches = subject
+      && subject.scenario === snapshot.scenario
+      && subject.row.lifecycle_status === 'campaign_started'
+      && subject.row.revision === snapshot.source_revision
+      && computeAnalysisInputFingerprint(subject.scenario, subject.row) === snapshot.input_fingerprint;
+    if (!subjectMatches) {
+      await markFailed(
+        client,
+        analysisSnapshotId,
+        { code: 'ANALYSIS_GENERATION_FAILED', retryable: true },
+        null,
+        null
+      );
+      await client.query('COMMIT');
+      transactionOpen = false;
+      return { analysisSnapshotId, status: 'failed' };
+    }
+
+    const status = await calculatePendingAnalysisSnapshot(client, analysisSnapshotId, subject);
+    await client.query('COMMIT');
+    transactionOpen = false;
+    return { analysisSnapshotId, status };
+  } catch (error) {
+    if (transactionOpen) {
+      await client.query('ROLLBACK').catch(() => {
+        destroyClient = true;
+      });
+      transactionOpen = false;
+    }
+    throw error;
+  } finally {
+    if (executionLocked) {
+      try {
+        if (!(await releaseSessionLock(client, executionScope))) destroyClient = true;
       } catch {
         destroyClient = true;
       }

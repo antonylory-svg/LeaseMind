@@ -1,5 +1,6 @@
-// Shared test-only connection strings, mirroring the four-identity model in
-// 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md.
+// Shared test-only connection strings. The original database boundary comes
+// from ADR-0005; ADR-0009 adds the Analysis writer, worker and evidence-
+// revocation identities without making any connection interchangeable.
 // Never used by application code -- tests only.
 
 export const MIGRATION_DATABASE_URL = process.env.LEASEMIND_MIGRATION_DATABASE_URL;
