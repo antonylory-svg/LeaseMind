@@ -104,6 +104,13 @@ jobs:
       - name: Apply Campaign read model migration
         run: npm run migrate:up --workspace apps/api
 
+      - name: Probe evidence revocation CLI dry-run
+        run: >-
+          npm run revoke-evidence-dataset --workspace apps/api --
+          --evidence-dataset-revision 0000000000000000000000000000000000000000000000000000000000000000
+          --reason-code SYNTHETIC_CI_PROBE
+          --actor-ref ci:app-foundation
+
       - name: Seed synthetic campaigns
         run: npm run seed --workspace apps/api
 

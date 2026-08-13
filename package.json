@@ -17,6 +17,7 @@
     "provision-roles": "npm run provision-roles --workspace apps/api",
     "migrate:up": "npm run migrate:up --workspace apps/api",
     "migrate:down": "npm run migrate:down --workspace apps/api",
-    "seed": "npm run seed --workspace apps/api"
+    "seed": "npm run seed --workspace apps/api",
+    "revoke-evidence-dataset": "npm run revoke-evidence-dataset --workspace apps/api --"
   }
 }
