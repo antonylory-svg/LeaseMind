@@ -3,7 +3,7 @@
 import type { Campaign } from './campaigns';
 
 // Same-origin by default, matching api.ts/campaigns.ts.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '';
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL ?? '';
 
 // Synthetic-only Contacts Gate marker (ADR-0008 section 2). The server
 // accepts only this exact literal -- the frontend cannot "declare" the
@@ -19,8 +19,9 @@ export type LaunchCampaignResult =
 
 /**
  * The atomic Campaign launch command. Sends nothing but a client-generated
- * idempotency_key, the Technical Assignment reference/revision, and the
- * synthetic Contacts Gate marker -- never a name, phone, email or any
+ * idempotency_key, the Technical Assignment reference/revision, the current
+ * server-owned Analysis Snapshot reference, and the synthetic Contacts Gate
+ * marker -- never a name, phone, email or any
  * other contact field (see
  * ADR-0007-synthetic-campaign-creation-command-boundary.md and
  * ADR-0008-technical-assignment-implementation.md). Retrying with the same
@@ -30,7 +31,8 @@ export type LaunchCampaignResult =
 export async function launchCampaign(
   idempotencyKey: string,
   technicalAssignmentId: string,
-  expectedRevision: number
+  expectedRevision: number,
+  analysisSnapshotId: string
 ): Promise<LaunchCampaignResult> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/campaigns`, {
@@ -40,6 +42,7 @@ export async function launchCampaign(
         idempotency_key: idempotencyKey,
         technical_assignment_id: technicalAssignmentId,
         expected_revision: expectedRevision,
+        analysis_snapshot_id: analysisSnapshotId,
         contacts_gate_evidence: SYNTHETIC_CONTACTS_GATE_EVIDENCE
       })
     });

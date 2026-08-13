@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 // No React DOM renderer is set up in this project's test suite (see the
 // same note in technicalAssignmentErrorMessages.test.ts). These are
-// source-text regression guards for the two Sprint 4 blocking defects --
+// source-text regression guards for the Sprint 4 blocking defects and the
+// Sprint 5 Analysis gate --
 // the only way to pin down "this wiring exists and is not dead code"
 // without a DOM. They check structure/ordering, not runtime behavior.
 
@@ -37,7 +38,9 @@ test('CampaignLaunchWizard never actually calls localStorage or sessionStorage',
 });
 
 test('the restore-on-mount effect reads the URL and re-fetches from the backend, not from any trusted client cache', () => {
-  const start = SOURCE.indexOf('useEffect(() => {\n    const id = getTechnicalAssignmentIdFromSearch(window.location.search);');
+  const restoreMarker = SOURCE.indexOf('// Restore-on-mount:');
+  assert.ok(restoreMarker >= 0, 'restore-on-mount marker not found');
+  const start = SOURCE.indexOf('useEffect(() => {', restoreMarker);
   assert.ok(start >= 0, 'restore-on-mount effect not found');
   const end = SOURCE.indexOf('}, [restoreAttempt]);', start);
   assert.ok(end > start, 'could not find the end of the restore-on-mount effect');
@@ -115,6 +118,97 @@ test('handleLaunch never sends anything but the server-defined synthetic Contact
   // when to call launchCampaign at all -- which the tests above cover.
   const body = functionBody(SOURCE, 'const handleLaunch = async () => {');
   assert.ok(body.includes('launchCampaign('), 'handleLaunch must call the launchCampaign command');
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5: server-owned Analysis restore, presentation and launch gate
+// ---------------------------------------------------------------------------
+
+test('Analysis restore reads the current server result before a confirmed not-found can create the first attempt', () => {
+  const start = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  assert.ok(start >= 0, 'Analysis restore/create effect not found');
+  const end = SOURCE.indexOf('// A pending attempt is refreshed', start);
+  assert.ok(end > start, 'could not find the end of the Analysis restore/create flow');
+  const flow = SOURCE.slice(start, end);
+  const readIndex = flow.indexOf('fetchCurrentPreLaunchAnalysisSnapshot(technicalAssignmentId, revision)');
+  const notFoundIndex = flow.indexOf("current.kind === 'not_found'");
+  const createIndex = flow.indexOf('createFromCommand(commandFor(null))', notFoundIndex);
+  assert.ok(readIndex >= 0 && notFoundIndex > readIndex && createIndex > notFoundIndex);
+});
+
+test('explicit Analysis retry creates a new key and names the failed Snapshot as its retry target', () => {
+  const body = functionBody(SOURCE, 'const handleAnalysisRetry = () => {');
+  assert.ok(body.includes("analysisSnapshot.status !== 'failed'"), 'retry must require a terminal failed result');
+  assert.ok(body.includes('!analysisSnapshot.failure?.retryable'), 'retry must require retryable=true');
+  assert.ok(body.includes('idempotencyKey: crypto.randomUUID()'), 'an explicit retry must use a new idempotency key');
+  assert.ok(
+    body.includes('retryOfAnalysisSnapshotId: analysisSnapshot.analysis_snapshot_id'),
+    'the new attempt must name the failed Snapshot'
+  );
+});
+
+test('Analysis screen presents the four approved blocks in order and never invents a probability percentage', () => {
+  const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
+  assert.ok(analysisSection.includes('<h2>Предварительный анализ</h2>'));
+  assert.ok(analysisSection.includes('По синтетической базе LeaseMind'));
+  const price = analysisSection.indexOf('1. Адекватность арендной ставки');
+  const competition = analysisSection.indexOf('2. Конкурентная среда');
+  const probability = analysisSection.indexOf('3. Вероятность сделки за 30 дней');
+  const categories = analysisSection.indexOf('4. ');
+  assert.ok(price >= 0 && competition > price && probability > competition && categories > probability);
+  assert.ok(
+    analysisSection.includes('Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней.')
+  );
+  assert.ok(!analysisSection.includes('%'), 'v1 must not display a deal probability percentage');
+});
+
+test('stale Analysis result is explained outside the terminal-results render branch', () => {
+  const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
+  const staleMessage = analysisSection.indexOf("analysisSnapshot?.freshness_status === 'stale'");
+  const resultsBranch = analysisSection.indexOf('{currentTerminalSnapshot && (');
+  assert.ok(staleMessage >= 0 && resultsBranch > staleMessage);
+  assert.ok(
+    analysisSection.includes('const currentTerminalSnapshot = analysisReady'),
+    'results must be derived only from the current terminal gate'
+  );
+});
+
+test('Contacts and Launch independently require the same current terminal Analysis gate', () => {
+  const contactsSection = sectionBetween("if (step === 'contacts') {", "if (step === 'launch') {");
+  const launchSection = sectionBetween("if (step === 'launch') {", "if (step === 'success'");
+  assert.ok(contactsSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(launchSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(launchSection.includes('disabled={launching || !analysisAllowsProgress(analysisSnapshot, assignment)}'));
+});
+
+test('Analysis gate checks scenario and result payload and fails closed after a server refresh error', () => {
+  const matchStart = SOURCE.indexOf('function analysisMatchesAssignment(');
+  const allowStart = SOURCE.indexOf('function analysisAllowsProgress(', matchStart);
+  const messagesStart = SOURCE.indexOf('function analysisFailureMessage(', allowStart);
+  const gates = SOURCE.slice(matchStart, messagesStart);
+  assert.ok(gates.includes('snapshot.scenario === assignment.scenario'));
+  assert.ok(gates.includes('Boolean(snapshot.results)'));
+
+  const flowStart = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  const flowEnd = SOURCE.indexOf('// A pending attempt is refreshed', flowStart);
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  const readFailure = flow.indexOf('setAnalysisLoading(false);', flow.indexOf("current.kind === 'not_found'"));
+  assert.ok(readFailure >= 0, 'current-read failure branch not found');
+  assert.ok(
+    flow.indexOf('setAnalysisSnapshot(null);', readFailure) > readFailure,
+    'a failed server refresh must revoke the locally cached progress gate'
+  );
+});
+
+test('handleLaunch passes the exact authorizing Analysis Snapshot id to the launch command', () => {
+  const body = functionBody(SOURCE, 'const handleLaunch = async () => {');
+  assert.ok(body.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(body.includes('analysisSnapshot.analysis_snapshot_id'));
+  const launchCall = body.slice(body.indexOf('launchCampaign('));
+  assert.ok(
+    launchCall.indexOf('analysisSnapshot.analysis_snapshot_id') > launchCall.indexOf('assignment.revision'),
+    'the launch command must receive the Snapshot id after the expected revision'
+  );
 });
 
 // ---------------------------------------------------------------------------

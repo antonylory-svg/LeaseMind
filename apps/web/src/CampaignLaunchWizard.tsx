@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { launchCampaign } from './campaignCommand';
 import { fetchCampaignById, type Campaign } from './campaigns';
 import { saveTechnicalAssignmentDraft, fetchTechnicalAssignmentById, type TechnicalAssignment } from './technicalAssignmentApi';
@@ -23,8 +23,22 @@ import {
   buildSearchWithTechnicalAssignmentId,
   buildSearchWithoutTechnicalAssignmentId
 } from './technicalAssignmentUrlState';
-import { SCENARIO_LABELS, LIFECYCLE_STATUS_LABELS, CAMPAIGN_STATUS_LABELS, ruLabel } from './ruLabels';
+import {
+  BUSINESS_CATEGORY_LABELS,
+  CAMPAIGN_STATUS_LABELS,
+  LIFECYCLE_STATUS_LABELS,
+  PROPERTY_TYPE_LABELS,
+  SCENARIO_LABELS,
+  ruLabel
+} from './ruLabels';
 import { explainTechnicalAssignmentError, explainMissingRequiredField } from './technicalAssignmentErrorMessages';
+import {
+  createPreLaunchAnalysisSnapshot,
+  fetchCurrentPreLaunchAnalysisSnapshot,
+  type AnalysisApiFailure,
+  type AnalysisMetric,
+  type AnalysisSnapshot
+} from './analysisSnapshotApi';
 
 // Visible end-to-end product scenario (Sprint 4): goal selection -> real
 // Technical Assignment form -> Analysis (gated on ready_for_analysis) ->
@@ -50,6 +64,107 @@ interface DecimalFieldState {
   rawText: string;
   invalid: boolean;
   touched: boolean;
+}
+
+interface AnalysisCommandState {
+  technicalAssignmentId: string;
+  revision: number;
+  idempotencyKey: string;
+  retryOfAnalysisSnapshotId: string | null;
+}
+
+const CONFIDENCE_LABELS: Record<string, string> = {
+  low: 'низкая',
+  medium: 'средняя',
+  high: 'высокая'
+};
+
+const PRICE_CLASSIFICATION_LABELS: Record<string, string> = {
+  below_reference_range: 'ниже диапазона сопоставимой выборки',
+  within_reference_range: 'в диапазоне сопоставимой выборки',
+  above_reference_range: 'выше диапазона сопоставимой выборки'
+};
+
+function analysisMatchesAssignment(snapshot: AnalysisSnapshot | null, assignment: TechnicalAssignment | null): boolean {
+  return Boolean(
+    snapshot
+      && assignment
+      && snapshot.analysis_kind === 'pre_launch'
+      && snapshot.technical_assignment_id === assignment.technical_assignment_id
+      && snapshot.source_revision === assignment.revision
+      && snapshot.scenario === assignment.scenario
+  );
+}
+
+function analysisAllowsProgress(snapshot: AnalysisSnapshot | null, assignment: TechnicalAssignment | null): boolean {
+  return analysisMatchesAssignment(snapshot, assignment)
+    && snapshot?.freshness_status === 'current'
+    && Boolean(snapshot.results)
+    && (snapshot.status === 'completed' || snapshot.status === 'insufficient_data');
+}
+
+function analysisFailureMessage(error: AnalysisApiFailure): string {
+  switch (error.code) {
+    case 'ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_FOUND':
+      return 'Техническое задание не найдено. Вернитесь назад и восстановите его из сохранённой ссылки.';
+    case 'ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_READY':
+      return 'Техническое задание ещё не готово к анализу.';
+    case 'ANALYSIS_REVISION_CONFLICT':
+      return 'Техническое задание изменилось. Откройте анализ для текущей версии.';
+    case 'ANALYSIS_DATASET_UNAVAILABLE':
+      return 'Доказательная база анализа временно недоступна. Попробуйте ещё раз.';
+    case 'ANALYSIS_GENERATION_FAILED':
+      return 'Расчёт завершился технической ошибкой. Попробуйте ещё раз.';
+    case 'ANALYSIS_IDEMPOTENCY_CONFLICT':
+      return 'Запрос анализа устарел. Обновите страницу и повторите действие.';
+    case 'ANALYSIS_RETRY_NOT_ALLOWED':
+    case 'ANALYSIS_RETRY_TARGET_MISMATCH':
+      return 'Повтор для этой версии анализа уже недоступен. Обновите текущий результат.';
+    default:
+      return 'Не удалось получить предварительный анализ. Попробуйте ещё раз.';
+  }
+}
+
+function analysisFreshnessMessage(snapshot: AnalysisSnapshot): string {
+  if (snapshot.freshness_reason === 'evidence_revoked') {
+    return 'Доказательная база этого расчёта отозвана. Результат больше не считается актуальным и не разрешает запуск кампании.';
+  }
+  return 'Техническое задание изменилось. Обновите анализ для текущей версии.';
+}
+
+function metricExplanation(metric: AnalysisMetric): string {
+  if (metric.reason_codes.includes('REFERENCE_SAMPLE_TOO_SMALL')) {
+    return 'Для надёжного сравнения цены нужно не менее пяти сопоставимых записей.';
+  }
+  if (metric.reason_codes.includes('NO_COMPATIBLE_SYNTHETIC_RECORDS')) {
+    return 'В синтетической базе пока нет сопоставимых записей для этого вывода.';
+  }
+  return 'Подтверждённых данных для надёжного вывода пока недостаточно.';
+}
+
+function MetricContext({ metric }: { metric: AnalysisMetric }) {
+  return (
+    <p>
+      Размер выборки: {metric.sample_size}. Уверенность:{' '}
+      {metric.confidence ? CONFIDENCE_LABELS[metric.confidence] : 'не определяется'}.
+      {metric.assumptions.includes('UNSUPPORTED_FILTERS_PRESENT')
+        ? ' Часть дополнительных условий пока не участвует в сравнении.'
+        : ''}
+    </p>
+  );
+}
+
+function formatRate(value: string): string {
+  const parsed = Number(value);
+  return Number.isFinite(parsed)
+    ? new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parsed)
+    : value;
+}
+
+function formatAnalysisTime(value: string | null): string {
+  if (!value) return 'расчёт ещё не завершён';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString('ru-RU');
 }
 
 interface RenderFieldContext {
@@ -318,7 +433,13 @@ export default function CampaignLaunchWizard() {
   const [saveErrorHighlightFieldIds, setSaveErrorHighlightFieldIds] = useState<string[]>([]);
   const [missingFields, setMissingFields] = useState<TAFieldDef[]>([]);
 
-  const [launchIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<AnalysisSnapshot | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisReloadAttempt, setAnalysisReloadAttempt] = useState(0);
+  const analysisCommandRef = useRef<AnalysisCommandState | null>(null);
+
+  const [launchIdempotencyKey, setLaunchIdempotencyKey] = useState(() => crypto.randomUUID());
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [wasReplay, setWasReplay] = useState(false);
@@ -400,6 +521,11 @@ export default function CampaignLaunchWizard() {
       const restoredFields = fieldsForScenario(found.scenario);
       setGoal(found.scenario === 'need_tenant' ? 'owner' : 'tenant');
       setAssignment(found);
+      setAnalysisSnapshot(null);
+      setAnalysisError(null);
+      analysisCommandRef.current = null;
+      setContactsGateConfirmed(false);
+      setLaunchIdempotencyKey(crypto.randomUUID());
       setFormValues({ ...found.payload });
       setDecimalState(hydrateDecimalState(restoredFields, found.payload));
       const restoredRequestRate = found.payload[REQUEST_RENT_RATE_FIELD_ID];
@@ -416,6 +542,109 @@ export default function CampaignLaunchWizard() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restoreAttempt]);
+
+  // Server-owned Analysis restore/create flow. A confirmed 404 is the only
+  // condition that creates the first attempt. Transport failures reuse the
+  // same command key, while a new key is generated only for an explicit
+  // retry of a retryable terminal failure.
+  useEffect(() => {
+    if (step !== 'analysis' || !assignment || assignment.lifecycle_status !== 'ready_for_analysis') return;
+
+    const technicalAssignmentId = assignment.technical_assignment_id;
+    const revision = assignment.revision;
+    let cancelled = false;
+
+    const commandFor = (retryOfAnalysisSnapshotId: string | null): AnalysisCommandState => {
+      const current = analysisCommandRef.current;
+      if (
+        current
+        && current.technicalAssignmentId === technicalAssignmentId
+        && current.revision === revision
+        && current.retryOfAnalysisSnapshotId === retryOfAnalysisSnapshotId
+      ) {
+        return current;
+      }
+      const next = {
+        technicalAssignmentId,
+        revision,
+        idempotencyKey: crypto.randomUUID(),
+        retryOfAnalysisSnapshotId
+      };
+      analysisCommandRef.current = next;
+      return next;
+    };
+
+    const createFromCommand = async (command: AnalysisCommandState): Promise<void> => {
+      const created = await createPreLaunchAnalysisSnapshot(
+        command.idempotencyKey,
+        command.technicalAssignmentId,
+        command.revision,
+        command.retryOfAnalysisSnapshotId
+      );
+      if (cancelled) return;
+      setAnalysisLoading(false);
+      if (created.kind === 'snapshot') {
+        setAnalysisSnapshot(created.snapshot);
+        setAnalysisError(null);
+        return;
+      }
+      if (created.kind === 'rejected') {
+        analysisCommandRef.current = null;
+        setAnalysisSnapshot(null);
+        setAnalysisError(analysisFailureMessage(created.error));
+        return;
+      }
+      setAnalysisSnapshot(null);
+      setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Повторите запрос с сохранённой ссылки.');
+    };
+
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    setAnalysisSnapshot(previous => (analysisMatchesAssignment(previous, assignment) ? previous : null));
+
+    void fetchCurrentPreLaunchAnalysisSnapshot(technicalAssignmentId, revision).then(async current => {
+      if (cancelled) return;
+      if (current.kind === 'snapshot') {
+        const pendingRetry = analysisCommandRef.current;
+        if (
+          pendingRetry
+          && pendingRetry.technicalAssignmentId === technicalAssignmentId
+          && pendingRetry.revision === revision
+          && pendingRetry.retryOfAnalysisSnapshotId === current.snapshot.analysis_snapshot_id
+        ) {
+          await createFromCommand(pendingRetry);
+          return;
+        }
+        setAnalysisSnapshot(current.snapshot);
+        setAnalysisLoading(false);
+        return;
+      }
+      if (current.kind === 'not_found') {
+        setAnalysisSnapshot(null);
+        await createFromCommand(commandFor(null));
+        return;
+      }
+      setAnalysisLoading(false);
+      setAnalysisSnapshot(null);
+      if (current.kind === 'rejected') {
+        setAnalysisError(analysisFailureMessage(current.error));
+      } else {
+        setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Ссылка на Техническое задание сохранена.');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, assignment?.technical_assignment_id, assignment?.revision, analysisReloadAttempt]);
+
+  // A pending attempt is refreshed by reading the same server-owned logical
+  // request. This never creates a second Snapshot or increments an attempt.
+  useEffect(() => {
+    if (step !== 'analysis' || analysisSnapshot?.status !== 'pending') return;
+    const timer = window.setTimeout(() => setAnalysisReloadAttempt(attempt => attempt + 1), 2000);
+    return () => window.clearTimeout(timer);
+  }, [step, analysisSnapshot?.analysis_snapshot_id, analysisSnapshot?.status, analysisReloadAttempt]);
 
   // Never silent: warns before a reload/close if there are edits since the
   // last successful "Сохранить" (see the note on hasUnsavedChanges above).
@@ -579,7 +808,17 @@ export default function CampaignLaunchWizard() {
     const result = await saveTechnicalAssignmentDraft(taIdempotencyKey, scenario, payload, assignment ?? undefined);
     setSaving(false);
     if (result.kind === 'saved') {
+      const analysisIdentityChanged = !assignment
+        || assignment.technical_assignment_id !== result.assignment.technical_assignment_id
+        || assignment.revision !== result.assignment.revision;
       setAssignment(result.assignment);
+      if (analysisIdentityChanged) {
+        setAnalysisSnapshot(null);
+        setAnalysisError(null);
+        analysisCommandRef.current = null;
+        setContactsGateConfirmed(false);
+        setLaunchIdempotencyKey(crypto.randomUUID());
+      }
       setMissingFields(isReadyForAnalysis(result.assignment.lifecycle_status) ? [] : computeMissingRequiredFields(fields, result.assignment.payload));
       setHasUnsavedChanges(false);
       // Defect 1: an opaque, safe reference to the just-saved draft is now
@@ -600,16 +839,57 @@ export default function CampaignLaunchWizard() {
     setSaveError('Не удалось сохранить Техническое задание: сервис временно недоступен.');
   };
 
+  const handleAnalysisRetry = () => {
+    if (
+      !assignment
+      || !analysisSnapshot
+      || analysisSnapshot.status !== 'failed'
+      || !analysisSnapshot.failure?.retryable
+      || !analysisMatchesAssignment(analysisSnapshot, assignment)
+    ) {
+      return;
+    }
+    analysisCommandRef.current = {
+      technicalAssignmentId: assignment.technical_assignment_id,
+      revision: assignment.revision,
+      idempotencyKey: crypto.randomUUID(),
+      retryOfAnalysisSnapshotId: analysisSnapshot.analysis_snapshot_id
+    };
+    setAnalysisError(null);
+    setAnalysisReloadAttempt(attempt => attempt + 1);
+  };
+
   const handleLaunch = async () => {
-    if (!assignment) return;
+    if (!assignment || !analysisAllowsProgress(analysisSnapshot, assignment) || !analysisSnapshot) {
+      setLaunchError('Запуск недоступен: требуется актуальный завершённый предварительный анализ.');
+      setStep('analysis');
+      setAnalysisReloadAttempt(attempt => attempt + 1);
+      return;
+    }
     setLaunching(true);
     setLaunchError(null);
-    const result = await launchCampaign(launchIdempotencyKey, assignment.technical_assignment_id, assignment.revision);
+    const result = await launchCampaign(
+      launchIdempotencyKey,
+      assignment.technical_assignment_id,
+      assignment.revision,
+      analysisSnapshot.analysis_snapshot_id
+    );
     setLaunching(false);
     if (result.kind === 'created' || result.kind === 'replayed') {
       setCampaign(result.campaign);
       setWasReplay(result.kind === 'replayed');
       setStep('success');
+      return;
+    }
+    if (
+      result.kind === 'invalid'
+      && (result.error === 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED' || result.error === 'TECHNICAL_ASSIGNMENT_ANALYSIS_STALE')
+    ) {
+      setAnalysisSnapshot(null);
+      setAnalysisError('Предварительный анализ больше не актуален. Получите текущий результат перед повторным запуском.');
+      setContactsGateConfirmed(false);
+      setStep('analysis');
+      setAnalysisReloadAttempt(attempt => attempt + 1);
       return;
     }
     setLaunchError(
@@ -629,12 +909,6 @@ export default function CampaignLaunchWizard() {
     } else {
       setDetailError(true);
     }
-  };
-
-  const refreshAssignment = async () => {
-    if (!assignment) return;
-    const result = await fetchTechnicalAssignmentById(assignment.technical_assignment_id);
-    if (result.kind === 'loaded') setAssignment(result.assignment);
   };
 
   if (restoring) {
@@ -813,27 +1087,125 @@ export default function CampaignLaunchWizard() {
         </section>
       );
     }
+    const analysisReady = !analysisLoading && analysisAllowsProgress(analysisSnapshot, assignment);
+    const currentTerminalSnapshot = analysisReady && analysisSnapshot?.results ? analysisSnapshot : null;
+    const priceMetric = currentTerminalSnapshot?.results?.price_adequacy;
+    const competitionMetric = currentTerminalSnapshot?.results?.competition;
+    const probabilityMetric = currentTerminalSnapshot?.results?.deal_probability_30d;
+    const categoriesMetric = currentTerminalSnapshot?.results?.candidate_categories;
+    const categoryLabels = categoriesMetric?.value?.category_kind === 'tenant_business_category'
+      ? BUSINESS_CATEGORY_LABELS
+      : PROPERTY_TYPE_LABELS;
+
     return (
       <section>
-        <h2>Анализ</h2>
+        <h2>Предварительный анализ</h2>
+        <p><strong>По синтетической базе LeaseMind</strong></p>
         <p>
-          ID технического задания: {assignment.technical_assignment_id}, ревизия: {assignment.revision}
+          Техническое задание: {assignment.technical_assignment_id}. Версия: {assignment.revision}.
         </p>
-        <p>В течение 15 минут после запуска кампании мы покажем:</p>
-        <ul>
-          <li>Адекватность цены относительно рынка.</li>
-          <li>Количество конкурентов (аналогичных объектов или аналогичного спроса).</li>
-          <li>Вероятность сделки за 30 дней.</li>
-          <li>Потенциальные категории арендаторов (для собственника) или объектов (для арендатора).</li>
-        </ul>
-        <p>Первичный анализ — предварительная оценка, не финальный результат кампании. Уточняется по мере поступления данных.</p>
-        <p>Анализ носит информационный характер и не является юридической или финансовой рекомендацией. Решения по сделке принимает пользователь.</p>
+        {analysisLoading && !analysisSnapshot && <p>Подготавливаем анализ...</p>}
+        {analysisError && (
+          <div role="alert">
+            <p>{analysisError}</p>
+            <button type="button" onClick={() => setAnalysisReloadAttempt(attempt => attempt + 1)}>
+              Повторить загрузку
+            </button>
+          </div>
+        )}
+        {analysisSnapshot?.freshness_status === 'stale' && (
+          <p role="alert">{analysisFreshnessMessage(analysisSnapshot)}</p>
+        )}
+        {analysisSnapshot?.freshness_status === 'current' && analysisSnapshot.status === 'pending' && (
+          <p>Расчёт выполняется. Результат обновится автоматически.</p>
+        )}
+        {analysisSnapshot?.freshness_status === 'current' && analysisSnapshot.status === 'failed' && (
+          <div role="alert">
+            <p>{analysisFailureMessage(analysisSnapshot.failure ?? { code: 'ANALYSIS_GENERATION_FAILED', retryable: false })}</p>
+            {analysisSnapshot.failure?.retryable && (
+              <button type="button" disabled={analysisLoading} onClick={handleAnalysisRetry}>
+                Повторить расчёт
+              </button>
+            )}
+          </div>
+        )}
+        {currentTerminalSnapshot && (
+          <>
+            <p>
+              Результат сформирован: {formatAnalysisTime(currentTerminalSnapshot.generated_at)}.
+              Попытка расчёта: {currentTerminalSnapshot.calculation_attempt}.
+            </p>
+
+            <section aria-labelledby="analysis-price-heading">
+              <h3 id="analysis-price-heading">1. Адекватность арендной ставки</h3>
+              {priceMetric?.metric_status === 'assessed' && priceMetric.value ? (
+                <>
+                  <p>
+                    Указанная ставка: {formatRate(priceMetric.value.subject_rate_rub_per_sqm_month)} ₽/м²/мес.
+                    Сопоставимый диапазон: {formatRate(priceMetric.value.p25_rub_per_sqm_month)}–{formatRate(priceMetric.value.p75_rub_per_sqm_month)} ₽/м²/мес,
+                    медиана — {formatRate(priceMetric.value.median_rub_per_sqm_month)} ₽/м²/мес.
+                  </p>
+                  <p>Вывод: {ruLabel(PRICE_CLASSIFICATION_LABELS, priceMetric.value.classification)}.</p>
+                </>
+              ) : priceMetric ? (
+                <p>{metricExplanation(priceMetric)}</p>
+              ) : null}
+              {priceMetric && <MetricContext metric={priceMetric} />}
+            </section>
+
+            <section aria-labelledby="analysis-competition-heading">
+              <h3 id="analysis-competition-heading">2. Конкурентная среда</h3>
+              {competitionMetric?.metric_status === 'assessed' && competitionMetric.value ? (
+                <p>
+                  Найдено сопоставимых записей: {competitionMetric.value.comparable_count} из {competitionMetric.value.population_scanned} просмотренных.
+                </p>
+              ) : competitionMetric ? (
+                <p>{metricExplanation(competitionMetric)}</p>
+              ) : null}
+              {competitionMetric && <MetricContext metric={competitionMetric} />}
+            </section>
+
+            <section aria-labelledby="analysis-probability-heading">
+              <h3 id="analysis-probability-heading">3. Вероятность сделки за 30 дней</h3>
+              <p>Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней.</p>
+              {probabilityMetric && <MetricContext metric={probabilityMetric} />}
+            </section>
+
+            <section aria-labelledby="analysis-categories-heading">
+              <h3 id="analysis-categories-heading">
+                4. {assignment.scenario === 'need_tenant' ? 'Потенциальные категории арендаторов' : 'Потенциальные типы помещений'}
+              </h3>
+              {categoriesMetric?.metric_status === 'assessed' && categoriesMetric.value ? (
+                <ul>
+                  {categoriesMetric.value.items.map(item => (
+                    <li key={item.code}>
+                      {ruLabel(categoryLabels, item.code)} — сопоставимых записей: {item.compatible_count}
+                    </li>
+                  ))}
+                </ul>
+              ) : categoriesMetric ? (
+                <p>{metricExplanation(categoriesMetric)}</p>
+              ) : null}
+              {categoriesMetric && <MetricContext metric={categoriesMetric} />}
+            </section>
+
+            <p>Предварительный анализ основан только на синтетических данных и не является прогнозом результата конкретной кампании.</p>
+            <p>Анализ носит информационный характер и не является юридической или финансовой рекомендацией. Решения по сделке принимает пользователь.</p>
+          </>
+        )}
         <p>
           <button type="button" onClick={() => setStep('ta')}>
             Назад
           </button>{' '}
-          <button type="button" onClick={() => void refreshAssignment().then(() => setStep('contacts'))}>
-            Далее
+          <button
+            type="button"
+            disabled={!analysisReady}
+            onClick={() => {
+              setContactsGateConfirmed(false);
+              setStep('contacts');
+            }}
+          >
+            Далее (Контакты)
           </button>
         </p>
       </section>
@@ -846,11 +1218,15 @@ export default function CampaignLaunchWizard() {
     // must never render for a Technical Assignment that is not itself
     // ready_for_analysis, regardless of which button led here -- mirrors the
     // equivalent guard already on the 'analysis' step above.
-    if (!assignment || assignment.lifecycle_status !== 'ready_for_analysis') {
+    if (
+      !assignment
+      || assignment.lifecycle_status !== 'ready_for_analysis'
+      || !analysisAllowsProgress(analysisSnapshot, assignment)
+    ) {
       return (
         <section>
           <h2>Контакты</h2>
-          <p>Переход к Контактам недоступен: Техническое задание должно быть готово к Анализу («{LIFECYCLE_STATUS_LABELS.ready_for_analysis}»).</p>
+          <p>Переход к Контактам недоступен: требуется актуальный завершённый предварительный анализ текущей версии Технического задания.</p>
           <button type="button" onClick={() => setStep('analysis')}>
             Назад к Анализу
           </button>
@@ -904,6 +1280,17 @@ export default function CampaignLaunchWizard() {
         </section>
       );
     }
+    if (!assignment || !analysisAllowsProgress(analysisSnapshot, assignment)) {
+      return (
+        <section>
+          <h2>Запуск кампании</h2>
+          <p>Переход к запуску недоступен: требуется актуальный завершённый предварительный анализ.</p>
+          <button type="button" onClick={() => setStep('analysis')}>
+            Назад к Анализу
+          </button>
+        </section>
+      );
+    }
     return (
       <section>
         <h2>Запуск кампании</h2>
@@ -917,7 +1304,7 @@ export default function CampaignLaunchWizard() {
           <button type="button" disabled={launching} onClick={() => setStep('contacts')}>
             Назад
           </button>{' '}
-          <button type="button" disabled={launching || !assignment} onClick={() => void handleLaunch()}>
+          <button type="button" disabled={launching || !analysisAllowsProgress(analysisSnapshot, assignment)} onClick={() => void handleLaunch()}>
             {launching ? 'Запуск...' : 'Запустить кампанию'}
           </button>
         </p>
