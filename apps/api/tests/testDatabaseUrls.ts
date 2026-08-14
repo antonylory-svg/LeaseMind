@@ -1,5 +1,6 @@
-// Shared test-only connection strings, mirroring the four-identity model in
-// 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md.
+// Shared test-only connection strings. The original database boundary comes
+// from ADR-0005; ADR-0009 adds the Analysis writer, worker and evidence-
+// revocation identities without making any connection interchangeable.
 // Never used by application code -- tests only.
 
 export const MIGRATION_DATABASE_URL = process.env.LEASEMIND_MIGRATION_DATABASE_URL;
@@ -7,6 +8,9 @@ export const MAINTENANCE_DATABASE_URL = process.env.LEASEMIND_MAINTENANCE_DATABA
 export const API_DATABASE_URL = process.env.DATABASE_URL;
 export const COMMAND_DATABASE_URL = process.env.LEASEMIND_COMMAND_DATABASE_URL;
 export const TA_DATABASE_URL = process.env.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL;
+export const ANALYSIS_DATABASE_URL = process.env.LEASEMIND_ANALYSIS_DATABASE_URL;
+export const ANALYSIS_WORKER_DATABASE_URL = process.env.LEASEMIND_ANALYSIS_WORKER_DATABASE_URL;
+export const EVIDENCE_REVOCATION_DATABASE_URL = process.env.LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL;
 export const BOOTSTRAP_DATABASE_URL = process.env.LEASEMIND_BOOTSTRAP_DATABASE_URL;
 
 /** True only when all six connection strings are configured -- the same
@@ -19,4 +23,9 @@ export const hasDatabase = Boolean(
     COMMAND_DATABASE_URL &&
     TA_DATABASE_URL &&
     BOOTSTRAP_DATABASE_URL
+);
+
+/** Full ADR-0009 database boundary, used only by the new Analysis tests. */
+export const hasAnalysisDatabase = Boolean(
+  hasDatabase && ANALYSIS_DATABASE_URL && ANALYSIS_WORKER_DATABASE_URL && EVIDENCE_REVOCATION_DATABASE_URL
 );

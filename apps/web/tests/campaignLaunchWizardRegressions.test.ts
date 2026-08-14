@@ -5,7 +5,8 @@ import { fileURLToPath } from 'node:url';
 
 // No React DOM renderer is set up in this project's test suite (see the
 // same note in technicalAssignmentErrorMessages.test.ts). These are
-// source-text regression guards for the two Sprint 4 blocking defects --
+// source-text regression guards for the Sprint 4 blocking defects and the
+// Sprint 5 Analysis gate --
 // the only way to pin down "this wiring exists and is not dead code"
 // without a DOM. They check structure/ordering, not runtime behavior.
 
@@ -37,7 +38,9 @@ test('CampaignLaunchWizard never actually calls localStorage or sessionStorage',
 });
 
 test('the restore-on-mount effect reads the URL and re-fetches from the backend, not from any trusted client cache', () => {
-  const start = SOURCE.indexOf('useEffect(() => {\n    const id = getTechnicalAssignmentIdFromSearch(window.location.search);');
+  const restoreMarker = SOURCE.indexOf('// Restore-on-mount:');
+  assert.ok(restoreMarker >= 0, 'restore-on-mount marker not found');
+  const start = SOURCE.indexOf('useEffect(() => {', restoreMarker);
   assert.ok(start >= 0, 'restore-on-mount effect not found');
   const end = SOURCE.indexOf('}, [restoreAttempt]);', start);
   assert.ok(end > start, 'could not find the end of the restore-on-mount effect');
@@ -115,6 +118,407 @@ test('handleLaunch never sends anything but the server-defined synthetic Contact
   // when to call launchCampaign at all -- which the tests above cover.
   const body = functionBody(SOURCE, 'const handleLaunch = async () => {');
   assert.ok(body.includes('launchCampaign('), 'handleLaunch must call the launchCampaign command');
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5: server-owned Analysis restore, presentation and launch gate
+// ---------------------------------------------------------------------------
+
+test('Analysis restore reads the current server result before a confirmed not-found can create the first attempt', () => {
+  const start = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  assert.ok(start >= 0, 'Analysis restore/create effect not found');
+  const end = SOURCE.indexOf('// A pending attempt is refreshed', start);
+  assert.ok(end > start, 'could not find the end of the Analysis restore/create flow');
+  const flow = SOURCE.slice(start, end);
+  const readIndex = flow.indexOf('fetchCurrentPreLaunchAnalysisSnapshot(technicalAssignmentId, revision)');
+  const notFoundIndex = flow.indexOf("current.kind === 'not_found'");
+  const createIndex = flow.indexOf('createFromCommand(commandFor(null))', notFoundIndex);
+  assert.ok(readIndex >= 0 && notFoundIndex > readIndex && createIndex > notFoundIndex);
+});
+
+test('explicit Analysis retry creates a new key and names the failed Snapshot as its retry target', () => {
+  const body = functionBody(SOURCE, 'const handleAnalysisRetry = () => {');
+  assert.ok(body.includes("analysisSnapshot.status !== 'failed'"), 'retry must require a terminal failed result');
+  assert.ok(body.includes('!analysisSnapshot.failure?.retryable'), 'retry must require retryable=true');
+  assert.ok(body.includes('idempotencyKey: crypto.randomUUID()'), 'an explicit retry must use a new idempotency key');
+  assert.ok(
+    body.includes('retryOfAnalysisSnapshotId: analysisSnapshot.analysis_snapshot_id'),
+    'the new attempt must name the failed Snapshot'
+  );
+});
+
+test('handleAnalysisRetry has a synchronous in-flight guard checked before any other condition', () => {
+  // setAnalysisLoading(true) only commits on the next render, so a second
+  // click landing before that render must be rejected by something that is
+  // readable/writable synchronously -- a ref, checked first, before even
+  // the assignment/analysisSnapshot validity checks.
+  const body = functionBody(SOURCE, 'const handleAnalysisRetry = () => {');
+  const guardCheckIndex = body.indexOf('analysisRetryInFlightRef.current) return;');
+  const statusCheckIndex = body.indexOf("analysisSnapshot.status !== 'failed'");
+  const guardSetIndex = body.indexOf('analysisRetryInFlightRef.current = true;');
+  const reloadBumpIndex = body.indexOf('setAnalysisReloadAttempt(attempt => attempt + 1);');
+  assert.ok(guardCheckIndex >= 0, 'handleAnalysisRetry must synchronously check an in-flight guard');
+  assert.ok(statusCheckIndex >= 0 && guardSetIndex >= 0 && reloadBumpIndex >= 0);
+  assert.ok(
+    guardCheckIndex < statusCheckIndex,
+    'the in-flight guard must be checked before any other condition, so two rapid clicks cannot both pass validation and each dispatch a distinct retry command'
+  );
+  assert.ok(
+    guardSetIndex > statusCheckIndex && guardSetIndex < reloadBumpIndex,
+    'the guard must be set synchronously, after validity checks pass, before triggering the retry effect'
+  );
+});
+
+test('the retry in-flight guard is released once the pending retry command settles, so a later legitimate retry stays possible', () => {
+  const flowStart = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  const flowEnd = SOURCE.indexOf('// A pending attempt is refreshed', flowStart);
+  assert.ok(flowStart >= 0 && flowEnd > flowStart, 'Analysis restore/create effect not found');
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  assert.ok(
+    flow.includes('analysisRetryInFlightRef.current = false;'),
+    'the guard must be released in the same effect that consumes (or supersedes) the pending retry command'
+  );
+});
+
+// AnalysisResultBlocks is shared between the pre-launch 'analysis' step and
+// the post-launch section of 'detail' (see the two tests further below) --
+// its own markup and ordering only needs proving once, here.
+function analysisResultBlocksBody(): string {
+  const start = SOURCE.indexOf('function AnalysisResultBlocks(');
+  assert.ok(start >= 0, 'AnalysisResultBlocks not found');
+  const end = SOURCE.indexOf('interface RenderFieldContext {', start);
+  assert.ok(end > start, 'could not find the end of AnalysisResultBlocks');
+  return SOURCE.slice(start, end);
+}
+
+test('AnalysisResultBlocks presents the four approved blocks in order and never invents a probability percentage', () => {
+  const body = analysisResultBlocksBody();
+  const price = body.indexOf('1. Адекватность арендной ставки');
+  const competition = body.indexOf('2. Конкурентная среда');
+  const probability = body.indexOf('3. Вероятность сделки за 30 дней');
+  const categories = body.indexOf('4. ');
+  assert.ok(price >= 0 && competition > price && probability > competition && categories > probability);
+  assert.ok(
+    body.includes('Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней.')
+  );
+  assert.ok(!body.includes('%'), 'v1 must not display a deal probability percentage');
+  assert.ok(!body.toLocaleLowerCase('ru-RU').includes('реальный рынок'));
+});
+
+test('the pre-launch Analysis screen renders the heading, synthetic marker and the shared four-block component -- not a second copy of the markup', () => {
+  const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
+  assert.ok(analysisSection.includes('<h2>Предварительный анализ</h2>'));
+  assert.ok(analysisSection.includes('{SYNTHETIC_DATA_MARKER}'));
+  assert.ok(
+    analysisSection.includes('<AnalysisResultBlocks results={currentTerminalSnapshot.results} scenario={assignment.scenario} />'),
+    'pre-launch must reuse the shared component, not duplicate the four-block markup'
+  );
+  assert.ok(!analysisSection.includes('1. Адекватность арендной ставки'), 'the heading text must live only in AnalysisResultBlocks, not duplicated here');
+});
+
+test('stale Analysis result is explained outside the terminal-results render branch', () => {
+  const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
+  const staleMessage = analysisSection.indexOf("analysisSnapshot?.freshness_status === 'stale'");
+  const resultsBranch = analysisSection.indexOf('{currentTerminalSnapshot?.results && (');
+  assert.ok(staleMessage >= 0 && resultsBranch > staleMessage);
+  assert.ok(
+    analysisSection.includes('const currentTerminalSnapshot = analysisReady'),
+    'results must be derived only from the current terminal gate'
+  );
+});
+
+test('Contacts and Launch independently require the same current terminal Analysis gate', () => {
+  const contactsSection = sectionBetween("if (step === 'contacts') {", "if (step === 'launch') {");
+  const launchSection = sectionBetween("if (step === 'launch') {", "if (step === 'success'");
+  assert.ok(contactsSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(launchSection.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(launchSection.includes('disabled={launching || !analysisAllowsProgress(analysisSnapshot, assignment)}'));
+  assert.ok(
+    SOURCE.includes("snapshot.status === 'completed' || snapshot.status === 'insufficient_data'"),
+    'a current insufficient_data Snapshot must still allow progress to Contacts'
+  );
+});
+
+test('Analysis gate checks scenario and result payload and fails closed after a server refresh error', () => {
+  const matchStart = SOURCE.indexOf('function analysisMatchesAssignment(');
+  const allowStart = SOURCE.indexOf('function analysisAllowsProgress(', matchStart);
+  const messagesStart = SOURCE.indexOf('function analysisFailureMessage(', allowStart);
+  const gates = SOURCE.slice(matchStart, messagesStart);
+  assert.ok(gates.includes('snapshot.scenario === assignment.scenario'));
+  assert.ok(gates.includes('Boolean(snapshot.results)'));
+
+  const flowStart = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  const flowEnd = SOURCE.indexOf('// A pending attempt is refreshed', flowStart);
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  const readFailure = flow.indexOf('setAnalysisLoading(false);', flow.indexOf("current.kind === 'not_found'"));
+  assert.ok(readFailure >= 0, 'current-read failure branch not found');
+  assert.ok(
+    flow.indexOf('setAnalysisSnapshot(null);', readFailure) > readFailure,
+    'a failed server refresh must revoke the locally cached progress gate'
+  );
+});
+
+test('handleLaunch passes the exact authorizing Analysis Snapshot id to the launch command', () => {
+  const body = functionBody(SOURCE, 'const handleLaunch = async () => {');
+  assert.ok(body.includes('!analysisAllowsProgress(analysisSnapshot, assignment)'));
+  assert.ok(body.includes('analysisSnapshot.analysis_snapshot_id'));
+  const launchCall = body.slice(body.indexOf('launchCampaign('));
+  assert.ok(
+    launchCall.indexOf('analysisSnapshot.analysis_snapshot_id') > launchCall.indexOf('assignment.revision'),
+    'the launch command must receive the Snapshot id after the expected revision'
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Sprint 5 / H2: post-launch Analysis on the Campaign detail screen
+// (PRODUCT §15.3, ADR-0009 §11.1). Campaign status and Analysis refresh
+// status are distinct fields; a failed/stale refresh never touches or
+// implies a change to the Campaign's own status; there is no launch button
+// anywhere on this screen; reload/recovery reads only from the server.
+// ---------------------------------------------------------------------------
+
+function detailStepSection(): string {
+  const start = SOURCE.indexOf("if (step === 'detail') {");
+  assert.ok(start >= 0, "'detail' step not found");
+  // 'detail' is the last step in the component -- slicing to end-of-file is
+  // safe for the .includes()/.indexOf() substring checks below (no CRLF
+  // dependency, unlike a literal multi-line end marker would be).
+  return SOURCE.slice(start);
+}
+
+test('Campaign detail never renders a launch button, in any state', () => {
+  const section = detailStepSection();
+  assert.ok(!section.includes('Запустить кампанию'), 'no launch button text anywhere in the detail screen');
+  assert.ok(!section.includes('void handleLaunch()') && !section.includes('handleLaunch()'), 'handleLaunch must never be wired up on this screen');
+});
+
+test('Campaign detail shows Campaign status and Analysis refresh status as two distinct fields', () => {
+  const section = detailStepSection();
+  assert.ok(section.includes('Статус кампании: {campaignStatusLabel}'));
+  assert.ok(section.includes('Статус анализа после запуска:'));
+  assert.ok(
+    section.indexOf('const campaignStatusLabel = detail ? ruLabel(CAMPAIGN_STATUS_LABELS, detail.status)')
+      < section.indexOf('Статус анализа после запуска:'),
+    'Campaign status is derived once, independently of any Analysis state'
+  );
+});
+
+test('analysis_context=null shows a distinct safe message, never presented as pending', () => {
+  const section = detailStepSection();
+  const nullMessageIndex = section.indexOf('{!detail.analysis_context && (');
+  assert.ok(nullMessageIndex >= 0);
+  const nullBranch = section.slice(nullMessageIndex, section.indexOf('{detail.analysis_context && ('));
+  assert.ok(nullBranch.includes('Анализ после запуска для этой кампании недоступен.'));
+  assert.ok(!nullBranch.includes('pending') && !nullBranch.includes('15 минут'), 'must not be worded as a pending/waiting state');
+});
+
+test('post-launch pending (no Snapshot yet, and an actual pending Snapshot) both show the 15-minute message', () => {
+  const section = detailStepSection();
+  const noSnapshotYet = section.indexOf('{!postLaunchLoading && !postLaunchError && !postLaunchSnapshot && (');
+  const pendingSnapshot = section.indexOf("postLaunchSnapshot.status === 'pending'");
+  assert.ok(noSnapshotYet >= 0 && pendingSnapshot > noSnapshotYet);
+  const noSnapshotBranch = section.slice(noSnapshotYet, section.indexOf('{postLaunchSnapshot && ('));
+  assert.ok(noSnapshotBranch.includes('Не позднее 15 минут после запуска'));
+  const pendingBranch = section.slice(pendingSnapshot, section.indexOf("postLaunchSnapshot.status === 'failed'"));
+  assert.ok(pendingBranch.includes('Не позднее 15 минут после запуска'));
+});
+
+test('H2 corrective pass: post-launch stale uses its own message -- never claims launch is blocked, always confirms the Campaign status is unchanged', () => {
+  const section = detailStepSection();
+  const staleLine = section.indexOf("postLaunchSnapshot.freshness_status === 'stale'");
+  assert.ok(staleLine >= 0, 'post-launch stale branch not found');
+  assert.ok(
+    section.includes('postLaunchFreshnessMessage(postLaunchSnapshot)'),
+    'the post-launch stale message must use its own context-appropriate function, not the pre-launch one'
+  );
+  assert.ok(
+    !section.slice(staleLine, staleLine + 400).includes('analysisFreshnessMessage(postLaunchSnapshot)'),
+    'post-launch stale must not reuse the pre-launch message function'
+  );
+
+  // The function itself: never claims launch is blocked (that claim is
+  // only true/meaningful pre-launch), and always confirms the already-
+  // launched Campaign's own status is unchanged.
+  const fnStart = SOURCE.indexOf('function postLaunchFreshnessMessage(');
+  assert.ok(fnStart >= 0, 'postLaunchFreshnessMessage not found');
+  const fnEnd = SOURCE.indexOf('\n}', fnStart);
+  const fnBody = SOURCE.slice(fnStart, fnEnd);
+  assert.ok(!fnBody.includes('не разрешает запуск'), 'must never claim a stale post-launch result blocks launch -- the Campaign already launched');
+  assert.ok(fnBody.includes('Статус уже запущенной кампании не изменился'), 'must explicitly confirm the Campaign status is unchanged');
+  // Never leaks the internal audit fields (PRODUCT §6.4) -- only the
+  // public freshness_reason is consulted, same boundary as the pre-launch
+  // message.
+  for (const forbidden of ['reason_code', 'revoked_at', 'revoked_by', 'actor']) {
+    assert.ok(!fnBody.toLowerCase().includes(forbidden.toLowerCase()), `must never reference ${forbidden}`);
+  }
+
+  // Pre-launch keeps its original, launch-blocking wording -- unaffected by
+  // this corrective pass.
+  const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
+  assert.ok(analysisSection.includes('analysisFreshnessMessage(analysisSnapshot)'));
+  const preLaunchFnStart = SOURCE.indexOf('function analysisFreshnessMessage(');
+  const preLaunchFnEnd = SOURCE.indexOf('\n}', preLaunchFnStart);
+  assert.ok(SOURCE.slice(preLaunchFnStart, preLaunchFnEnd).includes('не разрешает запуск кампании'));
+});
+
+test('post-launch retry is shown only for failed+retryable, gated the same way as pre-launch retry', () => {
+  const section = detailStepSection();
+  const failedBranchStart = section.indexOf("postLaunchSnapshot.status === 'failed'");
+  const retryButtonIndex = section.indexOf('Повторить анализ', failedBranchStart);
+  assert.ok(failedBranchStart >= 0 && retryButtonIndex > failedBranchStart);
+  const failedBranch = section.slice(failedBranchStart, retryButtonIndex);
+  assert.ok(failedBranch.includes('postLaunchSnapshot.failure?.retryable &&'), 'retry button must be conditioned on failure.retryable');
+  // Only inside the failed branch -- never rendered for pending/completed/
+  // insufficient_data/stale.
+  const beforeFailedBranch = section.slice(0, failedBranchStart);
+  assert.ok(!beforeFailedBranch.includes('Повторить анализ'));
+});
+
+test('handlePostLaunchRetry has a synchronous in-flight guard checked before any other condition', () => {
+  const body = functionBody(SOURCE, 'const handlePostLaunchRetry = () => {');
+  const guardCheckIndex = body.indexOf('postLaunchRetryInFlightRef.current) return;');
+  const statusCheckIndex = body.indexOf("postLaunchSnapshot.status !== 'failed'");
+  const guardSetIndex = body.indexOf('postLaunchRetryInFlightRef.current = true;');
+  const reloadBumpIndex = body.indexOf('setPostLaunchReloadAttempt(attempt => attempt + 1);');
+  assert.ok(guardCheckIndex >= 0 && statusCheckIndex >= 0 && guardSetIndex >= 0 && reloadBumpIndex >= 0);
+  assert.ok(guardCheckIndex < statusCheckIndex, 'the in-flight guard must be checked before any other condition');
+  assert.ok(guardSetIndex > statusCheckIndex && guardSetIndex < reloadBumpIndex, 'the guard must be set synchronously before triggering the retry effect');
+});
+
+test('post-launch retry command names analysis_kind=post_launch_refresh, the Campaign and the failed Snapshot as its target', () => {
+  const flowStart = SOURCE.indexOf('// Post-launch Analysis read/retry');
+  const flowEnd = SOURCE.indexOf('// Server-owned Analysis restore/create flow.', flowStart);
+  assert.ok(flowStart >= 0 && flowEnd > flowStart, 'post-launch read/retry effect not found');
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  assert.ok(
+    flow.includes('analysisRetryInFlightRef.current = false;') === false,
+    'post-launch must use its own guard, not the pre-launch one'
+  );
+  const callIndex = flow.indexOf('createPostLaunchRefreshRetry(');
+  assert.ok(callIndex >= 0, 'createPostLaunchRefreshRetry must be called from the read/retry effect');
+  const call = flow.slice(callIndex, flow.indexOf(');', callIndex));
+  assert.ok(call.includes('command.idempotencyKey'));
+  assert.ok(call.includes('command.retryOfAnalysisSnapshotId'));
+  // The guard is released once the effect settles, mirroring the M3 pattern.
+  assert.ok(flow.includes('postLaunchRetryInFlightRef.current = false;'), 'the guard must be released once the retry command settles');
+});
+
+test('a confirmed 404 on the post-launch read is a safe waiting state -- it never creates a Snapshot', () => {
+  const flowStart = SOURCE.indexOf('// Post-launch Analysis read/retry');
+  const flowEnd = SOURCE.indexOf('// Server-owned Analysis restore/create flow.', flowStart);
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  const notFoundIndex = flow.indexOf("current.kind === 'not_found'");
+  assert.ok(notFoundIndex >= 0);
+  const notFoundBranch = flow.slice(notFoundIndex, flow.indexOf("current.kind === 'rejected'", notFoundIndex));
+  assert.ok(!notFoundBranch.includes('createPostLaunchRefreshRetry'), 'a 404 must never trigger a create/retry call');
+  assert.ok(notFoundBranch.includes('setPostLaunchSnapshot(null);'));
+});
+
+test('the Campaign detail restore-on-mount effect only ever performs GET-shaped reads, never a write command', () => {
+  const restoreStart = SOURCE.indexOf('// Campaign detail restore-on-mount');
+  const restoreEnd = SOURCE.indexOf('// Campaign detail read:', restoreStart);
+  assert.ok(restoreStart >= 0 && restoreEnd > restoreStart);
+  const restoreEffect = SOURCE.slice(restoreStart, restoreEnd);
+  for (const forbidden of ['launchCampaign(', 'createPostLaunchRefreshRetry(', 'createPreLaunchAnalysisSnapshot(', 'fetch(']) {
+    assert.ok(!restoreEffect.includes(forbidden), `restore-on-mount must never call ${forbidden}`);
+  }
+  assert.ok(restoreEffect.includes('getCampaignIdFromSearch(window.location.search)'), 'must read the id from the URL');
+  assert.ok(restoreEffect.includes("setStep('detail')"), 'a valid id must open the detail step');
+});
+
+test('a malformed campaign id is stripped from the URL and never opens detail; a transient GET error keeps the recovery URL', () => {
+  const restoreStart = SOURCE.indexOf('// Campaign detail restore-on-mount');
+  const restoreEnd = SOURCE.indexOf('// Campaign detail read:', restoreStart);
+  const restoreEffect = SOURCE.slice(restoreStart, restoreEnd);
+  const malformedCheck = restoreEffect.indexOf('!isLikelyCampaignId(id)');
+  const stripCall = restoreEffect.indexOf('buildSearchWithoutCampaignId(window.location.search)', malformedCheck);
+  const setStepDetail = restoreEffect.indexOf("setStep('detail')");
+  assert.ok(malformedCheck >= 0 && stripCall > malformedCheck && stripCall < setStepDetail, 'a malformed id must be stripped before the valid-id path ever runs');
+
+  const readStart = SOURCE.indexOf('// Campaign detail read:');
+  const readEnd = SOURCE.indexOf('// Post-launch Analysis read/retry', readStart);
+  const readEffect = SOURCE.slice(readStart, readEnd);
+  assert.ok(!readEffect.includes('buildSearchWithoutCampaignId'), 'a transient fetchCampaignById error must never strip the recovery URL');
+  assert.ok(readEffect.includes('setDetailError(true);'));
+});
+
+test('a launched Campaign writes campaign into the URL and removes ta; openDetail keeps the same recovery URL in sync', () => {
+  const launchBody = functionBody(SOURCE, 'const handleLaunch = async () => {');
+  const successBranchStart = launchBody.indexOf("result.kind === 'created' || result.kind === 'replayed'");
+  const successBranch = launchBody.slice(successBranchStart, launchBody.indexOf("result.kind === 'invalid'", successBranchStart));
+  assert.ok(successBranch.includes('buildSearchWithoutTechnicalAssignmentId(window.location.search)'));
+  assert.ok(successBranch.includes('buildSearchWithCampaignId(searchWithoutTa, result.campaign.campaign_id)'));
+  assert.ok(successBranch.includes('window.history.replaceState('));
+
+  const openDetailBody = functionBody(SOURCE, 'const openDetail = () => {');
+  assert.ok(openDetailBody.includes('buildSearchWithCampaignId(window.location.search, campaign.campaign_id)'));
+  assert.ok(openDetailBody.includes('window.history.replaceState('));
+});
+
+test('the pre-launch ta-restore effect steps aside only when campaignRestoreTakesPriority is true, never for a merely-present campaign id', () => {
+  const restoreStart = SOURCE.indexOf('// Restore-on-mount:');
+  const restoreEnd = SOURCE.indexOf("}, [restoreAttempt]);", restoreStart);
+  const restoreEffect = SOURCE.slice(restoreStart, restoreEnd);
+  assert.ok(
+    restoreEffect.includes('campaignRestoreTakesPriority(window.location.search)'),
+    'the ta restore guard must use the shared priority decision, not a bare "campaign id present" check -- a malformed campaign id must never suppress ta restore (H2 corrective pass)'
+  );
+  assert.ok(
+    !restoreEffect.includes('getCampaignIdFromSearch(window.location.search)'),
+    'the guard must not go back to a bare presence check (that was the original deadlock for a malformed campaign id)'
+  );
+});
+
+// ---------------------------------------------------------------------------
+// H2 corrective pass: the initial `restoring` state, the ta-restore effect's
+// guard, and the campaign-restore effect's valid-id branch must all agree
+// (via the one shared, directly-unit-tested campaignRestoreTakesPriority --
+// see campaignUrlState.test.ts) on when a campaign id takes priority, and
+// the campaign-restore effect must unconditionally close out `restoring`
+// once it accepts a valid id -- otherwise the recovery screen can get stuck
+// forever (valid ta + valid campaign, and valid ta + malformed campaign).
+// ---------------------------------------------------------------------------
+
+test('the initial restoring state defers to campaignRestoreTakesPriority, not a bare ta-presence check', () => {
+  const start = SOURCE.indexOf('const [restoring, setRestoring] = useState(() =>');
+  assert.ok(start >= 0, 'restoring useState initializer not found');
+  const end = SOURCE.indexOf('const [restoreNotice', start);
+  assert.ok(end > start, 'could not find the end of the restoring useState initializer');
+  const body = SOURCE.slice(start, end);
+  assert.ok(body.includes('getTechnicalAssignmentIdFromSearch(window.location.search)'));
+  assert.ok(
+    body.includes('!campaignRestoreTakesPriority(window.location.search)'),
+    'restoring must not start true when a valid campaign already takes priority over ta restore'
+  );
+});
+
+test('accepting a valid Campaign id unconditionally closes out restoring, so the recovery screen can never get stuck', () => {
+  const restoreStart = SOURCE.indexOf('// Campaign detail restore-on-mount');
+  const restoreEnd = SOURCE.indexOf('// Campaign detail read:', restoreStart);
+  assert.ok(restoreStart >= 0 && restoreEnd > restoreStart);
+  const restoreEffect = SOURCE.slice(restoreStart, restoreEnd);
+  const malformedBranchEnd = restoreEffect.indexOf('setRestoring(false);');
+  assert.ok(malformedBranchEnd >= 0, 'the valid-id path must explicitly close out restoring');
+  const setStepDetailIndex = restoreEffect.indexOf("setStep('detail');");
+  const setDetailCampaignIdIndex = restoreEffect.indexOf('setDetailCampaignId(id);');
+  assert.ok(
+    malformedBranchEnd < setStepDetailIndex && setStepDetailIndex < setDetailCampaignIdIndex,
+    'restoring must be closed out alongside opening detail, not left to a separate/uncertain code path'
+  );
+  // The malformed branch (return before reaching here) must not itself
+  // touch restoring -- it neither opens detail nor needs to, since a
+  // malformed id never suppressed restoring in the first place (see
+  // campaignRestoreTakesPriority).
+  const malformedBranchText = restoreEffect.slice(restoreEffect.indexOf('!isLikelyCampaignId(id)'), malformedBranchEnd);
+  assert.ok(!malformedBranchText.includes('setRestoring'), 'the malformed-id branch must not touch restoring at all');
+});
+
+test('post-launch results are rendered via the shared AnalysisResultBlocks component, not duplicated markup', () => {
+  const section = detailStepSection();
+  assert.ok(
+    section.includes('<AnalysisResultBlocks results={postLaunchSnapshot.results} scenario={detail.analysis_context.scenario} />')
+  );
+  assert.ok(!section.includes('1. Адекватность арендной ставки'), 'the heading text must live only in AnalysisResultBlocks, not duplicated here');
 });
 
 // ---------------------------------------------------------------------------

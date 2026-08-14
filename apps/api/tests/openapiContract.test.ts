@@ -14,8 +14,8 @@ const addFormats = addFormatsImport as unknown as (instance: Ajv2020) => void;
 import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
-import { deriveCampaignIdFromIdempotencyKey } from '../src/db/createCampaign.js';
 import { saveTechnicalAssignmentDraft } from '../src/db/technicalAssignment.js';
+import { createOrReplayPreLaunchAnalysisSnapshot } from '../src/db/analysisSnapshot.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
 import {
   MIGRATION_DATABASE_URL,
@@ -23,7 +23,9 @@ import {
   API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   TA_DATABASE_URL,
-  hasDatabase
+  ANALYSIS_DATABASE_URL,
+  hasDatabase,
+  hasAnalysisDatabase
 } from './testDatabaseUrls.js';
 
 // This file owns its own complete migration/seed/teardown lifecycle,
@@ -38,7 +40,11 @@ import {
 // actual production-shaped roles serve the documented contract, not an
 // omnipotent connection standing in for them.
 
-const OPENAPI_PATH = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'openapi', 'openapi.yaml');
+const TEST_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const API_ROOT = path.basename(path.dirname(TEST_DIRECTORY)) === 'dist'
+  ? path.join(TEST_DIRECTORY, '..', '..')
+  : path.join(TEST_DIRECTORY, '..');
+const OPENAPI_PATH = path.join(API_ROOT, 'openapi', 'openapi.yaml');
 const UNREACHABLE_CONNECTION_STRING = 'postgres://synthetic:synthetic@127.0.0.1:1/synthetic';
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
@@ -102,12 +108,15 @@ const EXPECTED_PATH_METHODS: Record<string, string[]> = {
   '/api/v1/campaigns': ['get', 'post'],
   '/api/v1/campaigns/{campaignId}': ['get'],
   '/api/v1/technical-assignments': ['post'],
-  '/api/v1/technical-assignments/{technicalAssignmentId}': ['get']
+  '/api/v1/technical-assignments/{technicalAssignmentId}': ['get'],
+  '/api/v1/analysis-snapshots': ['post'],
+  '/api/v1/analysis-snapshots/{analysisSnapshotId}': ['get'],
+  '/api/v1/technical-assignments/{technicalAssignmentId}/analysis-snapshots/current': ['get']
 };
 const ALL_HTTP_METHODS = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'];
-const WRITE_PATHS = ['/api/v1/campaigns', '/api/v1/technical-assignments'];
+const WRITE_PATHS = ['/api/v1/campaigns', '/api/v1/technical-assignments', '/api/v1/analysis-snapshots'];
 
-test('the contract documents exactly the seven allowed operations, nothing else', () => {
+test('the contract documents exactly the ten allowed operations, nothing else', () => {
   assert.deepEqual(Object.keys(api.paths).sort(), Object.keys(EXPECTED_PATH_METHODS).sort());
   for (const [pathKey, allowedMethods] of Object.entries(EXPECTED_PATH_METHODS)) {
     const item = api.paths[pathKey];
@@ -116,7 +125,7 @@ test('the contract documents exactly the seven allowed operations, nothing else'
   }
 });
 
-test('no write method exists anywhere except the two documented POST operations', () => {
+test('no write method exists anywhere except the three documented POST operations', () => {
   for (const pathKey of Object.keys(api.paths)) {
     for (const method of ['put', 'patch', 'delete']) {
       assert.equal(api.paths[pathKey][method], undefined, `${method.toUpperCase()} must not exist on ${pathKey}`);
@@ -138,8 +147,61 @@ test('every documented operation declares a unique operationId', () => {
       }
     }
   }
-  assert.equal(ids.length, 7);
-  assert.equal(new Set(ids).size, 7, 'operationId values must be unique');
+  assert.equal(ids.length, 10);
+  assert.equal(new Set(ids).size, 10, 'operationId values must be unique');
+});
+
+test('the Analysis Snapshot schema accepts the approved envelope and rejects extra fields', () => {
+  const schema = responseSchema('/api/v1/analysis-snapshots/{analysisSnapshotId}', 'get', 200);
+  const metric = {
+    metric_status: 'insufficient_data',
+    confidence: null,
+    value: null,
+    sample_size: 0,
+    evidence: {
+      method: 'synthetic_ru_v1',
+      filters_applied: [],
+      dataset_revision: null
+    },
+    reason_codes: ['CALIBRATED_OUTCOME_HISTORY_REQUIRED'],
+    assumptions: []
+  };
+  const validSnapshot = {
+    schema_version: '1.0',
+    analysis_snapshot_id: '00000000-0000-4000-8000-000000000001',
+    technical_assignment_id: '00000000-0000-7000-8000-000000000002',
+    source_revision: 1,
+    scenario: 'need_property',
+    analysis_kind: 'pre_launch',
+    campaign_id: null,
+    calculation_attempt: 1,
+    status: 'insufficient_data',
+    freshness_status: 'current',
+    freshness_reason: null,
+    method_version: 'synthetic_ru_v1',
+    market_context: {
+      country_code: 'RU',
+      currency: 'RUB',
+      locale: 'ru-RU',
+      area_unit: 'sqm',
+      rent_period: 'month'
+    },
+    input_fingerprint: 'a'.repeat(64),
+    evidence_dataset_revision: null,
+    evidence_as_of: null,
+    generated_at: '2026-08-11T10:00:00.000Z',
+    created_at: '2026-08-11T10:00:00.000Z',
+    failure: null,
+    results: {
+      price_adequacy: metric,
+      competition: metric,
+      deal_probability_30d: metric,
+      candidate_categories: metric
+    }
+  };
+
+  assertMatchesSchema(schema, validSnapshot, 'approved Analysis Snapshot fixture must pass');
+  assertViolatesSchema(schema, { ...validSnapshot, extra_field: 'unexpected' }, 'extra fields must be rejected');
 });
 
 test('the Campaign schema enumerates exactly the 11 approved statuses', () => {
@@ -170,7 +232,8 @@ test('negative mutation: an unexpected extra property on the Campaign schema is 
     status: 'Created',
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
-    updated_at: '2026-01-01T00:00:00.000Z'
+    updated_at: '2026-01-01T00:00:00.000Z',
+    analysis_context: null
   };
   assertMatchesSchema(schema, validCampaign, 'sanity: the valid fixture itself must pass');
   assertViolatesSchema(schema, { ...validCampaign, extra_field: 'unexpected' }, 'an additional property must be rejected');
@@ -183,7 +246,8 @@ test('negative mutation: an unapproved status value is rejected by the Campaign 
     status: 'NotAStatus',
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
-    updated_at: '2026-01-01T00:00:00.000Z'
+    updated_at: '2026-01-01T00:00:00.000Z',
+    analysis_context: null
   };
   assertViolatesSchema(schema, invalidCampaign, 'an unapproved status must be rejected');
 });
@@ -255,18 +319,21 @@ test(
       const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns' });
       assert.equal(response.statusCode, 200);
       const body = response.json() as { campaigns: Array<{ campaign_id: string; status: string }> };
-      assertMatchesSchema(responseSchema('/api/v1/campaigns', 'get', 200), body, 'campaigns list body must match contract');
+      const listSchema = responseSchema('/api/v1/campaigns', 'get', 200);
+      assertMatchesSchema(listSchema, body, 'campaigns list body must match contract');
       assert.equal(body.campaigns.length, 11);
       assert.deepEqual(
         body.campaigns.map(c => c.status).sort(),
         [...CAMPAIGN_STATUSES].sort()
       );
+      // H2 (ADR-0009): list items intentionally use the plain Campaign
+      // schema, never the richer CampaignDetail (analysis_context is
+      // detail-only) -- validated against the list's own dereferenced item
+      // schema, not the {campaignId} detail schema.
+      const itemSchema = (listSchema as { properties: { campaigns: { items: Record<string, unknown> } } }).properties.campaigns.items;
       for (const campaign of body.campaigns) {
-        assertMatchesSchema(
-          responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200),
-          campaign,
-          `campaign ${campaign.campaign_id} must match the Campaign schema`
-        );
+        assertMatchesSchema(itemSchema, campaign, `campaign ${campaign.campaign_id} must match the Campaign schema`);
+        assert.ok(!('analysis_context' in campaign), 'list items must never include the detail-only analysis_context field');
       }
     } finally {
       await app.close();
@@ -422,13 +489,37 @@ async function createReadyProperty(technicalAssignmentPool: pg.Pool, idempotency
   return { id: result.technical_assignment_id, revision: result.revision };
 }
 
-test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign matching the documented 201 schema', { skip: !hasDatabase }, async () => {
+async function createPreLaunchAnalysis(
+  analysisPool: pg.Pool,
+  technicalAssignmentId: string,
+  expectedRevision: number,
+  idempotencyKey: string
+): Promise<string> {
+  const result = await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, {
+    idempotencyKey,
+    technicalAssignmentId,
+    expectedRevision,
+    analysisKind: 'pre_launch',
+    campaignId: null,
+    retryOfAnalysisSnapshotId: null
+  });
+  return result.analysisSnapshotId;
+}
+
+test('POST /api/v1/campaigns: an Analysis-authorized launch command creates a Campaign matching the documented 201 schema', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
   const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
-  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, analysisPool, logger: false });
   try {
     const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-201-ta');
+    const analysisSnapshotId = await createPreLaunchAnalysis(
+      analysisPool,
+      ta.id,
+      ta.revision,
+      'openapi-contract:launch-201-analysis'
+    );
     const response = await app.inject({
       method: 'POST',
       url: '/api/v1/campaigns',
@@ -436,6 +527,7 @@ test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign ma
         idempotency_key: 'openapi-contract:launch-201-probe',
         technical_assignment_id: ta.id,
         expected_revision: ta.revision,
+        analysis_snapshot_id: analysisSnapshotId,
         contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
       }
     });
@@ -447,23 +539,51 @@ test('POST /api/v1/campaigns: a well-formed launch command creates a Campaign ma
 
     const detail = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${body.campaign_id}` });
     assert.equal(detail.statusCode, 200);
-    assert.deepEqual(detail.json(), body, 'the created Campaign must be immediately visible via GET by id');
+    const detailBody = detail.json();
+    assertMatchesSchema(responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200), detailBody, 'detail 200 body must match contract');
+    assert.deepEqual(
+      {
+        campaign_id: detailBody.campaign_id,
+        status: detailBody.status,
+        aggregate_version: detailBody.aggregate_version,
+        created_at: detailBody.created_at,
+        updated_at: detailBody.updated_at
+      },
+      body,
+      'the created Campaign fields must be immediately visible via GET by id'
+    );
+    // H2 (ADR-0009): the detail read additionally exposes the
+    // Analysis-authorized launch context -- not present on the plain POST
+    // response, which stays the unchanged 5-field Campaign shape.
+    assert.deepEqual(detailBody.analysis_context, {
+      technical_assignment_id: ta.id,
+      source_revision: ta.revision,
+      scenario: 'need_tenant'
+    });
   } finally {
     await app.close();
   }
 });
 
-test('POST /api/v1/campaigns: retrying the same idempotency_key returns the same Campaign (200), not a duplicate', { skip: !hasDatabase }, async () => {
+test('POST /api/v1/campaigns: retrying the same Analysis-authorized idempotency_key returns the same Campaign (200)', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
   const technicalAssignmentPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
-  const app = buildApp({ pool, commandPool, technicalAssignmentPool, logger: false });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, commandPool, technicalAssignmentPool, analysisPool, logger: false });
   try {
     const ta = await createReadyProperty(technicalAssignmentPool, 'openapi-contract:launch-replay-ta');
+    const analysisSnapshotId = await createPreLaunchAnalysis(
+      analysisPool,
+      ta.id,
+      ta.revision,
+      'openapi-contract:launch-replay-analysis'
+    );
     const payload = {
       idempotency_key: 'openapi-contract:launch-replay-probe',
       technical_assignment_id: ta.id,
       expected_revision: ta.revision,
+      analysis_snapshot_id: analysisSnapshotId,
       contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
     };
     const first = await app.inject({ method: 'POST', url: '/api/v1/campaigns', payload });
@@ -552,20 +672,31 @@ test('POST /api/v1/technical-assignments: a well-formed draft matches the docume
   }
 });
 
-test('cleanup: remove openapi-contract POST-probe campaigns/technical assignments so later "exactly 11" assertions stay valid', { skip: !hasDatabase }, async () => {
-  const launchIdempotencyKeys = ['openapi-contract:launch-201-probe', 'openapi-contract:launch-replay-probe'];
+test('launch contract probes persist their Analysis authorization and post-launch intents durably', { skip: !hasAnalysisDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
+  const client = await pool.connect();
   try {
-    for (const key of launchIdempotencyKeys) {
-      const campaignId = deriveCampaignIdFromIdempotencyKey(key);
-      await pool.query('DELETE FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1', [campaignId]);
-      await pool.query('DELETE FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1', [campaignId]);
-    }
-    await pool.query(
-      "DELETE FROM leasemind_app.property WHERE idempotency_key IN ('openapi-contract:launch-201-ta', 'openapi-contract:launch-replay-ta')"
+    const links = await client.query<{ campaign_id: string }>(
+      `SELECT campaign_id
+       FROM leasemind_app.campaign_subject_link_projection
+       WHERE authorization_contract_version = 'analysis_v2'
+         AND campaign_id IN (
+         SELECT campaign_id FROM leasemind_app.campaign_event_log
+         WHERE idempotency_key IN ('openapi-contract:launch-201-probe', 'openapi-contract:launch-replay-probe')
+       )`
     );
-    await pool.query("DELETE FROM leasemind_app.tenant_request WHERE idempotency_key = 'openapi-contract:ta-schema-probe'");
+    await client.query('SET ROLE lmapp_post_launch_refresh_owner');
+    const intents = await client.query(
+      `SELECT count(*)::int AS count
+       FROM leasemind_app.post_launch_refresh_intent
+       WHERE campaign_id = ANY($1::uuid[])`,
+      [links.rows.map(row => row.campaign_id)]
+    );
+    assert.equal(links.rowCount, 2);
+    assert.equal(intents.rows[0].count, 2);
   } finally {
+    await client.query('RESET ROLE').catch(() => {});
+    client.release();
     await pool.end();
   }
 });
