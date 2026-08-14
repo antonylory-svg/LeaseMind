@@ -522,10 +522,13 @@ export async function createOrReplayInitialPostLaunchAnalysisSnapshot(
   pool: pg.Pool,
   identity: PostLaunchRefreshIdentity
 ): Promise<CreateAnalysisSnapshotResult> {
-  if (!postLaunchIdentityIsConsistent(identity)) {
-    throw new AnalysisRequestError('ANALYSIS_CAMPAIGN_MISMATCH', 409, false);
-  }
-
+  // PRODUCT §6.1 / ADR-0009 §5-6: durable idempotency mapping is checked
+  // first, before any current-command validation. computing the
+  // idempotency key and command hash only needs campaignId/
+  // technicalAssignmentId/sourceRevision (see
+  // computeInitialPostLaunchRefreshIdempotencyKey below) -- it never
+  // requires identity to be internally consistent, so that check can wait
+  // until a genuinely new key is confirmed.
   const input: CreateAnalysisSnapshotInput = {
     idempotencyKey: computeInitialPostLaunchRefreshIdempotencyKey(identity),
     technicalAssignmentId: identity.technicalAssignmentId,
@@ -551,6 +554,12 @@ export async function createOrReplayInitialPostLaunchAnalysisSnapshot(
     keyLocked = true;
     const lockedMapping = await readMapping(client, input.idempotencyKey);
     if (lockedMapping) return replayOrConflict(lockedMapping, commandHash);
+
+    // Only a key that has never been accepted (fast path and locked
+    // recheck both found nothing) reaches identity validation.
+    if (!postLaunchIdentityIsConsistent(identity)) {
+      throw new AnalysisRequestError('ANALYSIS_CAMPAIGN_MISMATCH', 409, false);
+    }
 
     await acquireSessionLock(client, logicalScope);
     logicalLocked = true;

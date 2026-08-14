@@ -438,6 +438,11 @@ export default function CampaignLaunchWizard() {
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [analysisReloadAttempt, setAnalysisReloadAttempt] = useState(0);
   const analysisCommandRef = useRef<AnalysisCommandState | null>(null);
+  // Synchronous guard against a second click landing before the passive
+  // effect (and its setAnalysisLoading(true)) has run -- state updates are
+  // not visible synchronously, so only a ref read/write at the top of the
+  // click handler can close that window. See handleAnalysisRetry below.
+  const analysisRetryInFlightRef = useRef(false);
 
   const [launchIdempotencyKey, setLaunchIdempotencyKey] = useState(() => crypto.randomUUID());
   const [launching, setLaunching] = useState(false);
@@ -604,32 +609,42 @@ export default function CampaignLaunchWizard() {
 
     void fetchCurrentPreLaunchAnalysisSnapshot(technicalAssignmentId, revision).then(async current => {
       if (cancelled) return;
-      if (current.kind === 'snapshot') {
-        const pendingRetry = analysisCommandRef.current;
-        if (
-          pendingRetry
-          && pendingRetry.technicalAssignmentId === technicalAssignmentId
-          && pendingRetry.revision === revision
-          && pendingRetry.retryOfAnalysisSnapshotId === current.snapshot.analysis_snapshot_id
-        ) {
-          await createFromCommand(pendingRetry);
+      // The retry in-flight guard (handleAnalysisRetry) is released here,
+      // unconditionally, once this effect run reaches a terminal outcome --
+      // whether it actually consumed a pending retry command below, found a
+      // different state (letting a stale guard un-stick rather than
+      // permanently disable the button), or this run was not a retry at
+      // all (in which case the ref is already false and this is a no-op).
+      try {
+        if (current.kind === 'snapshot') {
+          const pendingRetry = analysisCommandRef.current;
+          if (
+            pendingRetry
+            && pendingRetry.technicalAssignmentId === technicalAssignmentId
+            && pendingRetry.revision === revision
+            && pendingRetry.retryOfAnalysisSnapshotId === current.snapshot.analysis_snapshot_id
+          ) {
+            await createFromCommand(pendingRetry);
+            return;
+          }
+          setAnalysisSnapshot(current.snapshot);
+          setAnalysisLoading(false);
           return;
         }
-        setAnalysisSnapshot(current.snapshot);
+        if (current.kind === 'not_found') {
+          setAnalysisSnapshot(null);
+          await createFromCommand(commandFor(null));
+          return;
+        }
         setAnalysisLoading(false);
-        return;
-      }
-      if (current.kind === 'not_found') {
         setAnalysisSnapshot(null);
-        await createFromCommand(commandFor(null));
-        return;
-      }
-      setAnalysisLoading(false);
-      setAnalysisSnapshot(null);
-      if (current.kind === 'rejected') {
-        setAnalysisError(analysisFailureMessage(current.error));
-      } else {
-        setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Ссылка на Техническое задание сохранена.');
+        if (current.kind === 'rejected') {
+          setAnalysisError(analysisFailureMessage(current.error));
+        } else {
+          setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Ссылка на Техническое задание сохранена.');
+        }
+      } finally {
+        analysisRetryInFlightRef.current = false;
       }
     });
 
@@ -840,6 +855,11 @@ export default function CampaignLaunchWizard() {
   };
 
   const handleAnalysisRetry = () => {
+    // Checked and set synchronously, first, before any other condition --
+    // a second call within the same tick (double click before the next
+    // render) must be rejected even though `analysisLoading` has not been
+    // committed yet.
+    if (analysisRetryInFlightRef.current) return;
     if (
       !assignment
       || !analysisSnapshot
@@ -849,6 +869,7 @@ export default function CampaignLaunchWizard() {
     ) {
       return;
     }
+    analysisRetryInFlightRef.current = true;
     analysisCommandRef.current = {
       technicalAssignmentId: assignment.technical_assignment_id,
       revision: assignment.revision,

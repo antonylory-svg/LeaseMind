@@ -259,6 +259,55 @@ test('AS-C-003/014: explicit retry creates attempt 2 while the old key remains p
   }
 });
 
+test('AS-C-014: retry rejected as ANALYSIS_RETRY_NOT_ALLOWED when the current attempt is not failed/retryable', { skip: !hasAnalysisDatabase }, async () => {
+  const { app, analysisPool } = makeApp();
+  try {
+    // propertySnapshotId (set by the AS-C-001/005/010 fixture above) is a
+    // terminal `completed` pre-launch Snapshot -- retrying against it must
+    // be rejected, not silently accepted or routed to
+    // ANALYSIS_RETRY_TARGET_MISMATCH, because the current attempt is not
+    // even `failed`.
+    const rejectedKey = key('analysis-retry-not-allowed');
+    const response = await app.inject({
+      method: 'POST',
+      url: '/api/v1/analysis-snapshots',
+      payload: {
+        idempotency_key: rejectedKey,
+        technical_assignment_id: propertySubjectId,
+        expected_revision: 1,
+        analysis_kind: 'pre_launch',
+        campaign_id: null,
+        retry_of_analysis_snapshot_id: propertySnapshotId
+      }
+    });
+    assert.equal(response.statusCode, 409, response.body);
+    assert.equal(response.json().code, 'ANALYSIS_RETRY_NOT_ALLOWED');
+
+    const mapping = await analysisPool.query(
+      `SELECT count(*)::int AS count
+         FROM leasemind_app.analysis_snapshot_idempotency_mapping
+        WHERE idempotency_key = $1`,
+      [rejectedKey]
+    );
+    assert.equal(mapping.rows[0].count, 0, 'a rejected retry must not create a mapping row for its key');
+
+    const attempts = await analysisPool.query(
+      `SELECT calculation_attempt
+         FROM leasemind_app.analysis_snapshot
+        WHERE technical_assignment_id = $1 AND source_revision = 1 AND analysis_kind = 'pre_launch'
+        ORDER BY calculation_attempt`,
+      [propertySubjectId]
+    );
+    assert.deepEqual(
+      attempts.rows.map(row => row.calculation_attempt),
+      [1],
+      'a rejected retry must not create a new attempt or any partial record'
+    );
+  } finally {
+    await app.close();
+  }
+});
+
 test('AS-C-004: concurrent different keys converge to one Snapshot and preserve both mappings', { skip: !hasAnalysisDatabase }, async () => {
   const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
   const subjectId = await createReadyProperty(taPool, 1550);

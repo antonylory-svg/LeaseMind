@@ -16,11 +16,17 @@ export interface PostLaunchRefreshClaim extends PostLaunchRefreshIdentity {
   slaDeadlineAt: Date;
 }
 
+export interface PostLaunchRefreshSlaBreachEvent {
+  campaignId: string;
+  analysisSnapshotId: string;
+}
+
 export interface PostLaunchRefreshCycleResult {
   claimed: number;
   completed: number;
   failed: number;
   slaBreachesMarked: number;
+  slaBreachEvents: PostLaunchRefreshSlaBreachEvent[];
 }
 
 interface ClaimRow {
@@ -150,7 +156,7 @@ export async function processPostLaunchRefreshClaim(
   workerId: string,
   claim: PostLaunchRefreshClaim,
   leaseRenewalMs = POST_LAUNCH_REFRESH_LEASE_RENEWAL_MS
-): Promise<{ terminalStatus: 'completed' | 'failed'; slaBreachesMarked: number }> {
+): Promise<{ terminalStatus: 'completed' | 'failed'; slaBreachesMarked: number; analysisSnapshotId: string }> {
   let slaBreachesMarked = await markPostLaunchRefreshSlaBreach(pool, claim.campaignId) ? 1 : 0;
   await renewPostLaunchRefreshLease(pool, workerId, claim);
   const heartbeat = startLeaseHeartbeat(pool, workerId, claim, leaseRenewalMs);
@@ -173,7 +179,7 @@ export async function processPostLaunchRefreshClaim(
       execution.status
     );
     if (await markPostLaunchRefreshSlaBreach(pool, claim.campaignId)) slaBreachesMarked += 1;
-    return { terminalStatus, slaBreachesMarked };
+    return { terminalStatus, slaBreachesMarked, analysisSnapshotId };
   } finally {
     await heartbeat.stop();
   }
@@ -189,12 +195,25 @@ export async function runPostLaunchRefreshWorkerCycle(
     claimed: claims.length,
     completed: 0,
     failed: 0,
-    slaBreachesMarked: 0
+    slaBreachesMarked: 0,
+    slaBreachEvents: []
   };
   for (const claim of claims) {
     const processed = await processPostLaunchRefreshClaim(pool, workerId, claim);
     result[processed.terminalStatus] += 1;
     result.slaBreachesMarked += processed.slaBreachesMarked;
+    // markPostLaunchRefreshSlaBreach is backed by the DB's irreversible
+    // `sla_breach_reported_at IS NULL` guard (migration 009), so it can
+    // return true at most once, ever, for a given intent -- ...Marked is
+    // therefore 0 or 1 here, never more, and this event list carries at
+    // most one entry per claim regardless of how many worker cycles
+    // (across process restarts) eventually observe the breach.
+    if (processed.slaBreachesMarked > 0) {
+      result.slaBreachEvents.push({
+        campaignId: claim.campaignId,
+        analysisSnapshotId: processed.analysisSnapshotId
+      });
+    }
   }
   return result;
 }

@@ -147,6 +147,39 @@ test('explicit Analysis retry creates a new key and names the failed Snapshot as
   );
 });
 
+test('handleAnalysisRetry has a synchronous in-flight guard checked before any other condition', () => {
+  // setAnalysisLoading(true) only commits on the next render, so a second
+  // click landing before that render must be rejected by something that is
+  // readable/writable synchronously -- a ref, checked first, before even
+  // the assignment/analysisSnapshot validity checks.
+  const body = functionBody(SOURCE, 'const handleAnalysisRetry = () => {');
+  const guardCheckIndex = body.indexOf('analysisRetryInFlightRef.current) return;');
+  const statusCheckIndex = body.indexOf("analysisSnapshot.status !== 'failed'");
+  const guardSetIndex = body.indexOf('analysisRetryInFlightRef.current = true;');
+  const reloadBumpIndex = body.indexOf('setAnalysisReloadAttempt(attempt => attempt + 1);');
+  assert.ok(guardCheckIndex >= 0, 'handleAnalysisRetry must synchronously check an in-flight guard');
+  assert.ok(statusCheckIndex >= 0 && guardSetIndex >= 0 && reloadBumpIndex >= 0);
+  assert.ok(
+    guardCheckIndex < statusCheckIndex,
+    'the in-flight guard must be checked before any other condition, so two rapid clicks cannot both pass validation and each dispatch a distinct retry command'
+  );
+  assert.ok(
+    guardSetIndex > statusCheckIndex && guardSetIndex < reloadBumpIndex,
+    'the guard must be set synchronously, after validity checks pass, before triggering the retry effect'
+  );
+});
+
+test('the retry in-flight guard is released once the pending retry command settles, so a later legitimate retry stays possible', () => {
+  const flowStart = SOURCE.indexOf('// Server-owned Analysis restore/create flow.');
+  const flowEnd = SOURCE.indexOf('// A pending attempt is refreshed', flowStart);
+  assert.ok(flowStart >= 0 && flowEnd > flowStart, 'Analysis restore/create effect not found');
+  const flow = SOURCE.slice(flowStart, flowEnd);
+  assert.ok(
+    flow.includes('analysisRetryInFlightRef.current = false;'),
+    'the guard must be released in the same effect that consumes (or supersedes) the pending retry command'
+  );
+});
+
 test('Analysis screen presents the four approved blocks in order and never invents a probability percentage', () => {
   const analysisSection = sectionBetween("if (step === 'analysis') {", "if (step === 'contacts') {");
   assert.ok(analysisSection.includes('<h2>Предварительный анализ</h2>'));

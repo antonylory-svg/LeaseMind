@@ -8,10 +8,12 @@ import {
   verifyRuntimeTechnicalAssignmentPrivileges,
   verifyRuntimeAnalysisPrivileges,
   verifyRuntimeAnalysisWorkerPrivileges,
-  verifyRuntimeEvidenceRevocationPrivileges
+  verifyRuntimeEvidenceRevocationPrivileges,
+  DatabasePrivilegeViolation
 } from '../src/dbPrivilegePolicy.js';
 import {
   MIGRATION_DATABASE_URL,
+  MAINTENANCE_DATABASE_URL,
   API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   TA_DATABASE_URL,
@@ -56,6 +58,58 @@ test('migrations 008-010 apply and all six runtime database gates pass', { skip:
     }
   }
 });
+
+// Positive-only proof above (each gate accepts its own connection) does not
+// show the gate actually rejects every OTHER application identity -- exactly
+// the kind of grant-swap/typo a near-identical pair like lmapp_analysis_writer/
+// lmapp_analysis_worker could introduce silently. Table-driven negative proof,
+// mirroring the existing pattern for the pre-Sprint-5 gates in
+// dbPrivilegeBoundary.test.ts (e.g. "the runtime privilege check rejects the
+// ${label} connection"), extended here to all nine application connection
+// strings against each of the three new ADR-0009 gates.
+const ALL_APPLICATION_CONNECTIONS: Array<[string, string | undefined]> = [
+  ['migrator', MIGRATION_DATABASE_URL],
+  ['maintainer', MAINTENANCE_DATABASE_URL],
+  ['api reader', API_DATABASE_URL],
+  ['campaign writer', COMMAND_DATABASE_URL],
+  ['ta writer', TA_DATABASE_URL],
+  ['analysis writer', ANALYSIS_DATABASE_URL],
+  ['analysis worker', ANALYSIS_WORKER_DATABASE_URL],
+  ['evidence revocation writer', EVIDENCE_REVOCATION_DATABASE_URL],
+  ['bootstrap/admin', BOOTSTRAP_DATABASE_URL]
+];
+
+const NEW_ANALYSIS_GATES: Array<{
+  gateLabel: string;
+  ownLabel: string;
+  verify: (pool: pg.Pool) => Promise<void>;
+}> = [
+  { gateLabel: 'analysis writer', ownLabel: 'analysis writer', verify: verifyRuntimeAnalysisPrivileges },
+  { gateLabel: 'analysis worker', ownLabel: 'analysis worker', verify: verifyRuntimeAnalysisWorkerPrivileges },
+  {
+    gateLabel: 'evidence revocation writer',
+    ownLabel: 'evidence revocation writer',
+    verify: verifyRuntimeEvidenceRevocationPrivileges
+  }
+];
+
+for (const gate of NEW_ANALYSIS_GATES) {
+  for (const [label, connectionString] of ALL_APPLICATION_CONNECTIONS) {
+    if (label === gate.ownLabel) continue;
+    test(
+      `the runtime ${gate.gateLabel} privilege check rejects the ${label} connection`,
+      { skip: !hasAnalysisDatabase },
+      async () => {
+        const rolePool = pool(connectionString);
+        try {
+          await assert.rejects(gate.verify(rolePool), DatabasePrivilegeViolation);
+        } finally {
+          await rolePool.end();
+        }
+      }
+    );
+  }
+}
 
 test('ADR-0009 owner, generated columns and security-invoker view match the catalog contract', { skip: !hasAnalysisDatabase }, async () => {
   const bootstrapPool = pool(BOOTSTRAP_DATABASE_URL);

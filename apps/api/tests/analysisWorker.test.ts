@@ -45,3 +45,19 @@ test('analysis worker is a separate least-privilege entrypoint with safe lifecyc
   assert.doesNotMatch(workerSource, /console\.(?:error|log)\(error/);
   assert.doesNotMatch(workerSource, /JSON\.stringify\(error/);
 });
+
+test('post_launch_refresh_sla_breach is a distinct structured event with a stable code and no forbidden fields', async () => {
+  const workerSource = await readFile(new URL('../src/analysis-worker.ts', import.meta.url), 'utf8');
+  assert.match(workerSource, /event: 'post_launch_refresh_sla_breach'/);
+  assert.match(workerSource, /safe_error_code: 'POST_LAUNCH_REFRESH_SLA_BREACH'/);
+  assert.match(workerSource, /campaign_id: breach\.campaignId/);
+  assert.match(workerSource, /analysis_snapshot_id: breach\.analysisSnapshotId/);
+  // PRODUCT §14 forbids logging TA payload, rates, addresses, contacts and
+  // raw exceptions -- the breach event object literal must carry only the
+  // four safe fields asserted above, nothing else.
+  const breachEventBlock = workerSource.match(/for \(const breach of result\.slaBreachEvents\) \{[\s\S]*?\n {6}\}/);
+  assert.ok(breachEventBlock, 'expected a for-of loop emitting post_launch_refresh_sla_breach events');
+  assert.doesNotMatch(breachEventBlock[0], /technicalAssignmentId|property|tenant_request|\brate\b|address|contact/i);
+  assert.doesNotMatch(breachEventBlock[0], /console\.(?:error|log)\([^,)]*,\s*(?:error|err)\b/);
+  assert.doesNotMatch(breachEventBlock[0], /JSON\.stringify\((?:error|err)\b/);
+});

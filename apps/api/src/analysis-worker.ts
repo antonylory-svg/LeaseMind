@@ -22,6 +22,12 @@ type SafeWorkerEvent =
       completed: number;
       failed: number;
       sla_breaches_marked: number;
+    }
+  | {
+      event: 'post_launch_refresh_sla_breach';
+      safe_error_code: 'POST_LAUNCH_REFRESH_SLA_BREACH';
+      campaign_id: string;
+      analysis_snapshot_id: string;
     };
 
 function logWorkerEvent(write: (line: string) => void, event: SafeWorkerEvent): void {
@@ -95,6 +101,22 @@ async function main(): Promise<void> {
           completed: result.completed,
           failed: result.failed,
           sla_breaches_marked: result.slaBreachesMarked
+        });
+      }
+      // PRODUCT §11.3/§14: a post_launch_refresh SLA breach must be visible
+      // as its own structured, alertable event carrying campaign_id and
+      // analysis_snapshot_id -- not only folded into the aggregate count
+      // above. slaBreachEvents is backed by the DB's irreversible
+      // sla_breach_reported_at guard (see postLaunchRefreshWorker.ts), so
+      // this can fire at most once per campaign across the intent's entire
+      // lifetime, regardless of how many worker cycles or process restarts
+      // eventually observe it.
+      for (const breach of result.slaBreachEvents) {
+        logWorkerEvent(line => console.error(line), {
+          event: 'post_launch_refresh_sla_breach',
+          safe_error_code: 'POST_LAUNCH_REFRESH_SLA_BREACH',
+          campaign_id: breach.campaignId,
+          analysis_snapshot_id: breach.analysisSnapshotId
         });
       }
     } catch {

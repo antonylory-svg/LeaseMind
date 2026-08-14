@@ -8,12 +8,14 @@ import { launchCampaignFromTechnicalAssignment } from '../src/db/launchCampaign.
 import {
   computeInitialPostLaunchRefreshIdempotencyKey,
   createOrReplayInitialPostLaunchAnalysisSnapshot,
-  createOrReplayPreLaunchAnalysisSnapshot
+  createOrReplayPreLaunchAnalysisSnapshot,
+  type PostLaunchRefreshIdentity
 } from '../src/db/analysisSnapshot.js';
 import {
   claimPostLaunchRefreshIntents,
   runPostLaunchRefreshWorkerCycle
 } from '../src/db/postLaunchRefreshWorker.js';
+import { AnalysisRequestError } from '../src/analysisTypes.js';
 import {
   ANALYSIS_DATABASE_URL,
   ANALYSIS_WORKER_DATABASE_URL,
@@ -150,7 +152,7 @@ test('AS-C-016: worker claims, calculates and completes a durable post-launch re
     await drainRefreshQueue(workerPool);
     const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'worker-complete');
     const cycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
-    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0 });
+    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0, slaBreachEvents: [] });
 
     const intent = await queryIntentAsOwner(
       `SELECT status, current_analysis_snapshot_id
@@ -225,7 +227,7 @@ test('AS-C-016: worker preserves the TenantRequest identity for need_property re
     });
 
     const cycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
-    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0 });
+    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0, slaBreachEvents: [] });
     const intent = await queryIntentAsOwner(
       `SELECT property_id, tenant_request_id, scenario, status, current_analysis_snapshot_id
          FROM leasemind_app.post_launch_refresh_intent
@@ -319,7 +321,7 @@ test('worker resumes an explicit retry Snapshot and never replays the initial ke
     );
 
     const cycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
-    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0 });
+    assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0, slaBreachEvents: [] });
     const attempts = await workerPool.query(
       `SELECT analysis_snapshot_id, calculation_attempt, status
          FROM leasemind_app.analysis_snapshot
@@ -342,5 +344,212 @@ test('worker resumes an explicit retry Snapshot and never replays the initial ke
     assert.deepEqual(intent.rows[0], { status: 'completed', current_analysis_snapshot_id: retrySnapshotId });
   } finally {
     await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), workerPool.end()]);
+  }
+});
+
+test('regression: a previously accepted post-launch idempotency key replays before identity validation', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 5 });
+  try {
+    await drainRefreshQueue(workerPool);
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'worker-mapping-first');
+    const [claim] = await claimPostLaunchRefreshIntents(workerPool, `test-worker:${randomUUID()}`, 1);
+    assert.ok(claim);
+    assert.equal(claim.campaignId, fixture.campaignId);
+    assert.equal(claim.scenario, 'need_tenant');
+    const firstAttempt = await createOrReplayInitialPostLaunchAnalysisSnapshot(workerPool, claim);
+
+    // Same campaignId/technicalAssignmentId/sourceRevision as `claim` -- the
+    // server-derived idempotency key (PRODUCT §6.1) depends only on those
+    // three fields, so it is identical to the one already accepted above --
+    // but a deliberately inconsistent scenario/propertyId/tenantRequestId
+    // shape (postLaunchIdentityIsConsistent would reject this on its own).
+    // PRODUCT §6.1 / ADR-0009 §5-6 require the durable mapping for an
+    // already-accepted key to be honored unconditionally, before any
+    // current-command validation, so this must still replay attempt 1
+    // rather than throw ANALYSIS_CAMPAIGN_MISMATCH.
+    const inconsistentButPreviouslyAcceptedIdentity: PostLaunchRefreshIdentity = {
+      campaignId: claim.campaignId,
+      technicalAssignmentId: claim.technicalAssignmentId,
+      sourceRevision: claim.sourceRevision,
+      scenario: 'need_property',
+      propertyId: claim.technicalAssignmentId,
+      tenantRequestId: null
+    };
+    const replay = await createOrReplayInitialPostLaunchAnalysisSnapshot(
+      workerPool,
+      inconsistentButPreviouslyAcceptedIdentity
+    );
+    assert.deepEqual(replay, { analysisSnapshotId: firstAttempt.analysisSnapshotId, created: false });
+
+    const mappingCount = await workerPool.query(
+      `SELECT count(*)::int AS count
+         FROM leasemind_app.analysis_snapshot_idempotency_mapping
+        WHERE idempotency_key = $1`,
+      [computeInitialPostLaunchRefreshIdempotencyKey(claim)]
+    );
+    assert.equal(mappingCount.rows[0].count, 1, 'no second mapping row or Snapshot was created by the replay');
+  } finally {
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), workerPool.end()]);
+  }
+});
+
+test('regression: identity validation still rejects an inconsistent, never-before-accepted post-launch key', { skip: !hasAnalysisDatabase }, async () => {
+  const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 2 });
+  try {
+    const fabricatedTechnicalAssignmentId = randomUUID();
+    const inconsistentNewIdentity: PostLaunchRefreshIdentity = {
+      campaignId: randomUUID(),
+      technicalAssignmentId: fabricatedTechnicalAssignmentId,
+      sourceRevision: 1,
+      scenario: 'need_property',
+      propertyId: fabricatedTechnicalAssignmentId,
+      tenantRequestId: null
+    };
+    await assert.rejects(
+      createOrReplayInitialPostLaunchAnalysisSnapshot(workerPool, inconsistentNewIdentity),
+      (error: unknown) => error instanceof AnalysisRequestError && error.code === 'ANALYSIS_CAMPAIGN_MISMATCH'
+    );
+
+    const mappingCount = await workerPool.query(
+      `SELECT count(*)::int AS count
+         FROM leasemind_app.analysis_snapshot_idempotency_mapping
+        WHERE idempotency_key = $1`,
+      [computeInitialPostLaunchRefreshIdempotencyKey(inconsistentNewIdentity)]
+    );
+    assert.equal(mappingCount.rows[0].count, 0, 'a rejected new key must not create a mapping row');
+    const snapshotCount = await workerPool.query(
+      `SELECT count(*)::int AS count
+         FROM leasemind_app.analysis_snapshot
+        WHERE campaign_id = $1`,
+      [inconsistentNewIdentity.campaignId]
+    );
+    assert.equal(snapshotCount.rows[0].count, 0, 'a rejected new key must not create a Snapshot');
+  } finally {
+    await workerPool.end();
+  }
+});
+
+// launchCampaignFromTechnicalAssignment always records launched_at = now(),
+// so an SLA-breach fixture must seed campaign_subject_link_projection and
+// post_launch_refresh_intent directly with a backdated launched_at --
+// launched_at is trigger-immutable (enforce_post_launch_refresh_intent_transition,
+// migration 009) and cannot be UPDATEd afterward by any role, including the
+// table owner. This mirrors the fixture technique already used in
+// analysisDatabaseFoundation.test.ts.
+async function createBackdatedLaunchedFixture(
+  taPool: pg.Pool,
+  analysisPool: pg.Pool,
+  migrationPool: pg.Pool,
+  campaignPool: pg.Pool,
+  prefix: string
+): Promise<Fixture> {
+  const assignment = await saveTechnicalAssignmentDraft(taPool, {
+    idempotencyKey: key(`${prefix}-ta`),
+    scenario: 'need_tenant',
+    payload: propertyPayload()
+  });
+  assert.equal(assignment.lifecycle_status, 'ready_for_analysis');
+  const preLaunch = await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, {
+    idempotencyKey: key(`${prefix}-analysis`),
+    technicalAssignmentId: assignment.technical_assignment_id,
+    expectedRevision: assignment.revision,
+    analysisKind: 'pre_launch',
+    campaignId: null,
+    retryOfAnalysisSnapshotId: null
+  });
+  const campaignId = randomUUID();
+  await migrationPool.query(
+    `INSERT INTO leasemind_app.campaign_current_state_projection (campaign_id, status)
+     VALUES ($1, 'Analyzing')`,
+    [campaignId]
+  );
+  await campaignPool.query(
+    `INSERT INTO leasemind_app.campaign_subject_link_projection (
+       campaign_id, scenario, property_id, source_revision, source_schema_version,
+       linked_at, authorization_contract_version, analysis_snapshot_id,
+       authorized_analysis_kind, authorized_analysis_status
+     ) VALUES ($1, 'need_tenant', $2, $3, '1.0', clock_timestamp(),
+       'analysis_v2', $4, 'pre_launch', 'completed')`,
+    [campaignId, assignment.technical_assignment_id, assignment.revision, preLaunch.analysisSnapshotId]
+  );
+  // createOrReplayInitialPostLaunchAnalysisSnapshot requires
+  // lifecycle_status='campaign_started' (ANALYSIS_CAMPAIGN_MISMATCH
+  // otherwise) -- launchCampaignFromTechnicalAssignment always performs this
+  // transition as part of the atomic launch transaction (launchCampaign.ts),
+  // so this manually-built fixture must reproduce it too.
+  await campaignPool.query(
+    `UPDATE leasemind_app.property
+        SET lifecycle_status = 'campaign_started', updated_at = clock_timestamp()
+      WHERE property_id = $1`,
+    [assignment.technical_assignment_id]
+  );
+  await campaignPool.query(
+    `INSERT INTO leasemind_app.post_launch_refresh_intent (
+       campaign_id, property_id, scenario, source_revision, analysis_kind, status, launched_at
+     ) VALUES ($1, $2, 'need_tenant', $3, 'post_launch_refresh', 'pending',
+       clock_timestamp() - interval '20 minutes')`,
+    [campaignId, assignment.technical_assignment_id, assignment.revision]
+  );
+  return {
+    campaignId,
+    technicalAssignmentId: assignment.technical_assignment_id,
+    sourceRevision: assignment.revision
+  };
+}
+
+test('regression: an SLA breach is surfaced as exactly one worker-cycle event, never repeated', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const migrationPool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 5 });
+  try {
+    await drainRefreshQueue(workerPool);
+    const fixture = await createBackdatedLaunchedFixture(
+      taPool,
+      analysisPool,
+      migrationPool,
+      commandPool,
+      'worker-sla-event'
+    );
+
+    const firstCycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
+    assert.equal(firstCycle.claimed, 1);
+    assert.equal(firstCycle.slaBreachesMarked, 1);
+    assert.equal(firstCycle.slaBreachEvents.length, 1);
+    assert.equal(firstCycle.slaBreachEvents[0].campaignId, fixture.campaignId);
+    assert.match(
+      firstCycle.slaBreachEvents[0].analysisSnapshotId,
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+    );
+
+    const intent = await queryIntentAsOwner(
+      `SELECT current_analysis_snapshot_id, sla_breach_reported_at
+         FROM leasemind_app.post_launch_refresh_intent
+        WHERE campaign_id = $1`,
+      [fixture.campaignId]
+    );
+    assert.equal(firstCycle.slaBreachEvents[0].analysisSnapshotId, intent.rows[0].current_analysis_snapshot_id);
+    assert.ok(intent.rows[0].sla_breach_reported_at);
+
+    // Nothing left to claim, so no further breach event is produced -- this
+    // is the worker-level demonstration of the DB's irreversible
+    // sla_breach_reported_at guard: the same intent can never surface a
+    // second post_launch_refresh_sla_breach event.
+    const secondCycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
+    assert.equal(secondCycle.claimed, 0);
+    assert.equal(secondCycle.slaBreachesMarked, 0);
+    assert.deepEqual(secondCycle.slaBreachEvents, []);
+  } finally {
+    await Promise.all([
+      taPool.end(),
+      analysisPool.end(),
+      migrationPool.end(),
+      commandPool.end(),
+      workerPool.end()
+    ]);
   }
 });
