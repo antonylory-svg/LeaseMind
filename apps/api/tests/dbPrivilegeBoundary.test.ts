@@ -20,6 +20,7 @@ import {
   API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   TA_DATABASE_URL,
+  ANALYSIS_DATABASE_URL,
   BOOTSTRAP_DATABASE_URL,
   hasDatabase
 } from './testDatabaseUrls.js';
@@ -33,7 +34,10 @@ import {
 // migration lifecycle) -- it re-applies migrate:up itself, idempotently, as
 // its own first test.
 
-const API_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TEST_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const RUNNING_COMPILED = path.basename(path.dirname(TEST_DIRECTORY)) === 'dist';
+const API_ROOT = RUNNING_COMPILED ? path.join(TEST_DIRECTORY, '..', '..') : path.join(TEST_DIRECTORY, '..');
+const SERVER_ARGS = RUNNING_COMPILED ? ['dist/src/server.js'] : ['--import', 'tsx', 'src/server.ts'];
 
 test('migration up (fresh) prepares the schema for privilege boundary verification', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
@@ -649,6 +653,10 @@ function buildChildEnv(databaseUrl: string, port: number): NodeJS.ProcessEnv {
   // Same reasoning as LEASEMIND_COMMAND_DATABASE_URL above, for the
   // Technical Assignment pool.
   base.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL = TA_DATABASE_URL;
+  // Same reasoning as the command and Technical Assignment URLs above: the
+  // Analysis writer URL must be present before the intentionally wrong role
+  // is rejected by the startup privilege gate.
+  base.LEASEMIND_ANALYSIS_DATABASE_URL = ANALYSIS_DATABASE_URL;
   base.LEASEMIND_RUNTIME_MODE = 'synthetic';
   base.LEASEMIND_PRODUCTION_LAUNCH_GATE = 'blocked';
   base.LEASEMIND_ALLOW_REAL_PII = 'false';
@@ -667,7 +675,7 @@ interface RunResult {
 
 function runServerOnce(env: NodeJS.ProcessEnv, timeoutMs = 8000): Promise<RunResult> {
   return new Promise(resolve => {
-    const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+    const child = spawn(process.execPath, SERVER_ARGS, {
       cwd: API_ROOT,
       env,
       windowsHide: true

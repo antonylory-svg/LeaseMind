@@ -8,6 +8,21 @@ export interface Campaign {
   updated_at: string;
 }
 
+// ADR-0009: server-owned, read-only context letting the Campaign detail
+// screen ask the existing GET .../analysis-snapshots/current endpoint for
+// the current post_launch_refresh Snapshot. null for a legacy/unlinked
+// Campaign (no campaign_subject_link_projection row) -- never treated as
+// "analysis pending", always its own distinct safe state.
+export interface CampaignAnalysisContext {
+  technical_assignment_id: string;
+  source_revision: number;
+  scenario: 'need_tenant' | 'need_property';
+}
+
+export interface CampaignDetail extends Campaign {
+  analysis_context: CampaignAnalysisContext | null;
+}
+
 export type CampaignsState =
   | { kind: 'loading' }
   | { kind: 'empty' }
@@ -37,14 +52,15 @@ export async function fetchCampaigns(): Promise<CampaignsState> {
 }
 
 /** Returns null on any error, 400 or 404 alike -- callers only need to know
- * whether a displayable Campaign came back. */
-export async function fetchCampaignById(campaignId: string): Promise<Campaign | null> {
+ * whether a displayable Campaign came back. The detail response always
+ * includes analysis_context (null for a legacy/unlinked Campaign). */
+export async function fetchCampaignById(campaignId: string): Promise<CampaignDetail | null> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/v1/campaigns/${encodeURIComponent(campaignId)}`);
     if (!response.ok) {
       return null;
     }
-    return (await response.json()) as Campaign;
+    return (await response.json()) as CampaignDetail;
   } catch {
     return null;
   }

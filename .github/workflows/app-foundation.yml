@@ -35,18 +35,25 @@ jobs:
       NODE_ENV: development
       # Least-privilege database boundary (see
       # 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md).
-      # Six distinct synthetic-only connections/roles -- never interchangeable.
+      # Eight application LOGIN identities plus the bootstrap connection --
+      # all synthetic-only and never interchangeable.
       DATABASE_URL: postgres://lmapp_api_reader:synthetic-ci-api-reader-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_MIGRATION_DATABASE_URL: postgres://lmapp_migrator:synthetic-ci-migrator-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_MAINTENANCE_DATABASE_URL: postgres://lmapp_maintainer:synthetic-ci-maintainer-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_COMMAND_DATABASE_URL: postgres://lmapp_campaign_writer:synthetic-ci-campaign-writer-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL: postgres://lmapp_ta_writer:synthetic-ci-ta-writer-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_ANALYSIS_DATABASE_URL: postgres://lmapp_analysis_writer:synthetic-ci-analysis-writer-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_ANALYSIS_WORKER_DATABASE_URL: postgres://lmapp_analysis_worker:synthetic-ci-analysis-worker-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL: postgres://lmapp_evidence_revocation_writer:synthetic-ci-evidence-writer-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_BOOTSTRAP_DATABASE_URL: postgres://lmapp_dev:synthetic-dev-only-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_MIGRATOR_PASSWORD: synthetic-ci-migrator-password
       LEASEMIND_MAINTAINER_PASSWORD: synthetic-ci-maintainer-password
       LEASEMIND_API_READER_PASSWORD: synthetic-ci-api-reader-password
       LEASEMIND_CAMPAIGN_WRITER_PASSWORD: synthetic-ci-campaign-writer-password
       LEASEMIND_TA_WRITER_PASSWORD: synthetic-ci-ta-writer-password
+      LEASEMIND_ANALYSIS_WRITER_PASSWORD: synthetic-ci-analysis-writer-password
+      LEASEMIND_ANALYSIS_WORKER_PASSWORD: synthetic-ci-analysis-worker-password
+      LEASEMIND_EVIDENCE_REVOCATION_WRITER_PASSWORD: synthetic-ci-evidence-writer-password
       LEASEMIND_RUNTIME_MODE: synthetic
       LEASEMIND_PRODUCTION_LAUNCH_GATE: blocked
       LEASEMIND_ALLOW_REAL_PII: 'false'
@@ -94,16 +101,34 @@ jobs:
       - name: Frontend production build
         run: npm run build --workspace apps/web
 
+      - name: Frontend tests
+        run: npm run test --workspace apps/web
+
       - name: Apply Campaign read model migration
         run: npm run migrate:up --workspace apps/api
+
+      - name: Probe evidence revocation CLI dry-run
+        run: >-
+          npm run revoke-evidence-dataset --workspace apps/api --
+          --evidence-dataset-revision 0000000000000000000000000000000000000000000000000000000000000000
+          --reason-code SYNTHETIC_CI_PROBE
+          --actor-ref ci:app-foundation
 
       - name: Seed synthetic campaigns
         run: npm run seed --workspace apps/api
 
-      - name: Start API for live probe
+      - name: Start API and Analysis worker for live probe
         run: |
           node --import tsx apps/api/src/server.ts &
           echo $! > api.pid
+          node --import tsx apps/api/src/analysis-worker.ts &
+          echo $! > analysis-worker.pid
+
+      - name: Probe Analysis worker process
+        run: |
+          sleep 1
+          kill -0 "$(cat analysis-worker.pid)"
+          echo "analysis worker running"
 
       - name: Probe /api/v1/health/live and /api/v1/health/ready
         run: |
@@ -153,9 +178,13 @@ jobs:
 
           echo "campaigns list=200 (11 items) detail=200"
 
-      - name: Stop API process
+      - name: Stop application processes
         if: always()
         run: |
+          if [ -f analysis-worker.pid ]; then
+            kill "$(cat analysis-worker.pid)" 2>/dev/null || true
+            rm -f analysis-worker.pid
+          fi
           if [ -f api.pid ]; then
             kill "$(cat api.pid)" 2>/dev/null || true
             rm -f api.pid

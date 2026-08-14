@@ -24,7 +24,9 @@ import {
   API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   TA_DATABASE_URL,
-  hasDatabase
+  ANALYSIS_DATABASE_URL,
+  hasDatabase,
+  hasAnalysisDatabase
 } from './testDatabaseUrls.js';
 
 // Secure application observability boundary -- see
@@ -38,7 +40,10 @@ import {
 // a spawned child process's stdout/stderr accumulated in a string) -- no
 // runtime log file is ever written to disk or the repository.
 
-const API_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
+const TEST_DIRECTORY = path.dirname(fileURLToPath(import.meta.url));
+const RUNNING_COMPILED = path.basename(path.dirname(TEST_DIRECTORY)) === 'dist';
+const API_ROOT = RUNNING_COMPILED ? path.join(TEST_DIRECTORY, '..', '..') : path.join(TEST_DIRECTORY, '..');
+const SERVER_ARGS = RUNNING_COMPILED ? ['dist/src/server.js'] : ['--import', 'tsx', 'src/server.ts'];
 const UNREACHABLE_DATABASE_URL = 'postgres://lmapp_synthetic:synthetic-dev-only-password@127.0.0.1:1/synthetic';
 
 const PINO_BASELINE_FIELDS = new Set(['level', 'time', 'pid', 'hostname', 'reqId']);
@@ -468,6 +473,7 @@ async function startServer(port: number, databaseUrl: string): Promise<ServerHan
     DATABASE_URL: databaseUrl,
     LEASEMIND_COMMAND_DATABASE_URL: COMMAND_DATABASE_URL,
     LEASEMIND_TECHNICAL_ASSIGNMENT_DATABASE_URL: TA_DATABASE_URL,
+    LEASEMIND_ANALYSIS_DATABASE_URL: ANALYSIS_DATABASE_URL,
     LEASEMIND_RUNTIME_MODE: 'synthetic',
     LEASEMIND_PRODUCTION_LAUNCH_GATE: 'blocked',
     LEASEMIND_ALLOW_REAL_PII: 'false',
@@ -475,7 +481,7 @@ async function startServer(port: number, databaseUrl: string): Promise<ServerHan
     LEASEMIND_ALLOW_PROTECTED_REVEAL: 'false',
     LEASEMIND_ALLOW_PRODUCTION_ADAPTERS: 'false'
   });
-  const child = spawn(process.execPath, ['--import', 'tsx', 'src/server.ts'], {
+  const child = spawn(process.execPath, SERVER_ARGS, {
     cwd: API_ROOT,
     env,
     windowsHide: true
@@ -540,7 +546,7 @@ test('migration up + seed (fresh) prepare the schema for the live observability 
 
 test(
   'live server: safe startup event, unchanged response contract on 200/400/404, and only allowlisted structured logs (no secrets, headers, query string, or raw URL)',
-  { skip: !hasDatabase },
+  { skip: !hasAnalysisDatabase },
   async () => {
     const port = 34610;
     const handle = await startServer(port, API_DATABASE_URL as string);
@@ -645,7 +651,7 @@ const canTestRealSignals = process.platform !== 'win32';
 
 test(
   'live server: graceful shutdown on SIGTERM logs safe shutdown events, closes the app, and exits 0',
-  { skip: !hasDatabase || !canTestRealSignals },
+  { skip: !hasAnalysisDatabase || !canTestRealSignals },
   async () => {
     const port = 34611;
     const handle = await startServer(port, API_DATABASE_URL as string);
@@ -661,7 +667,7 @@ test(
 
 test(
   'live server: graceful shutdown on SIGINT logs safe shutdown events, closes the app, and exits 0',
-  { skip: !hasDatabase || !canTestRealSignals },
+  { skip: !hasAnalysisDatabase || !canTestRealSignals },
   async () => {
     const port = 34612;
     const handle = await startServer(port, API_DATABASE_URL as string);

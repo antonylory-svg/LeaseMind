@@ -1,9 +1,20 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { createHash, randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { buildApp } from '../src/app.js';
 import { migrateUp, migrateDown } from '../src/db/migrate.js';
-import { MIGRATION_DATABASE_URL, API_DATABASE_URL, COMMAND_DATABASE_URL, TA_DATABASE_URL, hasDatabase } from './testDatabaseUrls.js';
+import { createOrReplayPreLaunchAnalysisSnapshot } from '../src/db/analysisSnapshot.js';
+import { deriveCampaignIdFromIdempotencyKey } from '../src/db/createCampaign.js';
+import {
+  MIGRATION_DATABASE_URL,
+  API_DATABASE_URL,
+  COMMAND_DATABASE_URL,
+  TA_DATABASE_URL,
+  ANALYSIS_DATABASE_URL,
+  hasDatabase,
+  hasAnalysisDatabase
+} from './testDatabaseUrls.js';
 
 // All 27 acceptance scenarios from 02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md
 // sections 15-16 (CTA-L-001..010, CTA-T-001..011, CTA-C-001..006), plus
@@ -65,13 +76,15 @@ interface Pools {
   pool: pg.Pool;
   commandPool: pg.Pool;
   technicalAssignmentPool: pg.Pool;
+  analysisPool: pg.Pool;
 }
 
 function makePools(): Pools {
   return {
     pool: new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 }),
     commandPool: new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 }),
-    technicalAssignmentPool: new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 })
+    technicalAssignmentPool: new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 }),
+    analysisPool: new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 })
   };
 }
 
@@ -79,6 +92,45 @@ let idempotencyCounter = 0;
 function nextKey(prefix: string): string {
   idempotencyCounter += 1;
   return `${prefix}-${idempotencyCounter}-${Date.now()}`;
+}
+
+async function createPreLaunchSnapshot(
+  analysisPool: pg.Pool,
+  technicalAssignmentId: string,
+  expectedRevision: number,
+  prefix: string
+): Promise<string> {
+  const result = await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, {
+    idempotencyKey: nextKey(prefix),
+    technicalAssignmentId,
+    expectedRevision,
+    analysisKind: 'pre_launch',
+    campaignId: null,
+    retryOfAnalysisSnapshotId: null
+  });
+  return result.analysisSnapshotId;
+}
+
+async function queryAsMigrator(text: string, values: unknown[] = []): Promise<pg.QueryResult> {
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 1 });
+  try {
+    return await pool.query(text, values);
+  } finally {
+    await pool.end();
+  }
+}
+
+async function queryRefreshIntentAsOwner(text: string, values: unknown[] = []): Promise<pg.QueryResult> {
+  const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 1 });
+  const client = await pool.connect();
+  try {
+    await client.query('SET ROLE lmapp_post_launch_refresh_owner');
+    return await client.query(text, values);
+  } finally {
+    await client.query('RESET ROLE').catch(() => {});
+    client.release();
+    await pool.end();
+  }
 }
 
 test('migration up (fresh) prepares the schema for Technical Assignment acceptance scenarios', { skip: !hasDatabase }, async () => {
@@ -1108,7 +1160,105 @@ test('regression: a direct API launch attempt against a still-draft Technical As
   }
 });
 
-test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch creates exactly one Campaign idempotently', { skip: !hasDatabase }, async () => {
+test('AS-C-015: a new launch without a pre-launch Snapshot creates no partial Campaign records', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('as-c-015'), scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const assignment = saved.json();
+    const launchKey = nextKey('as-c-015-launch');
+    const launch = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: assignment.technical_assignment_id,
+        expected_revision: assignment.revision,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(launch.statusCode, 400);
+    assert.equal(launch.json().error, 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED');
+
+    const partials = await queryAsMigrator(
+      `SELECT
+         (SELECT count(*)::int FROM leasemind_app.campaign_event_log WHERE campaign_id = $1) AS events,
+         (SELECT count(*)::int FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1) AS campaign,
+         (SELECT count(*)::int FROM leasemind_app.campaign_subject_link_projection WHERE campaign_id = $1) AS subject_link`,
+      [deriveCampaignIdFromIdempotencyKey(launchKey)]
+    );
+    const intents = await queryRefreshIntentAsOwner(
+      'SELECT count(*)::int AS count FROM leasemind_app.post_launch_refresh_intent WHERE campaign_id = $1',
+      [deriveCampaignIdFromIdempotencyKey(launchKey)]
+    );
+    assert.deepEqual(partials.rows[0], { events: 0, campaign: 0, subject_link: 0 });
+    assert.equal(intents.rows[0].count, 0);
+  } finally {
+    await app.close();
+  }
+});
+
+test('ADR-0009 legacy_v1: replay without analysis_snapshot_id remains compatible after migration 008', { skip: !hasDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('legacy-replay-ta'), scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const assignment = saved.json();
+    const launchKey = nextKey('legacy-replay-launch');
+    const campaignId = deriveCampaignIdFromIdempotencyKey(launchKey);
+    const commandHash = createHash('sha256')
+      .update(`LEASEMIND_CAMPAIGN_LAUNCH_V1|COMMAND|${campaignId}|${assignment.technical_assignment_id}|${assignment.revision}`)
+      .digest('hex');
+
+    await queryAsMigrator(
+      `WITH inserted_projection AS (
+         INSERT INTO leasemind_app.campaign_current_state_projection
+           (campaign_id, status, aggregate_version, created_at, updated_at)
+         VALUES ($1, 'Created', 1, clock_timestamp(), clock_timestamp())
+         RETURNING created_at
+       ), inserted_event AS (
+         INSERT INTO leasemind_app.campaign_event_log
+           (event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+            idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at)
+         SELECT $2, $1, 1, 'campaign.status_recorded.v1', 1, '{"status":"Created"}'::jsonb,
+                $3, $4, repeat('0', 64), repeat('a', 64), created_at
+         FROM inserted_projection
+       )
+       INSERT INTO leasemind_app.campaign_subject_link_projection
+         (campaign_id, scenario, property_id, tenant_request_id, source_revision,
+          source_schema_version, linked_at, authorization_contract_version,
+          analysis_snapshot_id, authorized_analysis_kind, authorized_analysis_status)
+       SELECT $1, 'need_tenant', $5, NULL, $6, '1.0', created_at, 'legacy_v1', NULL, NULL, NULL
+       FROM inserted_projection`,
+      [campaignId, randomUUID(), launchKey, commandHash, assignment.technical_assignment_id, assignment.revision]
+    );
+
+    const replay = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: assignment.technical_assignment_id,
+        expected_revision: assignment.revision,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(replay.statusCode, 200, replay.body);
+    assert.equal(replay.json().campaign_id, campaignId);
+  } finally {
+    await app.close();
+  }
+});
+
+test('CTA-C-006 / AS-C-016: a fresh Snapshot launch atomically creates one Campaign, authorization link and durable refresh intent', { skip: !hasAnalysisDatabase }, async () => {
   const pools = makePools();
   const app = buildApp({ ...pools, logger: false });
   try {
@@ -1119,6 +1269,12 @@ test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch crea
     });
     const body = saved.json();
     assert.equal(body.lifecycle_status, 'ready_for_analysis');
+    const analysisSnapshotId = await createPreLaunchSnapshot(
+      pools.analysisPool,
+      body.technical_assignment_id,
+      body.revision,
+      'cta-c-006-analysis'
+    );
 
     const launchKey = nextKey('cta-c-006-launch');
     const first = await app.inject({
@@ -1128,12 +1284,40 @@ test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch crea
         idempotency_key: launchKey,
         technical_assignment_id: body.technical_assignment_id,
         expected_revision: body.revision,
+        analysis_snapshot_id: analysisSnapshotId,
         contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
       }
     });
     assert.equal(first.statusCode, 201);
     const campaign = first.json();
     assert.equal(campaign.status, 'Created');
+
+    const missingAnalysisReplay = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: body.technical_assignment_id,
+        expected_revision: body.revision,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(missingAnalysisReplay.statusCode, 400);
+    assert.equal(missingAnalysisReplay.json().error, 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED');
+
+    const differentAnalysisReplay = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: body.technical_assignment_id,
+        expected_revision: body.revision,
+        analysis_snapshot_id: randomUUID(),
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(differentAnalysisReplay.statusCode, 400);
+    assert.equal(differentAnalysisReplay.json().error, 'TECHNICAL_ASSIGNMENT_REVISION_CONFLICT');
 
     const replay = await app.inject({
       method: 'POST',
@@ -1142,6 +1326,7 @@ test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch crea
         idempotency_key: launchKey,
         technical_assignment_id: body.technical_assignment_id,
         expected_revision: body.revision,
+        analysis_snapshot_id: analysisSnapshotId,
         contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
       }
     });
@@ -1159,12 +1344,148 @@ test('CTA-C-006: a fully ready, fresh-revision, Contacts-Gate-passed launch crea
       events.rows.map((r: { event_type: string }) => r.event_type),
       ['campaign.subject_linked.v1', 'campaign.status_recorded.v1']
     );
+
+    const authorization = await queryAsMigrator(
+      `SELECT
+         link.authorization_contract_version,
+         link.analysis_snapshot_id,
+         link.authorized_analysis_kind,
+         link.authorized_analysis_status
+       FROM leasemind_app.campaign_subject_link_projection link
+       WHERE link.campaign_id = $1`,
+      [campaign.campaign_id]
+    );
+    const intent = await queryRefreshIntentAsOwner(
+      `SELECT
+         status AS intent_status,
+         analysis_kind AS intent_analysis_kind,
+         current_analysis_snapshot_id,
+         extract(epoch FROM (sla_deadline_at - launched_at))::int AS sla_seconds
+       FROM leasemind_app.post_launch_refresh_intent
+       WHERE campaign_id = $1`,
+      [campaign.campaign_id]
+    );
+    assert.equal(authorization.rowCount, 1);
+    assert.equal(intent.rowCount, 1);
+    assert.deepEqual(
+      { ...authorization.rows[0], ...intent.rows[0] },
+      {
+        authorization_contract_version: 'analysis_v2',
+        analysis_snapshot_id: analysisSnapshotId,
+        authorized_analysis_kind: 'pre_launch',
+        authorized_analysis_status: authorization.rows[0].authorized_analysis_status,
+        intent_status: 'pending',
+        intent_analysis_kind: 'post_launch_refresh',
+        current_analysis_snapshot_id: null,
+        sla_seconds: 900
+      }
+    );
+    assert.ok(['completed', 'insufficient_data'].includes(authorization.rows[0].authorized_analysis_status));
   } finally {
     await app.close();
   }
 });
 
-test('regression: simultaneous retries of one launch command converge to one Campaign response', { skip: !hasDatabase }, async () => {
+test('AS-C-012/015: a Snapshot for revision N cannot authorize launch of revision N+1', { skip: !hasAnalysisDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const taKey = nextKey('stale-analysis-ta');
+    const first = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: taKey, scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const revisionOne = first.json();
+    const staleSnapshotId = await createPreLaunchSnapshot(
+      pools.analysisPool,
+      revisionOne.technical_assignment_id,
+      revisionOne.revision,
+      'stale-analysis-snapshot'
+    );
+    const second = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: {
+        idempotency_key: taKey,
+        technical_assignment_id: revisionOne.technical_assignment_id,
+        expected_revision: revisionOne.revision,
+        scenario: 'need_tenant',
+        payload: minimalProperty({ property_area_sqm: 125 })
+      }
+    });
+    const revisionTwo = second.json();
+    const launchKey = nextKey('stale-analysis-launch');
+    const launch = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: revisionTwo.technical_assignment_id,
+        expected_revision: revisionTwo.revision,
+        analysis_snapshot_id: staleSnapshotId,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(launch.statusCode, 400);
+    assert.equal(launch.json().error, 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED');
+    const campaign = await queryAsMigrator(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [deriveCampaignIdFromIdempotencyKey(launchKey)]
+    );
+    assert.equal(campaign.rows[0].count, 0);
+  } finally {
+    await app.close();
+  }
+});
+
+test('AS-C-016: need_property launch stores the TenantRequest identity in both durable records', { skip: !hasAnalysisDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('tenant-launch-ta'), scenario: 'need_property', payload: minimalTenantRequest() }
+    });
+    const assignment = saved.json();
+    const analysisSnapshotId = await createPreLaunchSnapshot(
+      pools.analysisPool,
+      assignment.technical_assignment_id,
+      assignment.revision,
+      'tenant-launch-analysis'
+    );
+    const launch = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: nextKey('tenant-launch-command'),
+        technical_assignment_id: assignment.technical_assignment_id,
+        expected_revision: assignment.revision,
+        analysis_snapshot_id: analysisSnapshotId,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(launch.statusCode, 201, launch.body);
+    const link = await queryAsMigrator(
+      `SELECT property_id, tenant_request_id, scenario
+       FROM leasemind_app.campaign_subject_link_projection WHERE campaign_id = $1`,
+      [launch.json().campaign_id]
+    );
+    const intent = await queryRefreshIntentAsOwner(
+      `SELECT property_id, tenant_request_id, scenario
+       FROM leasemind_app.post_launch_refresh_intent WHERE campaign_id = $1`,
+      [launch.json().campaign_id]
+    );
+    const expected = { property_id: null, tenant_request_id: assignment.technical_assignment_id, scenario: 'need_property' };
+    assert.deepEqual(link.rows[0], expected);
+    assert.deepEqual(intent.rows[0], expected);
+  } finally {
+    await app.close();
+  }
+});
+
+test('regression: simultaneous retries of one Analysis-authorized launch converge to one Campaign and one durable intent', { skip: !hasAnalysisDatabase }, async () => {
   const pools = makePools();
   const app = buildApp({ ...pools, logger: false });
   try {
@@ -1174,10 +1495,17 @@ test('regression: simultaneous retries of one launch command converge to one Cam
       payload: { idempotency_key: nextKey('concurrent-launch-ta'), scenario: 'need_tenant', payload: minimalProperty() }
     });
     const assignment = saved.json();
+    const analysisSnapshotId = await createPreLaunchSnapshot(
+      pools.analysisPool,
+      assignment.technical_assignment_id,
+      assignment.revision,
+      'concurrent-launch-analysis'
+    );
     const payload = {
       idempotency_key: nextKey('concurrent-launch-command'),
       technical_assignment_id: assignment.technical_assignment_id,
       expected_revision: assignment.revision,
+      analysis_snapshot_id: analysisSnapshotId,
       contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
     };
 
@@ -1197,6 +1525,76 @@ test('regression: simultaneous retries of one launch command converge to one Cam
       [campaignId]
     );
     assert.equal(events.rows[0].count, 2, 'one subject link plus one Created event, never duplicates');
+    const links = await queryAsMigrator(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_subject_link_projection WHERE campaign_id = $1',
+      [campaignId]
+    );
+    const intents = await queryRefreshIntentAsOwner(
+      'SELECT count(*)::int AS count FROM leasemind_app.post_launch_refresh_intent WHERE campaign_id = $1',
+      [campaignId]
+    );
+    assert.equal(links.rows[0].count, 1);
+    assert.equal(intents.rows[0].count, 1);
+  } finally {
+    await app.close();
+  }
+});
+
+test('AS-C-027: revoking a Snapshot evidence revision blocks launch without partial writes', { skip: !hasAnalysisDatabase }, async () => {
+  const pools = makePools();
+  const app = buildApp({ ...pools, logger: false });
+  try {
+    const saved = await app.inject({
+      method: 'POST',
+      url: '/api/v1/technical-assignments',
+      payload: { idempotency_key: nextKey('revoked-launch-ta'), scenario: 'need_tenant', payload: minimalProperty() }
+    });
+    const assignment = saved.json();
+    const analysisSnapshotId = await createPreLaunchSnapshot(
+      pools.analysisPool,
+      assignment.technical_assignment_id,
+      assignment.revision,
+      'revoked-launch-analysis'
+    );
+    const evidence = await queryAsMigrator(
+      'SELECT evidence_dataset_revision FROM leasemind_app.analysis_snapshot WHERE analysis_snapshot_id = $1',
+      [analysisSnapshotId]
+    );
+    await queryAsMigrator(
+      `INSERT INTO leasemind_app.evidence_dataset_revocation
+         (evidence_dataset_revision, evidence_revocation_reason_code, revoked_by_actor_ref)
+       VALUES ($1, 'SYNTHETIC_TEST_REVOCATION', 'test:privacy-safe-actor')`,
+      [evidence.rows[0].evidence_dataset_revision]
+    );
+
+    const launchKey = nextKey('revoked-launch-command');
+    const launch = await app.inject({
+      method: 'POST',
+      url: '/api/v1/campaigns',
+      payload: {
+        idempotency_key: launchKey,
+        technical_assignment_id: assignment.technical_assignment_id,
+        expected_revision: assignment.revision,
+        analysis_snapshot_id: analysisSnapshotId,
+        contacts_gate_evidence: 'synthetic-fixture-acknowledged-v1'
+      }
+    });
+    assert.equal(launch.statusCode, 400);
+    assert.equal(launch.json().error, 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED');
+    const campaignId = deriveCampaignIdFromIdempotencyKey(launchKey);
+    const partials = await queryAsMigrator(
+      `SELECT
+         (SELECT count(*)::int FROM leasemind_app.campaign_event_log WHERE campaign_id = $1) AS events,
+         (SELECT count(*)::int FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1) AS campaign,
+         (SELECT count(*)::int FROM leasemind_app.campaign_subject_link_projection WHERE campaign_id = $1) AS link`,
+      [campaignId]
+    );
+    const intent = await queryRefreshIntentAsOwner(
+      'SELECT count(*)::int AS count FROM leasemind_app.post_launch_refresh_intent WHERE campaign_id = $1',
+      [campaignId]
+    );
+    assert.deepEqual(partials.rows[0], { events: 0, campaign: 0, link: 0 });
+    assert.equal(intent.rows[0].count, 0);
   } finally {
     await app.close();
   }

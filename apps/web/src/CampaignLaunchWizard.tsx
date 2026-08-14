@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { launchCampaign } from './campaignCommand';
-import { fetchCampaignById, type Campaign } from './campaigns';
+import { fetchCampaignById, type Campaign, type CampaignDetail } from './campaigns';
 import { saveTechnicalAssignmentDraft, fetchTechnicalAssignmentById, type TechnicalAssignment } from './technicalAssignmentApi';
 import { PROPERTY_FIELDS, TENANT_REQUEST_FIELDS, FIELD_GROUPS, fieldsForScenario, type TAFieldDef } from './technicalAssignmentFields';
 import {
@@ -23,8 +23,32 @@ import {
   buildSearchWithTechnicalAssignmentId,
   buildSearchWithoutTechnicalAssignmentId
 } from './technicalAssignmentUrlState';
-import { SCENARIO_LABELS, LIFECYCLE_STATUS_LABELS, CAMPAIGN_STATUS_LABELS, ruLabel } from './ruLabels';
+import {
+  getCampaignIdFromSearch,
+  buildSearchWithCampaignId,
+  buildSearchWithoutCampaignId,
+  isLikelyCampaignId,
+  campaignRestoreTakesPriority
+} from './campaignUrlState';
+import {
+  BUSINESS_CATEGORY_LABELS,
+  CAMPAIGN_STATUS_LABELS,
+  LIFECYCLE_STATUS_LABELS,
+  PROPERTY_TYPE_LABELS,
+  SCENARIO_LABELS,
+  ruLabel
+} from './ruLabels';
 import { explainTechnicalAssignmentError, explainMissingRequiredField } from './technicalAssignmentErrorMessages';
+import {
+  createPreLaunchAnalysisSnapshot,
+  createPostLaunchRefreshRetry,
+  fetchCurrentPreLaunchAnalysisSnapshot,
+  fetchCurrentPostLaunchRefreshAnalysisSnapshot,
+  type AnalysisApiFailure,
+  type AnalysisMetric,
+  type AnalysisResults,
+  type AnalysisSnapshot
+} from './analysisSnapshotApi';
 
 // Visible end-to-end product scenario (Sprint 4): goal selection -> real
 // Technical Assignment form -> Analysis (gated on ready_for_analysis) ->
@@ -50,6 +74,210 @@ interface DecimalFieldState {
   rawText: string;
   invalid: boolean;
   touched: boolean;
+}
+
+interface AnalysisCommandState {
+  technicalAssignmentId: string;
+  revision: number;
+  idempotencyKey: string;
+  retryOfAnalysisSnapshotId: string | null;
+}
+
+interface PostLaunchRetryCommandState {
+  idempotencyKey: string;
+  retryOfAnalysisSnapshotId: string;
+}
+
+const CONFIDENCE_LABELS: Record<string, string> = {
+  low: 'низкая',
+  medium: 'средняя',
+  high: 'высокая'
+};
+
+const PRICE_CLASSIFICATION_LABELS: Record<string, string> = {
+  below_reference_range: 'ниже диапазона сопоставимой выборки',
+  within_reference_range: 'в диапазоне сопоставимой выборки',
+  above_reference_range: 'выше диапазона сопоставимой выборки'
+};
+
+function analysisMatchesAssignment(snapshot: AnalysisSnapshot | null, assignment: TechnicalAssignment | null): boolean {
+  return Boolean(
+    snapshot
+      && assignment
+      && snapshot.analysis_kind === 'pre_launch'
+      && snapshot.technical_assignment_id === assignment.technical_assignment_id
+      && snapshot.source_revision === assignment.revision
+      && snapshot.scenario === assignment.scenario
+  );
+}
+
+function analysisAllowsProgress(snapshot: AnalysisSnapshot | null, assignment: TechnicalAssignment | null): boolean {
+  return analysisMatchesAssignment(snapshot, assignment)
+    && snapshot?.freshness_status === 'current'
+    && Boolean(snapshot.results)
+    && (snapshot.status === 'completed' || snapshot.status === 'insufficient_data');
+}
+
+function analysisFailureMessage(error: AnalysisApiFailure): string {
+  switch (error.code) {
+    case 'ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_FOUND':
+      return 'Техническое задание не найдено. Вернитесь назад и восстановите его из сохранённой ссылки.';
+    case 'ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_READY':
+      return 'Техническое задание ещё не готово к анализу.';
+    case 'ANALYSIS_REVISION_CONFLICT':
+      return 'Техническое задание изменилось. Откройте анализ для текущей версии.';
+    case 'ANALYSIS_DATASET_UNAVAILABLE':
+      return 'Доказательная база анализа временно недоступна. Попробуйте ещё раз.';
+    case 'ANALYSIS_GENERATION_FAILED':
+      return 'Расчёт завершился технической ошибкой. Попробуйте ещё раз.';
+    case 'ANALYSIS_IDEMPOTENCY_CONFLICT':
+      return 'Запрос анализа устарел. Обновите страницу и повторите действие.';
+    case 'ANALYSIS_RETRY_NOT_ALLOWED':
+    case 'ANALYSIS_RETRY_TARGET_MISMATCH':
+      return 'Повтор для этой версии анализа уже недоступен. Обновите текущий результат.';
+    default:
+      return 'Не удалось получить предварительный анализ. Попробуйте ещё раз.';
+  }
+}
+
+function analysisFreshnessMessage(snapshot: AnalysisSnapshot): string {
+  if (snapshot.freshness_reason === 'evidence_revoked') {
+    return 'Доказательная база этого расчёта отозвана. Результат больше не считается актуальным и не разрешает запуск кампании.';
+  }
+  return 'Техническое задание изменилось. Обновите анализ для текущей версии.';
+}
+
+// H2 corrective pass: pre-launch's analysisFreshnessMessage above correctly
+// warns that a stale result does not authorize launch (PRODUCT §4/§11.3) --
+// but that warning is misleading on the post-launch Campaign detail screen,
+// where the Campaign has already launched and stale only means the
+// post_launch_refresh result itself is outdated. This never surfaces the
+// internal evidence_revocation_reason_code, revocation actor/timestamp or
+// any raw payload (PRODUCT §6.4) -- only the public freshness_reason, same
+// as analysisFreshnessMessage.
+function postLaunchFreshnessMessage(snapshot: AnalysisSnapshot): string {
+  const reason = snapshot.freshness_reason === 'evidence_revoked'
+    ? 'Доказательная база этого расчёта отозвана.'
+    : 'Техническое задание изменилось.';
+  return `${reason} Результат анализа после запуска больше не актуален, требуется новый анализ. Статус уже запущенной кампании не изменился.`;
+}
+
+function metricExplanation(metric: AnalysisMetric): string {
+  if (metric.reason_codes.includes('REFERENCE_SAMPLE_TOO_SMALL')) {
+    return 'Для надёжного сравнения цены нужно не менее пяти сопоставимых записей.';
+  }
+  if (metric.reason_codes.includes('NO_COMPATIBLE_SYNTHETIC_RECORDS')) {
+    return 'В синтетической базе пока нет сопоставимых записей для этого вывода.';
+  }
+  return 'Подтверждённых данных для надёжного вывода пока недостаточно.';
+}
+
+function MetricContext({ metric }: { metric: AnalysisMetric }) {
+  return (
+    <p>
+      Размер выборки: {metric.sample_size}. Уверенность:{' '}
+      {metric.confidence ? CONFIDENCE_LABELS[metric.confidence] : 'не определяется'}.
+      {metric.assumptions.includes('UNSUPPORTED_FILTERS_PRESENT')
+        ? ' Часть дополнительных условий пока не участвует в сравнении.'
+        : ''}
+    </p>
+  );
+}
+
+function formatRate(value: string): string {
+  const parsed = Number(value);
+  return Number.isFinite(parsed)
+    ? new Intl.NumberFormat('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(parsed)
+    : value;
+}
+
+function formatAnalysisTime(value: string | null): string {
+  if (!value) return 'расчёт ещё не завершён';
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString('ru-RU');
+}
+
+// PRODUCT §15.1/§15.3: pre-launch and post-launch screens present the same
+// four approved analytical blocks, in the same order, with the same
+// synthetic-only marker and never a deal-probability number/range/word --
+// shared here once instead of duplicated per screen.
+const SYNTHETIC_DATA_MARKER = 'По синтетической базе LeaseMind';
+
+const POST_LAUNCH_STATUS_LABELS: Record<AnalysisSnapshot['status'], string> = {
+  pending: 'выполняется',
+  completed: 'завершён',
+  insufficient_data: 'завершён (недостаточно данных)',
+  failed: 'ошибка'
+};
+
+function AnalysisResultBlocks({ results, scenario }: { results: AnalysisResults; scenario: 'need_tenant' | 'need_property' }) {
+  const priceMetric = results.price_adequacy;
+  const competitionMetric = results.competition;
+  const probabilityMetric = results.deal_probability_30d;
+  const categoriesMetric = results.candidate_categories;
+  const categoryLabels = categoriesMetric.value?.category_kind === 'tenant_business_category'
+    ? BUSINESS_CATEGORY_LABELS
+    : PROPERTY_TYPE_LABELS;
+
+  return (
+    <>
+      <section aria-labelledby="analysis-price-heading">
+        <h3 id="analysis-price-heading">1. Адекватность арендной ставки</h3>
+        {priceMetric.metric_status === 'assessed' && priceMetric.value ? (
+          <>
+            <p>
+              Указанная ставка: {formatRate(priceMetric.value.subject_rate_rub_per_sqm_month)} ₽/м²/мес.
+              Сопоставимый диапазон: {formatRate(priceMetric.value.p25_rub_per_sqm_month)}–{formatRate(priceMetric.value.p75_rub_per_sqm_month)} ₽/м²/мес,
+              медиана — {formatRate(priceMetric.value.median_rub_per_sqm_month)} ₽/м²/мес.
+            </p>
+            <p>Вывод: {ruLabel(PRICE_CLASSIFICATION_LABELS, priceMetric.value.classification)}.</p>
+          </>
+        ) : (
+          <p>{metricExplanation(priceMetric)}</p>
+        )}
+        <MetricContext metric={priceMetric} />
+      </section>
+
+      <section aria-labelledby="analysis-competition-heading">
+        <h3 id="analysis-competition-heading">2. Конкурентная среда</h3>
+        {competitionMetric.metric_status === 'assessed' && competitionMetric.value ? (
+          <p>
+            Найдено сопоставимых записей: {competitionMetric.value.comparable_count} из {competitionMetric.value.population_scanned} просмотренных.
+          </p>
+        ) : (
+          <p>{metricExplanation(competitionMetric)}</p>
+        )}
+        <MetricContext metric={competitionMetric} />
+      </section>
+
+      <section aria-labelledby="analysis-probability-heading">
+        <h3 id="analysis-probability-heading">3. Вероятность сделки за 30 дней</h3>
+        <p>Недостаточно подтверждённой истории исходов для обоснованной оценки за 30 дней.</p>
+        <MetricContext metric={probabilityMetric} />
+      </section>
+
+      <section aria-labelledby="analysis-categories-heading">
+        <h3 id="analysis-categories-heading">
+          4. {scenario === 'need_tenant' ? 'Потенциальные категории арендаторов' : 'Потенциальные типы помещений'}
+        </h3>
+        {categoriesMetric.metric_status === 'assessed' && categoriesMetric.value ? (
+          <ul>
+            {categoriesMetric.value.items.map(item => (
+              <li key={item.code}>
+                {ruLabel(categoryLabels, item.code)} — сопоставимых записей: {item.compatible_count}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{metricExplanation(categoriesMetric)}</p>
+        )}
+        <MetricContext metric={categoriesMetric} />
+      </section>
+
+      <p>Предварительный анализ основан только на синтетических данных и не является прогнозом результата конкретной кампании.</p>
+      <p>Анализ носит информационный характер и не является юридической или финансовой рекомендацией. Решения по сделке принимает пользователь.</p>
+    </>
+  );
 }
 
 interface RenderFieldContext {
@@ -318,13 +546,38 @@ export default function CampaignLaunchWizard() {
   const [saveErrorHighlightFieldIds, setSaveErrorHighlightFieldIds] = useState<string[]>([]);
   const [missingFields, setMissingFields] = useState<TAFieldDef[]>([]);
 
-  const [launchIdempotencyKey] = useState(() => crypto.randomUUID());
+  const [analysisSnapshot, setAnalysisSnapshot] = useState<AnalysisSnapshot | null>(null);
+  const [analysisLoading, setAnalysisLoading] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [analysisReloadAttempt, setAnalysisReloadAttempt] = useState(0);
+  const analysisCommandRef = useRef<AnalysisCommandState | null>(null);
+  // Synchronous guard against a second click landing before the passive
+  // effect (and its setAnalysisLoading(true)) has run -- state updates are
+  // not visible synchronously, so only a ref read/write at the top of the
+  // click handler can close that window. See handleAnalysisRetry below.
+  const analysisRetryInFlightRef = useRef(false);
+
+  const [launchIdempotencyKey, setLaunchIdempotencyKey] = useState(() => crypto.randomUUID());
   const [launching, setLaunching] = useState(false);
   const [launchError, setLaunchError] = useState<string | null>(null);
   const [wasReplay, setWasReplay] = useState(false);
   const [campaign, setCampaign] = useState<Campaign | null>(null);
-  const [detail, setDetail] = useState<Campaign | null>(null);
+  const [detailCampaignId, setDetailCampaignId] = useState<string | null>(null);
+  const [detail, setDetail] = useState<CampaignDetail | null>(null);
   const [detailError, setDetailError] = useState(false);
+  const [detailReloadAttempt, setDetailReloadAttempt] = useState(0);
+
+  // PRODUCT §15.3: post-launch Analysis on the Campaign detail screen.
+  // Read-only (GET current) plus explicit-retry-only -- there is no
+  // "create initial attempt" path here at all; the durable worker owns
+  // that exclusively (ADR-0009 §10).
+  const [postLaunchSnapshot, setPostLaunchSnapshot] = useState<AnalysisSnapshot | null>(null);
+  const [postLaunchLoading, setPostLaunchLoading] = useState(false);
+  const [postLaunchError, setPostLaunchError] = useState<string | null>(null);
+  const [postLaunchReloadAttempt, setPostLaunchReloadAttempt] = useState(0);
+  const postLaunchCommandRef = useRef<PostLaunchRetryCommandState | null>(null);
+  // Same synchronous double-click guard as analysisRetryInFlightRef above.
+  const postLaunchRetryInFlightRef = useRef(false);
 
   // Defect 1 (Sprint 4): reload / return-to-old-tab restore. `ta` in the URL
   // query string is the only navigation state kept client-side -- never the
@@ -337,7 +590,10 @@ export default function CampaignLaunchWizard() {
   // specified anywhere in the approved contract), only ever persisted when
   // the user explicitly saves; this at least keeps that loss from being
   // silent, without inventing a new autosave endpoint/behavior.
-  const [restoring, setRestoring] = useState(() => Boolean(getTechnicalAssignmentIdFromSearch(window.location.search)));
+  const [restoring, setRestoring] = useState(() =>
+    Boolean(getTechnicalAssignmentIdFromSearch(window.location.search))
+    && !campaignRestoreTakesPriority(window.location.search)
+  );
   const [restoreNotice, setRestoreNotice] = useState<string | null>(null);
   const [restoreFailed, setRestoreFailed] = useState(false);
   const [restoreAttempt, setRestoreAttempt] = useState(0);
@@ -377,7 +633,15 @@ export default function CampaignLaunchWizard() {
   // "Далее (Анализ)" again, which no longer means re-typing anything).
   useEffect(() => {
     const id = getTechnicalAssignmentIdFromSearch(window.location.search);
-    if (!id) return;
+    // A well-formed, supported `campaign` id in the URL takes priority --
+    // launching strips `ta` and writes `campaign` (see handleLaunch), so
+    // both present at once only happens for a stale bookmark; the Campaign
+    // detail restore below owns that case instead of racing with this one.
+    // A malformed/unsupported `campaign` value must NOT block `ta` restore
+    // -- it never becomes trusted state (Campaign detail restore strips it
+    // from the URL on its own), so restoring the Technical Assignment must
+    // proceed exactly as if `campaign` had never been present.
+    if (!id || campaignRestoreTakesPriority(window.location.search)) return;
     let cancelled = false;
     setRestoring(true);
     setRestoreFailed(false);
@@ -400,6 +664,11 @@ export default function CampaignLaunchWizard() {
       const restoredFields = fieldsForScenario(found.scenario);
       setGoal(found.scenario === 'need_tenant' ? 'owner' : 'tenant');
       setAssignment(found);
+      setAnalysisSnapshot(null);
+      setAnalysisError(null);
+      analysisCommandRef.current = null;
+      setContactsGateConfirmed(false);
+      setLaunchIdempotencyKey(crypto.randomUUID());
       setFormValues({ ...found.payload });
       setDecimalState(hydrateDecimalState(restoredFields, found.payload));
       const restoredRequestRate = found.payload[REQUEST_RENT_RATE_FIELD_ID];
@@ -416,6 +685,239 @@ export default function CampaignLaunchWizard() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [restoreAttempt]);
+
+  // Campaign detail restore-on-mount (PRODUCT §15.3, mirrors the Technical
+  // Assignment restore above): `campaign` in the URL is the only navigation
+  // state kept client-side for this screen -- never localStorage/
+  // sessionStorage, never the Campaign/Analysis content itself. A malformed
+  // or forbidden-version id is never trusted enough to open 'detail' or
+  // attempt a fetch -- it is stripped from the URL instead, exactly like an
+  // unresolved `ta` id already is above (and, unlike a valid one, never
+  // suppresses `ta` restore -- see campaignRestoreTakesPriority above).
+  useEffect(() => {
+    const id = getCampaignIdFromSearch(window.location.search);
+    if (!id) return;
+    if (!isLikelyCampaignId(id)) {
+      const nextSearch = buildSearchWithoutCampaignId(window.location.search);
+      window.history.replaceState(null, '', `${window.location.pathname}${nextSearch}`);
+      return;
+    }
+    // A valid Campaign id always wins over a `ta` restore in progress --
+    // explicitly closes out `restoring` here too (not just via the initial
+    // state above) so accepting a valid Campaign can never leave the
+    // recovery screen stuck, however `restoring` came to be true.
+    setRestoring(false);
+    setStep('detail');
+    setDetailCampaignId(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Campaign detail read: re-fetched from the server on every arrival at
+  // 'detail' (including reload/restore above) and on explicit retry after a
+  // transient error -- never from trusted client state, never creates
+  // anything (GET only).
+  useEffect(() => {
+    if (step !== 'detail' || !detailCampaignId) return;
+    let cancelled = false;
+    setDetailError(false);
+    fetchCampaignById(detailCampaignId).then(found => {
+      if (cancelled) return;
+      if (found) {
+        setDetail(found);
+      } else {
+        setDetailError(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [step, detailCampaignId, detailReloadAttempt]);
+
+  // Post-launch Analysis read/retry (PRODUCT §15.3, ADR-0009 §11.1). A
+  // confirmed 404 means the durable worker has not created the initial
+  // attempt yet (within its 15-minute SLA) -- a safe waiting state, never a
+  // reason to create a Snapshot from this GET. An explicit retry command
+  // (handlePostLaunchRetry) is consumed here the same way the pre-launch
+  // flow above consumes analysisCommandRef: only once the read confirms the
+  // exact failed attempt it targets.
+  useEffect(() => {
+    if (step !== 'detail' || !detail?.analysis_context) return;
+    const { technical_assignment_id: technicalAssignmentId, source_revision: revision } = detail.analysis_context;
+    const campaignId = detail.campaign_id;
+    let cancelled = false;
+
+    const settle = (): void => {
+      setPostLaunchLoading(false);
+      postLaunchRetryInFlightRef.current = false;
+    };
+
+    const createFromCommand = async (command: PostLaunchRetryCommandState): Promise<void> => {
+      const created = await createPostLaunchRefreshRetry(
+        command.idempotencyKey,
+        technicalAssignmentId,
+        revision,
+        campaignId,
+        command.retryOfAnalysisSnapshotId
+      );
+      if (cancelled) return;
+      if (created.kind === 'snapshot') {
+        setPostLaunchSnapshot(created.snapshot);
+        setPostLaunchError(null);
+      } else if (created.kind === 'rejected') {
+        postLaunchCommandRef.current = null;
+        setPostLaunchError(analysisFailureMessage(created.error));
+      } else {
+        setPostLaunchError('Не удалось повторить анализ после запуска: сервис временно недоступен. Попробуйте ещё раз.');
+      }
+      settle();
+    };
+
+    setPostLaunchLoading(true);
+    setPostLaunchError(null);
+
+    fetchCurrentPostLaunchRefreshAnalysisSnapshot(technicalAssignmentId, revision, campaignId).then(async current => {
+      if (cancelled) return;
+      if (current.kind === 'snapshot') {
+        const pendingRetry = postLaunchCommandRef.current;
+        if (pendingRetry && pendingRetry.retryOfAnalysisSnapshotId === current.snapshot.analysis_snapshot_id) {
+          await createFromCommand(pendingRetry);
+          return;
+        }
+        setPostLaunchSnapshot(current.snapshot);
+        settle();
+        return;
+      }
+      if (current.kind === 'not_found') {
+        setPostLaunchSnapshot(null);
+        settle();
+        return;
+      }
+      setPostLaunchSnapshot(null);
+      settle();
+      if (current.kind === 'rejected') {
+        setPostLaunchError(analysisFailureMessage(current.error));
+      } else {
+        setPostLaunchError('Не удалось получить статус анализа после запуска: сервис временно недоступен.');
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, detail?.campaign_id, detail?.analysis_context?.technical_assignment_id, detail?.analysis_context?.source_revision, postLaunchReloadAttempt]);
+
+  // Server-owned Analysis restore/create flow. A confirmed 404 is the only
+  // condition that creates the first attempt. Transport failures reuse the
+  // same command key, while a new key is generated only for an explicit
+  // retry of a retryable terminal failure.
+  useEffect(() => {
+    if (step !== 'analysis' || !assignment || assignment.lifecycle_status !== 'ready_for_analysis') return;
+
+    const technicalAssignmentId = assignment.technical_assignment_id;
+    const revision = assignment.revision;
+    let cancelled = false;
+
+    const commandFor = (retryOfAnalysisSnapshotId: string | null): AnalysisCommandState => {
+      const current = analysisCommandRef.current;
+      if (
+        current
+        && current.technicalAssignmentId === technicalAssignmentId
+        && current.revision === revision
+        && current.retryOfAnalysisSnapshotId === retryOfAnalysisSnapshotId
+      ) {
+        return current;
+      }
+      const next = {
+        technicalAssignmentId,
+        revision,
+        idempotencyKey: crypto.randomUUID(),
+        retryOfAnalysisSnapshotId
+      };
+      analysisCommandRef.current = next;
+      return next;
+    };
+
+    const createFromCommand = async (command: AnalysisCommandState): Promise<void> => {
+      const created = await createPreLaunchAnalysisSnapshot(
+        command.idempotencyKey,
+        command.technicalAssignmentId,
+        command.revision,
+        command.retryOfAnalysisSnapshotId
+      );
+      if (cancelled) return;
+      setAnalysisLoading(false);
+      if (created.kind === 'snapshot') {
+        setAnalysisSnapshot(created.snapshot);
+        setAnalysisError(null);
+        return;
+      }
+      if (created.kind === 'rejected') {
+        analysisCommandRef.current = null;
+        setAnalysisSnapshot(null);
+        setAnalysisError(analysisFailureMessage(created.error));
+        return;
+      }
+      setAnalysisSnapshot(null);
+      setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Повторите запрос с сохранённой ссылки.');
+    };
+
+    setAnalysisLoading(true);
+    setAnalysisError(null);
+    setAnalysisSnapshot(previous => (analysisMatchesAssignment(previous, assignment) ? previous : null));
+
+    void fetchCurrentPreLaunchAnalysisSnapshot(technicalAssignmentId, revision).then(async current => {
+      if (cancelled) return;
+      // The retry in-flight guard (handleAnalysisRetry) is released here,
+      // unconditionally, once this effect run reaches a terminal outcome --
+      // whether it actually consumed a pending retry command below, found a
+      // different state (letting a stale guard un-stick rather than
+      // permanently disable the button), or this run was not a retry at
+      // all (in which case the ref is already false and this is a no-op).
+      try {
+        if (current.kind === 'snapshot') {
+          const pendingRetry = analysisCommandRef.current;
+          if (
+            pendingRetry
+            && pendingRetry.technicalAssignmentId === technicalAssignmentId
+            && pendingRetry.revision === revision
+            && pendingRetry.retryOfAnalysisSnapshotId === current.snapshot.analysis_snapshot_id
+          ) {
+            await createFromCommand(pendingRetry);
+            return;
+          }
+          setAnalysisSnapshot(current.snapshot);
+          setAnalysisLoading(false);
+          return;
+        }
+        if (current.kind === 'not_found') {
+          setAnalysisSnapshot(null);
+          await createFromCommand(commandFor(null));
+          return;
+        }
+        setAnalysisLoading(false);
+        setAnalysisSnapshot(null);
+        if (current.kind === 'rejected') {
+          setAnalysisError(analysisFailureMessage(current.error));
+        } else {
+          setAnalysisError('Не удалось получить предварительный анализ: сервис временно недоступен. Ссылка на Техническое задание сохранена.');
+        }
+      } finally {
+        analysisRetryInFlightRef.current = false;
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [step, assignment?.technical_assignment_id, assignment?.revision, analysisReloadAttempt]);
+
+  // A pending attempt is refreshed by reading the same server-owned logical
+  // request. This never creates a second Snapshot or increments an attempt.
+  useEffect(() => {
+    if (step !== 'analysis' || analysisSnapshot?.status !== 'pending') return;
+    const timer = window.setTimeout(() => setAnalysisReloadAttempt(attempt => attempt + 1), 2000);
+    return () => window.clearTimeout(timer);
+  }, [step, analysisSnapshot?.analysis_snapshot_id, analysisSnapshot?.status, analysisReloadAttempt]);
 
   // Never silent: warns before a reload/close if there are edits since the
   // last successful "Сохранить" (see the note on hasUnsavedChanges above).
@@ -579,7 +1081,17 @@ export default function CampaignLaunchWizard() {
     const result = await saveTechnicalAssignmentDraft(taIdempotencyKey, scenario, payload, assignment ?? undefined);
     setSaving(false);
     if (result.kind === 'saved') {
+      const analysisIdentityChanged = !assignment
+        || assignment.technical_assignment_id !== result.assignment.technical_assignment_id
+        || assignment.revision !== result.assignment.revision;
       setAssignment(result.assignment);
+      if (analysisIdentityChanged) {
+        setAnalysisSnapshot(null);
+        setAnalysisError(null);
+        analysisCommandRef.current = null;
+        setContactsGateConfirmed(false);
+        setLaunchIdempotencyKey(crypto.randomUUID());
+      }
       setMissingFields(isReadyForAnalysis(result.assignment.lifecycle_status) ? [] : computeMissingRequiredFields(fields, result.assignment.payload));
       setHasUnsavedChanges(false);
       // Defect 1: an opaque, safe reference to the just-saved draft is now
@@ -600,16 +1112,90 @@ export default function CampaignLaunchWizard() {
     setSaveError('Не удалось сохранить Техническое задание: сервис временно недоступен.');
   };
 
+  const handleAnalysisRetry = () => {
+    // Checked and set synchronously, first, before any other condition --
+    // a second call within the same tick (double click before the next
+    // render) must be rejected even though `analysisLoading` has not been
+    // committed yet.
+    if (analysisRetryInFlightRef.current) return;
+    if (
+      !assignment
+      || !analysisSnapshot
+      || analysisSnapshot.status !== 'failed'
+      || !analysisSnapshot.failure?.retryable
+      || !analysisMatchesAssignment(analysisSnapshot, assignment)
+    ) {
+      return;
+    }
+    analysisRetryInFlightRef.current = true;
+    analysisCommandRef.current = {
+      technicalAssignmentId: assignment.technical_assignment_id,
+      revision: assignment.revision,
+      idempotencyKey: crypto.randomUUID(),
+      retryOfAnalysisSnapshotId: analysisSnapshot.analysis_snapshot_id
+    };
+    setAnalysisError(null);
+    setAnalysisReloadAttempt(attempt => attempt + 1);
+  };
+
+  const handlePostLaunchRetry = () => {
+    // Same synchronous-guard-first pattern as handleAnalysisRetry above.
+    if (postLaunchRetryInFlightRef.current) return;
+    if (
+      !detail?.analysis_context
+      || !postLaunchSnapshot
+      || postLaunchSnapshot.status !== 'failed'
+      || !postLaunchSnapshot.failure?.retryable
+    ) {
+      return;
+    }
+    postLaunchRetryInFlightRef.current = true;
+    postLaunchCommandRef.current = {
+      idempotencyKey: crypto.randomUUID(),
+      retryOfAnalysisSnapshotId: postLaunchSnapshot.analysis_snapshot_id
+    };
+    setPostLaunchError(null);
+    setPostLaunchReloadAttempt(attempt => attempt + 1);
+  };
+
   const handleLaunch = async () => {
-    if (!assignment) return;
+    if (!assignment || !analysisAllowsProgress(analysisSnapshot, assignment) || !analysisSnapshot) {
+      setLaunchError('Запуск недоступен: требуется актуальный завершённый предварительный анализ.');
+      setStep('analysis');
+      setAnalysisReloadAttempt(attempt => attempt + 1);
+      return;
+    }
     setLaunching(true);
     setLaunchError(null);
-    const result = await launchCampaign(launchIdempotencyKey, assignment.technical_assignment_id, assignment.revision);
+    const result = await launchCampaign(
+      launchIdempotencyKey,
+      assignment.technical_assignment_id,
+      assignment.revision,
+      analysisSnapshot.analysis_snapshot_id
+    );
     setLaunching(false);
     if (result.kind === 'created' || result.kind === 'replayed') {
       setCampaign(result.campaign);
       setWasReplay(result.kind === 'replayed');
       setStep('success');
+      // The Technical Assignment wizard flow is done -- `campaign` becomes
+      // the URL's only recovery identity from here on, so a reload/return
+      // opens Campaign detail (via the restore-on-mount effect above)
+      // instead of racing with the `ta` restore.
+      const searchWithoutTa = buildSearchWithoutTechnicalAssignmentId(window.location.search);
+      const nextSearch = buildSearchWithCampaignId(searchWithoutTa, result.campaign.campaign_id);
+      window.history.replaceState(null, '', `${window.location.pathname}${nextSearch}`);
+      return;
+    }
+    if (
+      result.kind === 'invalid'
+      && (result.error === 'TECHNICAL_ASSIGNMENT_ANALYSIS_REQUIRED' || result.error === 'TECHNICAL_ASSIGNMENT_ANALYSIS_STALE')
+    ) {
+      setAnalysisSnapshot(null);
+      setAnalysisError('Предварительный анализ больше не актуален. Получите текущий результат перед повторным запуском.');
+      setContactsGateConfirmed(false);
+      setStep('analysis');
+      setAnalysisReloadAttempt(attempt => attempt + 1);
       return;
     }
     setLaunchError(
@@ -619,22 +1205,20 @@ export default function CampaignLaunchWizard() {
     );
   };
 
-  const openDetail = async () => {
+  const openDetail = () => {
     if (!campaign) return;
+    // Data loading itself is owned by the Campaign detail effect above,
+    // keyed on detailCampaignId -- this only navigates and (defensively,
+    // handleLaunch's success branch already does this) keeps the URL
+    // recovery reference in sync.
+    setDetail(null);
     setDetailError(false);
+    setPostLaunchSnapshot(null);
+    setPostLaunchError(null);
+    setDetailCampaignId(campaign.campaign_id);
     setStep('detail');
-    const found = await fetchCampaignById(campaign.campaign_id);
-    if (found) {
-      setDetail(found);
-    } else {
-      setDetailError(true);
-    }
-  };
-
-  const refreshAssignment = async () => {
-    if (!assignment) return;
-    const result = await fetchTechnicalAssignmentById(assignment.technical_assignment_id);
-    if (result.kind === 'loaded') setAssignment(result.assignment);
+    const nextSearch = buildSearchWithCampaignId(window.location.search, campaign.campaign_id);
+    window.history.replaceState(null, '', `${window.location.pathname}${nextSearch}`);
   };
 
   if (restoring) {
@@ -813,27 +1397,63 @@ export default function CampaignLaunchWizard() {
         </section>
       );
     }
+    const analysisReady = !analysisLoading && analysisAllowsProgress(analysisSnapshot, assignment);
+    const currentTerminalSnapshot = analysisReady && analysisSnapshot?.results ? analysisSnapshot : null;
+
     return (
       <section>
-        <h2>Анализ</h2>
+        <h2>Предварительный анализ</h2>
+        <p><strong>{SYNTHETIC_DATA_MARKER}</strong></p>
         <p>
-          ID технического задания: {assignment.technical_assignment_id}, ревизия: {assignment.revision}
+          Техническое задание: {assignment.technical_assignment_id}. Версия: {assignment.revision}.
         </p>
-        <p>В течение 15 минут после запуска кампании мы покажем:</p>
-        <ul>
-          <li>Адекватность цены относительно рынка.</li>
-          <li>Количество конкурентов (аналогичных объектов или аналогичного спроса).</li>
-          <li>Вероятность сделки за 30 дней.</li>
-          <li>Потенциальные категории арендаторов (для собственника) или объектов (для арендатора).</li>
-        </ul>
-        <p>Первичный анализ — предварительная оценка, не финальный результат кампании. Уточняется по мере поступления данных.</p>
-        <p>Анализ носит информационный характер и не является юридической или финансовой рекомендацией. Решения по сделке принимает пользователь.</p>
+        {analysisLoading && !analysisSnapshot && <p>Подготавливаем анализ...</p>}
+        {analysisError && (
+          <div role="alert">
+            <p>{analysisError}</p>
+            <button type="button" onClick={() => setAnalysisReloadAttempt(attempt => attempt + 1)}>
+              Повторить загрузку
+            </button>
+          </div>
+        )}
+        {analysisSnapshot?.freshness_status === 'stale' && (
+          <p role="alert">{analysisFreshnessMessage(analysisSnapshot)}</p>
+        )}
+        {analysisSnapshot?.freshness_status === 'current' && analysisSnapshot.status === 'pending' && (
+          <p>Расчёт выполняется. Результат обновится автоматически.</p>
+        )}
+        {analysisSnapshot?.freshness_status === 'current' && analysisSnapshot.status === 'failed' && (
+          <div role="alert">
+            <p>{analysisFailureMessage(analysisSnapshot.failure ?? { code: 'ANALYSIS_GENERATION_FAILED', retryable: false })}</p>
+            {analysisSnapshot.failure?.retryable && (
+              <button type="button" disabled={analysisLoading} onClick={handleAnalysisRetry}>
+                Повторить расчёт
+              </button>
+            )}
+          </div>
+        )}
+        {currentTerminalSnapshot?.results && (
+          <>
+            <p>
+              Результат сформирован: {formatAnalysisTime(currentTerminalSnapshot.generated_at)}.
+              Попытка расчёта: {currentTerminalSnapshot.calculation_attempt}.
+            </p>
+            <AnalysisResultBlocks results={currentTerminalSnapshot.results} scenario={assignment.scenario} />
+          </>
+        )}
         <p>
           <button type="button" onClick={() => setStep('ta')}>
             Назад
           </button>{' '}
-          <button type="button" onClick={() => void refreshAssignment().then(() => setStep('contacts'))}>
-            Далее
+          <button
+            type="button"
+            disabled={!analysisReady}
+            onClick={() => {
+              setContactsGateConfirmed(false);
+              setStep('contacts');
+            }}
+          >
+            Далее (Контакты)
           </button>
         </p>
       </section>
@@ -846,11 +1466,15 @@ export default function CampaignLaunchWizard() {
     // must never render for a Technical Assignment that is not itself
     // ready_for_analysis, regardless of which button led here -- mirrors the
     // equivalent guard already on the 'analysis' step above.
-    if (!assignment || assignment.lifecycle_status !== 'ready_for_analysis') {
+    if (
+      !assignment
+      || assignment.lifecycle_status !== 'ready_for_analysis'
+      || !analysisAllowsProgress(analysisSnapshot, assignment)
+    ) {
       return (
         <section>
           <h2>Контакты</h2>
-          <p>Переход к Контактам недоступен: Техническое задание должно быть готово к Анализу («{LIFECYCLE_STATUS_LABELS.ready_for_analysis}»).</p>
+          <p>Переход к Контактам недоступен: требуется актуальный завершённый предварительный анализ текущей версии Технического задания.</p>
           <button type="button" onClick={() => setStep('analysis')}>
             Назад к Анализу
           </button>
@@ -904,6 +1528,17 @@ export default function CampaignLaunchWizard() {
         </section>
       );
     }
+    if (!assignment || !analysisAllowsProgress(analysisSnapshot, assignment)) {
+      return (
+        <section>
+          <h2>Запуск кампании</h2>
+          <p>Переход к запуску недоступен: требуется актуальный завершённый предварительный анализ.</p>
+          <button type="button" onClick={() => setStep('analysis')}>
+            Назад к Анализу
+          </button>
+        </section>
+      );
+    }
     return (
       <section>
         <h2>Запуск кампании</h2>
@@ -917,7 +1552,7 @@ export default function CampaignLaunchWizard() {
           <button type="button" disabled={launching} onClick={() => setStep('contacts')}>
             Назад
           </button>{' '}
-          <button type="button" disabled={launching || !assignment} onClick={() => void handleLaunch()}>
+          <button type="button" disabled={launching || !analysisAllowsProgress(analysisSnapshot, assignment)} onClick={() => void handleLaunch()}>
             {launching ? 'Запуск...' : 'Запустить кампанию'}
           </button>
         </p>
@@ -933,7 +1568,7 @@ export default function CampaignLaunchWizard() {
         <p>ID кампании: {campaign.campaign_id}</p>
         <p>Не позднее 15 минут мы подготовим первичный анализ.</p>
         <p>
-          <button type="button" onClick={() => void openDetail()}>
+          <button type="button" onClick={openDetail}>
             Перейти к кампании
           </button>
         </p>
@@ -942,19 +1577,107 @@ export default function CampaignLaunchWizard() {
   }
 
   if (step === 'detail') {
+    // No launch button anywhere on this screen, in any state (PRODUCT
+    // §15.3: refresh never brings back the launch button) -- Campaign
+    // status and Analysis refresh status are always rendered as two
+    // distinct fields; a failed/stale refresh never overwrites or implies
+    // a change to campaignStatusLabel below.
+    const campaignStatusLabel = detail ? ruLabel(CAMPAIGN_STATUS_LABELS, detail.status) : null;
+    const showResults = postLaunchSnapshot?.results && postLaunchSnapshot.freshness_status === 'current';
+
     return (
       <section>
         <h2>Детали кампании</h2>
-        {detailError && <p role="alert">Не удалось загрузить кампанию.</p>}
+        {detailError && (
+          <div role="alert">
+            <p>Не удалось загрузить кампанию.</p>
+            <button type="button" onClick={() => setDetailReloadAttempt(attempt => attempt + 1)}>
+              Повторить загрузку
+            </button>
+          </div>
+        )}
         {!detailError && !detail && <p>Загрузка...</p>}
         {detail && (
-          <ul>
-            <li>ID кампании: {detail.campaign_id}</li>
-            <li>Статус: {ruLabel(CAMPAIGN_STATUS_LABELS, detail.status)}</li>
-            <li>Версия: {detail.aggregate_version}</li>
-            <li>Создано: {detail.created_at}</li>
-            <li>Обновлено: {detail.updated_at}</li>
-          </ul>
+          <>
+            <ul>
+              <li>ID кампании: {detail.campaign_id}</li>
+              <li>Статус кампании: {campaignStatusLabel}</li>
+              <li>Версия: {detail.aggregate_version}</li>
+              <li>Создано: {detail.created_at}</li>
+              <li>Обновлено: {detail.updated_at}</li>
+            </ul>
+
+            <section aria-labelledby="post-launch-analysis-heading">
+              <h3 id="post-launch-analysis-heading">Анализ после запуска</h3>
+
+              {!detail.analysis_context && (
+                <p>Анализ после запуска для этой кампании недоступен.</p>
+              )}
+
+              {detail.analysis_context && (
+                <>
+                  <p><strong>{SYNTHETIC_DATA_MARKER}</strong></p>
+
+                  {postLaunchLoading && !postLaunchSnapshot && <p>Загрузка статуса анализа...</p>}
+
+                  {postLaunchError && (
+                    <div role="alert">
+                      <p>{postLaunchError}</p>
+                      <button type="button" onClick={() => setPostLaunchReloadAttempt(attempt => attempt + 1)}>
+                        Повторить загрузку
+                      </button>
+                    </div>
+                  )}
+
+                  {!postLaunchLoading && !postLaunchError && !postLaunchSnapshot && (
+                    <p>
+                      Статус анализа после запуска: {POST_LAUNCH_STATUS_LABELS.pending}. Начато: {formatAnalysisTime(detail.created_at)}.
+                      Не позднее 15 минут после запуска мы подготовим результат.
+                    </p>
+                  )}
+
+                  {postLaunchSnapshot && (
+                    <>
+                      <p>
+                        Статус анализа после запуска: {POST_LAUNCH_STATUS_LABELS[postLaunchSnapshot.status]}.
+                        Попытка расчёта: {postLaunchSnapshot.calculation_attempt}.
+                      </p>
+
+                      {postLaunchSnapshot.status !== 'pending' && (
+                        <p>Результат сформирован: {formatAnalysisTime(postLaunchSnapshot.generated_at)}.</p>
+                      )}
+
+                      {postLaunchSnapshot.freshness_status === 'stale' && (
+                        <p role="alert">{postLaunchFreshnessMessage(postLaunchSnapshot)}</p>
+                      )}
+
+                      {postLaunchSnapshot.freshness_status === 'current' && postLaunchSnapshot.status === 'pending' && (
+                        <p>
+                          Начато: {formatAnalysisTime(postLaunchSnapshot.created_at)}. Не позднее 15 минут после запуска
+                          мы подготовим результат.
+                        </p>
+                      )}
+
+                      {postLaunchSnapshot.freshness_status === 'current' && postLaunchSnapshot.status === 'failed' && (
+                        <div role="alert">
+                          <p>{analysisFailureMessage(postLaunchSnapshot.failure ?? { code: 'ANALYSIS_GENERATION_FAILED', retryable: false })}</p>
+                          {postLaunchSnapshot.failure?.retryable && (
+                            <button type="button" disabled={postLaunchLoading} onClick={handlePostLaunchRetry}>
+                              Повторить анализ
+                            </button>
+                          )}
+                        </div>
+                      )}
+
+                      {showResults && postLaunchSnapshot.results && (
+                        <AnalysisResultBlocks results={postLaunchSnapshot.results} scenario={detail.analysis_context.scenario} />
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </section>
+          </>
         )}
       </section>
     );

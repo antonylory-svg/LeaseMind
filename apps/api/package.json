@@ -5,14 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file-if-exists=.env --import tsx src/server.ts",
+    "dev:analysis-worker": "node --env-file-if-exists=.env --import tsx src/analysis-worker.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/src/server.js",
+    "start:analysis-worker": "node dist/src/analysis-worker.js",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --import tsx --test --test-concurrency=1 tests/*.test.ts",
     "provision-roles": "node --env-file-if-exists=.env --import tsx src/db/provision-roles-cli.ts",
     "migrate:up": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts up",
     "migrate:down": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts down",
-    "seed": "node --env-file-if-exists=.env --import tsx src/db/seed-cli.ts"
+    "seed": "node --env-file-if-exists=.env --import tsx src/db/seed-cli.ts",
+    "revoke-evidence-dataset": "node --env-file-if-exists=.env --import tsx src/db/revoke-evidence-dataset-cli.ts"
   },
   "dependencies": {
     "fastify": "^5.0.0",
