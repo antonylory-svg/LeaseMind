@@ -3,12 +3,15 @@ import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
 import { migrateUp } from '../src/db/migrate.js';
+import { buildApp } from '../src/app.js';
 import { saveTechnicalAssignmentDraft } from '../src/db/technicalAssignment.js';
 import { launchCampaignFromTechnicalAssignment } from '../src/db/launchCampaign.js';
 import {
   computeInitialPostLaunchRefreshIdempotencyKey,
   createOrReplayInitialPostLaunchAnalysisSnapshot,
+  createOrReplayPostLaunchRefreshRetry,
   createOrReplayPreLaunchAnalysisSnapshot,
+  type CreateAnalysisSnapshotInput,
   type PostLaunchRefreshIdentity
 } from '../src/db/analysisSnapshot.js';
 import {
@@ -19,6 +22,7 @@ import { AnalysisRequestError } from '../src/analysisTypes.js';
 import {
   ANALYSIS_DATABASE_URL,
   ANALYSIS_WORKER_DATABASE_URL,
+  API_DATABASE_URL,
   COMMAND_DATABASE_URL,
   MIGRATION_DATABASE_URL,
   TA_DATABASE_URL,
@@ -347,6 +351,236 @@ test('worker resumes an explicit retry Snapshot and never replays the initial ke
   }
 });
 
+// H2 / PRODUCT §11.1, §15.3: the public, user-initiated retry command
+// (createOrReplayPostLaunchRefreshRetry, wired to POST /api/v1/analysis-snapshots
+// with analysis_kind=post_launch_refresh). Forces attempt 1 to a terminal
+// failed+retryable state the same way the test above does (the synthetic
+// calculation never fails on its own), so retry has something real to act on.
+async function forceFirstAttemptFailed(
+  workerPool: pg.Pool,
+  fixture: Fixture
+): Promise<{ analysisSnapshotId: string; executionClaimCount: number; workerId: string }> {
+  const workerId = `test-worker:${randomUUID()}`;
+  const [claim] = await claimPostLaunchRefreshIntents(workerPool, workerId, 1);
+  assert.ok(claim);
+  assert.equal(claim.currentAnalysisSnapshotId, null);
+  const firstAttempt = await createOrReplayInitialPostLaunchAnalysisSnapshot(workerPool, claim);
+  await workerPool.query(
+    `UPDATE leasemind_app.analysis_snapshot
+        SET status = 'failed', generated_at = clock_timestamp(),
+            failure = '{"code":"ANALYSIS_GENERATION_FAILED","retryable":true}'::jsonb
+      WHERE analysis_snapshot_id = $1`,
+    [firstAttempt.analysisSnapshotId]
+  );
+  await workerPool.query(
+    `SELECT leasemind_app.fail_post_launch_refresh_intent($1, $2, $3, $4)`,
+    [fixture.campaignId, workerId, claim.executionClaimCount, firstAttempt.analysisSnapshotId]
+  );
+  return { analysisSnapshotId: firstAttempt.analysisSnapshotId, executionClaimCount: claim.executionClaimCount, workerId };
+}
+
+test('H2: a client cannot create the initial post_launch_refresh attempt via the public retry command', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 2 });
+  try {
+    await drainRefreshQueue(workerPool);
+    // No worker cycle run -- the intent exists (created atomically at
+    // launch) but the durable worker has not created attempt 1 yet.
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'h2-no-initial');
+    const rejectedKey = key('h2-client-initial-attempt');
+    const input: CreateAnalysisSnapshotInput = {
+      idempotencyKey: rejectedKey,
+      technicalAssignmentId: fixture.technicalAssignmentId,
+      expectedRevision: fixture.sourceRevision,
+      analysisKind: 'post_launch_refresh',
+      campaignId: fixture.campaignId,
+      retryOfAnalysisSnapshotId: null
+    };
+    await assert.rejects(
+      createOrReplayPostLaunchRefreshRetry(analysisPool, input),
+      (error: unknown) => error instanceof AnalysisRequestError && error.code === 'ANALYSIS_RETRY_NOT_ALLOWED'
+    );
+    const mapping = await analysisPool.query(
+      `SELECT count(*)::int AS count FROM leasemind_app.analysis_snapshot_idempotency_mapping WHERE idempotency_key = $1`,
+      [rejectedKey]
+    );
+    assert.equal(mapping.rows[0].count, 0);
+    const snapshots = await analysisPool.query(
+      `SELECT count(*)::int AS count FROM leasemind_app.analysis_snapshot
+        WHERE campaign_id = $1 AND analysis_kind = 'post_launch_refresh'`,
+      [fixture.campaignId]
+    );
+    assert.equal(snapshots.rows[0].count, 0, 'no Snapshot of any kind may be created by this rejected command');
+  } finally {
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), workerPool.end()]);
+  }
+});
+
+test(
+  'H2: a correct explicit retry via POST /api/v1/analysis-snapshots creates exactly one pending attempt N+1 (HTTP 202), the worker then executes it, and replay returns HTTP 200 with the original attempt',
+  { skip: !hasAnalysisDatabase },
+  async () => {
+    const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+    const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+    const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+    const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 2 });
+    const apiPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+    const app = buildApp({ pool: apiPool, analysisPool, logger: false });
+    try {
+      await drainRefreshQueue(workerPool);
+      const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'h2-correct-retry');
+      const campaignBefore = await commandPool.query(
+        `SELECT status, aggregate_version FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1`,
+        [fixture.campaignId]
+      );
+      const first = await forceFirstAttemptFailed(workerPool, fixture);
+
+      const retryKey = key('h2-correct-retry-command');
+      const retryPayload = {
+        idempotency_key: retryKey,
+        technical_assignment_id: fixture.technicalAssignmentId,
+        expected_revision: fixture.sourceRevision,
+        analysis_kind: 'post_launch_refresh',
+        campaign_id: fixture.campaignId,
+        retry_of_analysis_snapshot_id: first.analysisSnapshotId
+      };
+      const created = await app.inject({ method: 'POST', url: '/api/v1/analysis-snapshots', payload: retryPayload });
+      assert.equal(created.statusCode, 202, created.body);
+      const createdBody = created.json();
+      assert.equal(createdBody.status, 'pending');
+      assert.equal(createdBody.calculation_attempt, 2);
+      assert.notEqual(createdBody.analysis_snapshot_id, first.analysisSnapshotId);
+
+      const intentAfterRetry = await queryIntentAsOwner(
+        `SELECT status, current_analysis_snapshot_id
+           FROM leasemind_app.post_launch_refresh_intent
+          WHERE campaign_id = $1`,
+        [fixture.campaignId]
+      );
+      assert.deepEqual(intentAfterRetry.rows[0], {
+        status: 'pending',
+        current_analysis_snapshot_id: createdBody.analysis_snapshot_id
+      });
+
+      // Replay the same idempotency key -- must return the SAME attempt,
+      // HTTP 200, regardless of its (by-then-possibly-different) status.
+      const replay = await app.inject({ method: 'POST', url: '/api/v1/analysis-snapshots', payload: retryPayload });
+      assert.equal(replay.statusCode, 200, replay.body);
+      assert.equal(replay.json().analysis_snapshot_id, createdBody.analysis_snapshot_id);
+      assert.equal(replay.json().calculation_attempt, 2);
+
+      // The worker (not this HTTP request) executes the new pending attempt.
+      const cycle = await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
+      assert.deepEqual(cycle, { claimed: 1, completed: 1, failed: 0, slaBreachesMarked: 0, slaBreachEvents: [] });
+
+      const attempts = await workerPool.query(
+        `SELECT calculation_attempt, status
+           FROM leasemind_app.analysis_snapshot
+          WHERE campaign_id = $1 AND analysis_kind = 'post_launch_refresh'
+          ORDER BY calculation_attempt`,
+        [fixture.campaignId]
+      );
+      assert.deepEqual(attempts.rows, [
+        { calculation_attempt: 1, status: 'failed' },
+        { calculation_attempt: 2, status: 'completed' }
+      ]);
+
+      // A failed attempt and its retry never touch the Campaign's own
+      // status/aggregate_version -- compared against the baseline captured
+      // right after launch, not a hardcoded guess.
+      const campaignAfter = await commandPool.query(
+        `SELECT status, aggregate_version FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1`,
+        [fixture.campaignId]
+      );
+      assert.deepEqual(campaignAfter.rows[0], campaignBefore.rows[0]);
+
+      // Replaying the ORIGINAL command a second time, after the retry
+      // completed, must still return the original attempt with 200 -- not
+      // silently upgraded to the new one.
+      const replayAgain = await app.inject({ method: 'POST', url: '/api/v1/analysis-snapshots', payload: retryPayload });
+      assert.equal(replayAgain.statusCode, 200, replayAgain.body);
+      assert.equal(replayAgain.json().analysis_snapshot_id, createdBody.analysis_snapshot_id);
+    } finally {
+      await app.close();
+      await Promise.all([taPool.end(), workerPool.end()]);
+    }
+  }
+);
+
+test('H2: invalid, non-retryable and mismatched retry commands are rejected without partial writes', { skip: !hasAnalysisDatabase }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 2 });
+  try {
+    await drainRefreshQueue(workerPool);
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'h2-invalid-retry');
+    const first = await forceFirstAttemptFailed(workerPool, fixture);
+
+    // (a) retry_of_analysis_snapshot_id missing entirely for a
+    // failed+retryable current attempt -- the caller must name the target.
+    await assert.rejects(
+      createOrReplayPostLaunchRefreshRetry(analysisPool, {
+        idempotencyKey: key('h2-invalid-no-target'),
+        technicalAssignmentId: fixture.technicalAssignmentId,
+        expectedRevision: fixture.sourceRevision,
+        analysisKind: 'post_launch_refresh',
+        campaignId: fixture.campaignId,
+        retryOfAnalysisSnapshotId: null
+      }),
+      (error: unknown) => error instanceof AnalysisRequestError && error.code === 'ANALYSIS_RETRY_TARGET_MISMATCH'
+    );
+
+    // (b) retry_of_analysis_snapshot_id names the wrong Snapshot.
+    await assert.rejects(
+      createOrReplayPostLaunchRefreshRetry(analysisPool, {
+        idempotencyKey: key('h2-invalid-wrong-target'),
+        technicalAssignmentId: fixture.technicalAssignmentId,
+        expectedRevision: fixture.sourceRevision,
+        analysisKind: 'post_launch_refresh',
+        campaignId: fixture.campaignId,
+        retryOfAnalysisSnapshotId: randomUUID()
+      }),
+      (error: unknown) => error instanceof AnalysisRequestError && error.code === 'ANALYSIS_RETRY_TARGET_MISMATCH'
+    );
+
+    // (c) a valid retry succeeds once, moving the current attempt away from
+    // `failed` -- a second retry attempt against the now-stale target must
+    // be rejected as ANALYSIS_RETRY_NOT_ALLOWED, not silently accepted.
+    const validRetry = await createOrReplayPostLaunchRefreshRetry(analysisPool, {
+      idempotencyKey: key('h2-valid-retry-for-not-allowed-check'),
+      technicalAssignmentId: fixture.technicalAssignmentId,
+      expectedRevision: fixture.sourceRevision,
+      analysisKind: 'post_launch_refresh',
+      campaignId: fixture.campaignId,
+      retryOfAnalysisSnapshotId: first.analysisSnapshotId
+    });
+    assert.equal(validRetry.created, true);
+    await assert.rejects(
+      createOrReplayPostLaunchRefreshRetry(analysisPool, {
+        idempotencyKey: key('h2-invalid-after-retry'),
+        technicalAssignmentId: fixture.technicalAssignmentId,
+        expectedRevision: fixture.sourceRevision,
+        analysisKind: 'post_launch_refresh',
+        campaignId: fixture.campaignId,
+        retryOfAnalysisSnapshotId: first.analysisSnapshotId
+      }),
+      (error: unknown) => error instanceof AnalysisRequestError && error.code === 'ANALYSIS_RETRY_NOT_ALLOWED'
+    );
+
+    const attempts = await analysisPool.query(
+      `SELECT count(*)::int AS count FROM leasemind_app.analysis_snapshot
+        WHERE campaign_id = $1 AND analysis_kind = 'post_launch_refresh'`,
+      [fixture.campaignId]
+    );
+    assert.equal(attempts.rows[0].count, 2, 'only the one valid retry created a second attempt -- nothing from the three rejected commands');
+  } finally {
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), workerPool.end()]);
+  }
+});
+
 test('regression: a previously accepted post-launch idempotency key replays before identity validation', { skip: !hasAnalysisDatabase }, async () => {
   const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
   const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
@@ -553,3 +787,60 @@ test('regression: an SLA breach is surfaced as exactly one worker-cycle event, n
     ]);
   }
 });
+
+test(
+  'H2: GET /api/v1/campaigns/:campaignId exposes analysis_context for an Analysis-authorized launch, and the current post_launch_refresh Snapshot is reachable through the existing current-read endpoint',
+  { skip: !hasAnalysisDatabase },
+  async () => {
+    const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+    const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+    const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+    const workerPool = new pg.Pool({ connectionString: ANALYSIS_WORKER_DATABASE_URL, max: 2 });
+    const apiPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+    const app = buildApp({ pool: apiPool, analysisPool, logger: false });
+    try {
+      await drainRefreshQueue(workerPool);
+      const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'h2-detail-context');
+
+      const detail = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${fixture.campaignId}` });
+      assert.equal(detail.statusCode, 200, detail.body);
+      assert.deepEqual(detail.json().analysis_context, {
+        technical_assignment_id: fixture.technicalAssignmentId,
+        source_revision: fixture.sourceRevision,
+        scenario: 'need_tenant'
+      });
+
+      // No protected/internal field leaks through analysis_context --
+      // exactly the three documented columns, nothing else.
+      assert.deepEqual(Object.keys(detail.json().analysis_context).sort(), [
+        'scenario',
+        'source_revision',
+        'technical_assignment_id'
+      ]);
+
+      // Before the worker runs: the existing current-read endpoint
+      // correctly reports 404 (not_found), not an error -- the Campaign
+      // detail screen's safe waiting state.
+      const beforeWorker = await app.inject({
+        method: 'GET',
+        url: `/api/v1/technical-assignments/${fixture.technicalAssignmentId}/analysis-snapshots/current`
+          + `?revision=${fixture.sourceRevision}&analysis_kind=post_launch_refresh&campaign_id=${fixture.campaignId}`
+      });
+      assert.equal(beforeWorker.statusCode, 404, beforeWorker.body);
+
+      await runPostLaunchRefreshWorkerCycle(workerPool, `test-worker:${randomUUID()}`);
+
+      const afterWorker = await app.inject({
+        method: 'GET',
+        url: `/api/v1/technical-assignments/${fixture.technicalAssignmentId}/analysis-snapshots/current`
+          + `?revision=${fixture.sourceRevision}&analysis_kind=post_launch_refresh&campaign_id=${fixture.campaignId}`
+      });
+      assert.equal(afterWorker.statusCode, 200, afterWorker.body);
+      assert.equal(afterWorker.json().status, 'completed');
+      assert.equal(afterWorker.json().campaign_id, fixture.campaignId);
+    } finally {
+      await app.close();
+      await Promise.all([taPool.end(), workerPool.end()]);
+    }
+  }
+);

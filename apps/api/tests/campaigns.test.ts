@@ -785,6 +785,25 @@ test('GET /api/v1/campaigns/:campaignId returns 200 for an existing campaign', {
   }
 });
 
+// H2 (ADR-0009): the synthetic seed campaigns are created directly against
+// campaign_current_state_projection, never through the Analysis-authorized
+// launch command -- none of them has a campaign_subject_link_projection
+// row. This is exactly the "legacy/unlinked Campaign" case the Campaign
+// detail screen must present as a distinct, safe "unavailable" state, never
+// as a pending post-launch Analysis.
+test('GET /api/v1/campaigns/:campaignId returns analysis_context: null for a legacy/unlinked campaign, using only the existing lmapp_api_reader grants', { skip: !hasDatabase }, async () => {
+  const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
+  const app = buildApp({ pool, logger: false });
+  try {
+    const target = SYNTHETIC_CAMPAIGN_SEEDS[0];
+    const response = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${target.campaignId}` });
+    assert.equal(response.statusCode, 200, response.body);
+    assert.deepEqual(response.json().analysis_context, null);
+  } finally {
+    await app.close();
+  }
+});
+
 test('GET /api/v1/campaigns/:campaignId rejects malformed UUIDs with 400', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 2 });
   const app = buildApp({ pool, logger: false });

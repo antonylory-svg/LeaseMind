@@ -654,6 +654,162 @@ export async function createOrReplayInitialPostLaunchAnalysisSnapshot(
   }
 }
 
+/**
+ * User-initiated explicit retry of a terminal `failed`+`retryable` post_launch_refresh
+ * attempt (PRODUCT §11.1/§15.3). This is the ONLY post_launch_refresh path
+ * reachable from the public HTTP command -- the initial attempt (calculation_attempt=1)
+ * is created exclusively by the durable worker via its own server-derived
+ * key (createOrReplayInitialPostLaunchAnalysisSnapshot), never by this
+ * function: if the worker has not created a current attempt yet, this
+ * throws ANALYSIS_RETRY_NOT_ALLOWED rather than creating one. A validated
+ * new attempt stays `pending` -- it is executed by the worker, never
+ * calculated synchronously here -- and atomically (same transaction, before
+ * COMMIT) reopens the durable post_launch_refresh_intent via the
+ * SECURITY DEFINER function request_post_launch_refresh_retry, so the
+ * worker picks it up on its next claim.
+ */
+export async function createOrReplayPostLaunchRefreshRetry(
+  pool: pg.Pool,
+  input: CreateAnalysisSnapshotInput
+): Promise<CreateAnalysisSnapshotResult> {
+  const commandHash = computeAnalysisCommandHash(input);
+  const fastMapping = await readMapping(pool, input.idempotencyKey);
+  if (fastMapping) return replayOrConflict(fastMapping, commandHash);
+
+  const client = await pool.connect();
+  const keyScope = `analysis-snapshot:idempotency-key:${input.idempotencyKey}`;
+  const logicalScope = `technical-assignment:id:${input.technicalAssignmentId}`;
+  let keyLocked = false;
+  let logicalLocked = false;
+  let transactionOpen = false;
+  let destroyClient = false;
+
+  try {
+    await acquireSessionLock(client, keyScope);
+    keyLocked = true;
+
+    const lockedMapping = await readMapping(client, input.idempotencyKey);
+    if (lockedMapping) return replayOrConflict(lockedMapping, commandHash);
+
+    // PRODUCT §6.1: durable mapping is checked first, before any
+    // current-command validation. Only a genuinely new key reaches this
+    // gate.
+    if (input.analysisKind !== 'post_launch_refresh' || input.campaignId === null) {
+      throw new AnalysisRequestError('ANALYSIS_KIND_INVALID', 400, false);
+    }
+
+    await acquireSessionLock(client, logicalScope);
+    logicalLocked = true;
+    await client.query('BEGIN ISOLATION LEVEL REPEATABLE READ');
+    transactionOpen = true;
+
+    const subject = await readSubject(client, input.technicalAssignmentId);
+    if (!subject) {
+      throw new AnalysisRequestError('ANALYSIS_TECHNICAL_ASSIGNMENT_NOT_FOUND', 404, false);
+    }
+    if (
+      subject.row.lifecycle_status !== 'campaign_started'
+      || subject.row.revision !== input.expectedRevision
+    ) {
+      throw new AnalysisRequestError('ANALYSIS_CAMPAIGN_MISMATCH', 409, false);
+    }
+    const countryCode = subject.scenario === 'need_tenant'
+      ? subject.row.property_country_code
+      : subject.row.request_country_code;
+    if (countryCode !== 'RU') {
+      throw new AnalysisRequestError('ANALYSIS_MARKET_UNSUPPORTED', 400, false);
+    }
+
+    const current = await readCurrentAttempt(
+      client,
+      input.technicalAssignmentId,
+      input.expectedRevision,
+      'post_launch_refresh',
+      input.campaignId
+    );
+    // The initial attempt is exclusively created by the durable worker
+    // (server-derived key, see createOrReplayInitialPostLaunchAnalysisSnapshot) --
+    // if it has not run yet, this user-facing path has nothing to retry or
+    // converge to.
+    if (!current) {
+      throw new AnalysisRequestError('ANALYSIS_RETRY_NOT_ALLOWED', 409, false);
+    }
+    const decision = decideAttempt(current, input.retryOfAnalysisSnapshotId);
+
+    if (!decision.create) {
+      await insertMapping(client, input, commandHash, decision.analysisSnapshotId);
+      await client.query('COMMIT');
+      transactionOpen = false;
+      return { analysisSnapshotId: decision.analysisSnapshotId, created: false };
+    }
+
+    const analysisSnapshotId = randomUUID();
+    await client.query(
+      `INSERT INTO leasemind_app.analysis_snapshot (
+         analysis_snapshot_id, property_id, tenant_request_id, source_revision, scenario,
+         analysis_kind, campaign_id, calculation_attempt, status, schema_version,
+         method_version, country_code, currency, locale, area_unit, rent_period, input_fingerprint
+       ) VALUES (
+         $1, $2, $3, $4, $5,
+         'post_launch_refresh', $6, $7, 'pending', $8,
+         $9, 'RU', 'RUB', 'ru-RU', 'sqm', 'month', $10
+       )`,
+      [
+        analysisSnapshotId,
+        subject.scenario === 'need_tenant' ? input.technicalAssignmentId : null,
+        subject.scenario === 'need_property' ? input.technicalAssignmentId : null,
+        input.expectedRevision,
+        subject.scenario,
+        input.campaignId,
+        decision.attempt,
+        ANALYSIS_SCHEMA_VERSION,
+        ANALYSIS_METHOD_VERSION,
+        computeAnalysisInputFingerprint(subject.scenario, subject.row)
+      ]
+    );
+    await insertMapping(client, input, commandHash, analysisSnapshotId);
+
+    // Atomic with the Snapshot + mapping insert above (same transaction,
+    // before COMMIT): reopens the durable intent so the worker claims and
+    // executes this new pending attempt. This SECURITY DEFINER function
+    // independently re-validates the prior failed+retryable attempt, the
+    // new pending Snapshot's shape/logical key/calculation_attempt, and the
+    // mapping row linking it as a retry -- see migration 009.
+    await client.query(
+      `SELECT leasemind_app.request_post_launch_refresh_retry($1, $2)`,
+      [input.campaignId, analysisSnapshotId]
+    );
+
+    await client.query('COMMIT');
+    transactionOpen = false;
+    return { analysisSnapshotId, created: true };
+  } catch (error) {
+    if (transactionOpen) {
+      await client.query('ROLLBACK').catch(() => {
+        destroyClient = true;
+      });
+      transactionOpen = false;
+    }
+    throw error;
+  } finally {
+    if (logicalLocked) {
+      try {
+        if (!(await releaseSessionLock(client, logicalScope))) destroyClient = true;
+      } catch {
+        destroyClient = true;
+      }
+    }
+    if (keyLocked) {
+      try {
+        if (!(await releaseSessionLock(client, keyScope))) destroyClient = true;
+      } catch {
+        destroyClient = true;
+      }
+    }
+    client.release(destroyClient);
+  }
+}
+
 interface ExecutionSnapshotRow {
   analysis_snapshot_id: string;
   technical_assignment_id: string;

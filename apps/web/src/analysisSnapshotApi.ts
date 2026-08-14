@@ -40,6 +40,13 @@ export interface CandidateCategoriesValue extends Record<string, unknown> {
   items: Array<{ code: string; compatible_count: number }>;
 }
 
+export interface AnalysisResults {
+  price_adequacy: AnalysisMetric<PriceAdequacyValue>;
+  competition: AnalysisMetric<CompetitionValue>;
+  deal_probability_30d: AnalysisMetric;
+  candidate_categories: AnalysisMetric<CandidateCategoriesValue>;
+}
+
 export interface AnalysisSnapshot {
   schema_version: '1.0';
   analysis_snapshot_id: string;
@@ -69,12 +76,7 @@ export interface AnalysisSnapshot {
     code: 'ANALYSIS_DATASET_UNAVAILABLE' | 'ANALYSIS_GENERATION_FAILED';
     retryable: boolean;
   };
-  results: null | {
-    price_adequacy: AnalysisMetric<PriceAdequacyValue>;
-    competition: AnalysisMetric<CompetitionValue>;
-    deal_probability_30d: AnalysisMetric;
-    candidate_categories: AnalysisMetric<CandidateCategoriesValue>;
-  };
+  results: AnalysisResults | null;
 }
 
 export interface AnalysisApiFailure {
@@ -150,6 +152,73 @@ export async function fetchCurrentPreLaunchAnalysisSnapshot(
     );
     if (response.status === 200) return { kind: 'snapshot', snapshot: (await response.json()) as AnalysisSnapshot };
     if (response.status === 404) return { kind: 'not_found' };
+    const failure = await readFailure(response);
+    return failure ? { kind: 'rejected', error: failure } : { kind: 'error' };
+  } catch {
+    return { kind: 'error' };
+  }
+}
+
+/** Campaign detail (PRODUCT §15.3): the current post_launch_refresh
+ * Snapshot for this Campaign, read the same way as the pre-launch current
+ * read -- a 404 here means the durable worker has not created the initial
+ * attempt yet (within its 15-minute SLA), not an error; the caller must
+ * show a safe waiting state, never create a Snapshot from a GET. */
+export async function fetchCurrentPostLaunchRefreshAnalysisSnapshot(
+  technicalAssignmentId: string,
+  revision: number,
+  campaignId: string
+): Promise<FetchAnalysisResult> {
+  try {
+    const query = new URLSearchParams({
+      revision: String(revision),
+      analysis_kind: 'post_launch_refresh',
+      campaign_id: campaignId
+    });
+    const response = await fetch(
+      `${API_BASE_URL}/api/v1/technical-assignments/${encodeURIComponent(technicalAssignmentId)}/analysis-snapshots/current?${query}`
+    );
+    if (response.status === 200) return { kind: 'snapshot', snapshot: (await response.json()) as AnalysisSnapshot };
+    if (response.status === 404) return { kind: 'not_found' };
+    const failure = await readFailure(response);
+    return failure ? { kind: 'rejected', error: failure } : { kind: 'error' };
+  } catch {
+    return { kind: 'error' };
+  }
+}
+
+/** Explicit user retry of a terminal failed+retryable post_launch_refresh
+ * attempt only (PRODUCT §11.1/§15.3) -- the server rejects any other use of
+ * this command for analysis_kind=post_launch_refresh (ANALYSIS_RETRY_NOT_ALLOWED
+ * if there is no current attempt to retry). The caller owns idempotency-key
+ * generation, exactly like createPreLaunchAnalysisSnapshot. */
+export async function createPostLaunchRefreshRetry(
+  idempotencyKey: string,
+  technicalAssignmentId: string,
+  expectedRevision: number,
+  campaignId: string,
+  retryOfAnalysisSnapshotId: string
+): Promise<CreateAnalysisResult> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/analysis-snapshots`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        idempotency_key: idempotencyKey,
+        technical_assignment_id: technicalAssignmentId,
+        expected_revision: expectedRevision,
+        analysis_kind: 'post_launch_refresh',
+        campaign_id: campaignId,
+        retry_of_analysis_snapshot_id: retryOfAnalysisSnapshotId
+      })
+    });
+    if (response.status === 200 || response.status === 201 || response.status === 202) {
+      return {
+        kind: 'snapshot',
+        snapshot: (await response.json()) as AnalysisSnapshot,
+        created: response.status === 201 || response.status === 202
+      };
+    }
     const failure = await readFailure(response);
     return failure ? { kind: 'rejected', error: failure } : { kind: 'error' };
   } catch {

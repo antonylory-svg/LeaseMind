@@ -376,7 +376,10 @@ paths:
         campaignId must be a UUID v4 or v7; any other syntactically valid
         UUID version (v1, v2, v3, v5, v6, v8) or malformed value is
         rejected with 400 before any database query runs
-        (apps/api/src/uuid.ts).
+        (apps/api/src/uuid.ts). Unlike the list endpoint, the detail
+        response additionally includes analysis_context (ADR-0009), read via
+        a LEFT JOIN against campaign_subject_link_projection -- null for a
+        legacy/unlinked Campaign.
       parameters:
         - name: campaignId
           in: path
@@ -385,11 +388,11 @@ paths:
             $ref: '#/components/schemas/UuidV4OrV7'
       responses:
         '200':
-          description: The matching Campaign.
+          description: The matching Campaign, with its Analysis launch context.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Campaign'
+                $ref: '#/components/schemas/CampaignDetail'
         '400':
           description: campaignId is not a well-formed UUID v4 or v7.
           content:
@@ -484,6 +487,67 @@ components:
         updated_at:
           type: string
           format: date-time
+
+    CampaignAnalysisContext:
+      description: >-
+        Read-only, server-owned Technical Assignment / revision / scenario a
+        Campaign was launched from (ADR-0009), letting the frontend ask
+        GET /api/v1/technical-assignments/{technicalAssignmentId}/analysis-snapshots/current
+        for the current post_launch_refresh Analysis Snapshot without a
+        second read endpoint. null for a legacy/unlinked Campaign (no
+        campaign_subject_link_projection row).
+      nullable: true
+      type: object
+      additionalProperties: false
+      required: [technical_assignment_id, source_revision, scenario]
+      properties:
+        technical_assignment_id:
+          type: string
+          format: uuid
+        source_revision:
+          type: integer
+          minimum: 1
+        scenario:
+          type: string
+          enum: [need_tenant, need_property]
+
+    CampaignDetail:
+      description: >-
+        Detail-only shape returned by GET /api/v1/campaigns/{campaignId} --
+        deliberately not used by the list endpoint (CampaignListResponse
+        keeps the plain Campaign shape).
+      type: object
+      additionalProperties: false
+      required: [campaign_id, status, aggregate_version, created_at, updated_at, analysis_context]
+      properties:
+        campaign_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - Created
+            - Analyzing
+            - Strategy Building
+            - Searching
+            - Qualifying
+            - Negotiating
+            - Viewing
+            - Deal Support
+            - Completed
+            - Paused
+            - Failed
+        aggregate_version:
+          type: string
+          pattern: '^[1-9][0-9]*$'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        analysis_context:
+          $ref: '#/components/schemas/CampaignAnalysisContext'
 
     CampaignListResponse:
       type: object

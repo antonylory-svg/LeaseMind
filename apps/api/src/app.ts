@@ -1,7 +1,7 @@
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from 'fastify';
 import type pg from 'pg';
 import { checkDatabaseConnection } from './db.js';
-import { CAMPAIGN_STATUSES, getCampaignById, listCampaigns } from './db/campaigns.js';
+import { CAMPAIGN_STATUSES, getCampaignDetailById, listCampaigns } from './db/campaigns.js';
 import { isUuidV4OrV7 } from './uuid.js';
 import { SafeLogController, loggerOptions, genReqId } from './observability/logging.js';
 import {
@@ -24,6 +24,7 @@ import {
 } from './db/launchCampaign.js';
 import {
   createOrReplayPreLaunchAnalysisSnapshot,
+  createOrReplayPostLaunchRefreshRetry,
   getAnalysisSnapshotById,
   getCurrentAnalysisSnapshot
 } from './db/analysisSnapshot.js';
@@ -96,6 +97,41 @@ const campaignSchema = {
   }
 } as const;
 
+// ADR-0009: read-only server-owned context (technical_assignment_id,
+// source_revision, scenario) letting the frontend ask the existing
+// GET .../analysis-snapshots/current endpoint for the current
+// post_launch_refresh Snapshot -- never exact address, contacts, PII, raw
+// evidence, internal reason codes or any post_launch_refresh_intent column.
+const campaignAnalysisContextSchema = {
+  anyOf: [
+    { type: 'null' },
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['technical_assignment_id', 'source_revision', 'scenario'],
+      properties: {
+        technical_assignment_id: { type: 'string', format: 'uuid' },
+        source_revision: { type: 'integer', minimum: 1 },
+        scenario: { type: 'string', enum: ['need_tenant', 'need_property'] }
+      }
+    }
+  ]
+} as const;
+
+const campaignDetailSchema = {
+  type: 'object',
+  additionalProperties: false,
+  required: ['campaign_id', 'status', 'aggregate_version', 'created_at', 'updated_at', 'analysis_context'],
+  properties: {
+    campaign_id: { type: 'string', format: 'uuid' },
+    status: { type: 'string', enum: [...CAMPAIGN_STATUSES] },
+    aggregate_version: { type: 'string', pattern: '^[1-9][0-9]*$' },
+    created_at: { type: 'string', format: 'date-time' },
+    updated_at: { type: 'string', format: 'date-time' },
+    analysis_context: campaignAnalysisContextSchema
+  }
+} as const;
+
 const campaignServiceUnavailableSchema = {
   type: 'object',
   additionalProperties: false,
@@ -119,7 +155,7 @@ const campaignListResponseSchema = {
 } as const;
 
 const campaignDetailResponseSchema = {
-  200: campaignSchema,
+  200: campaignDetailSchema,
   400: {
     type: 'object',
     additionalProperties: false,
@@ -549,7 +585,7 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
       }
 
       try {
-        const campaign = await getCampaignById(pool, campaignId);
+        const campaign = await getCampaignDetailById(pool, campaignId);
         if (!campaign) {
           request.safeErrorCode = 'CAMPAIGN_NOT_FOUND';
           return reply.code(404).send({ error: 'CAMPAIGN_NOT_FOUND' as const });
@@ -714,18 +750,33 @@ export function buildApp(options: BuildAppOptions): FastifyInstance {
         return sendAnalysisError(request, reply, new AnalysisRequestError('ANALYSIS_KIND_INVALID', 400, false));
       }
       try {
-        const command = await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, {
+        const input = {
           idempotencyKey: body.idempotency_key,
           technicalAssignmentId: body.technical_assignment_id,
           expectedRevision: body.expected_revision,
           analysisKind: body.analysis_kind,
           campaignId: body.campaign_id,
           retryOfAnalysisSnapshotId: body.retry_of_analysis_snapshot_id
-        });
+        };
+        // post_launch_refresh is explicit-retry-only on this public command
+        // (PRODUCT §11.1/§15.3): the initial attempt is created exclusively
+        // by the durable worker via its own server-derived key. pre_launch
+        // (create or explicit retry) is unchanged.
+        const command = body.analysis_kind === 'post_launch_refresh'
+          ? await createOrReplayPostLaunchRefreshRetry(analysisPool, input)
+          : await createOrReplayPreLaunchAnalysisSnapshot(analysisPool, input);
         const snapshot = await getAnalysisSnapshotById(pool, command.analysisSnapshotId);
         if (!snapshot) return analysisUnavailable(request, reply);
         request.safeErrorCode = null;
-        return reply.code(command.created ? 201 : 200).send(snapshot);
+        // PRODUCT §11.1: a new attempt that completed synchronously is 201;
+        // a new attempt left `pending` (post_launch_refresh retry, executed
+        // by the worker, never synchronously here) is 202; anything that
+        // converged to an existing attempt (replay or convergence) is 200.
+        // pre_launch's synchronous path always completes before COMMIT, so
+        // its status is never 'pending' here -- this is a pure
+        // generalization, not a behavior change for pre_launch.
+        const statusCode = !command.created ? 200 : snapshot.status === 'pending' ? 202 : 201;
+        return reply.code(statusCode).send(snapshot);
       } catch (error) {
         if (error instanceof AnalysisRequestError) return sendAnalysisError(request, reply, error);
         return analysisUnavailable(request, reply);

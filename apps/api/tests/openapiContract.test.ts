@@ -232,7 +232,8 @@ test('negative mutation: an unexpected extra property on the Campaign schema is 
     status: 'Created',
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
-    updated_at: '2026-01-01T00:00:00.000Z'
+    updated_at: '2026-01-01T00:00:00.000Z',
+    analysis_context: null
   };
   assertMatchesSchema(schema, validCampaign, 'sanity: the valid fixture itself must pass');
   assertViolatesSchema(schema, { ...validCampaign, extra_field: 'unexpected' }, 'an additional property must be rejected');
@@ -245,7 +246,8 @@ test('negative mutation: an unapproved status value is rejected by the Campaign 
     status: 'NotAStatus',
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
-    updated_at: '2026-01-01T00:00:00.000Z'
+    updated_at: '2026-01-01T00:00:00.000Z',
+    analysis_context: null
   };
   assertViolatesSchema(schema, invalidCampaign, 'an unapproved status must be rejected');
 });
@@ -317,18 +319,21 @@ test(
       const response = await app.inject({ method: 'GET', url: '/api/v1/campaigns' });
       assert.equal(response.statusCode, 200);
       const body = response.json() as { campaigns: Array<{ campaign_id: string; status: string }> };
-      assertMatchesSchema(responseSchema('/api/v1/campaigns', 'get', 200), body, 'campaigns list body must match contract');
+      const listSchema = responseSchema('/api/v1/campaigns', 'get', 200);
+      assertMatchesSchema(listSchema, body, 'campaigns list body must match contract');
       assert.equal(body.campaigns.length, 11);
       assert.deepEqual(
         body.campaigns.map(c => c.status).sort(),
         [...CAMPAIGN_STATUSES].sort()
       );
+      // H2 (ADR-0009): list items intentionally use the plain Campaign
+      // schema, never the richer CampaignDetail (analysis_context is
+      // detail-only) -- validated against the list's own dereferenced item
+      // schema, not the {campaignId} detail schema.
+      const itemSchema = (listSchema as { properties: { campaigns: { items: Record<string, unknown> } } }).properties.campaigns.items;
       for (const campaign of body.campaigns) {
-        assertMatchesSchema(
-          responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200),
-          campaign,
-          `campaign ${campaign.campaign_id} must match the Campaign schema`
-        );
+        assertMatchesSchema(itemSchema, campaign, `campaign ${campaign.campaign_id} must match the Campaign schema`);
+        assert.ok(!('analysis_context' in campaign), 'list items must never include the detail-only analysis_context field');
       }
     } finally {
       await app.close();
@@ -534,7 +539,27 @@ test('POST /api/v1/campaigns: an Analysis-authorized launch command creates a Ca
 
     const detail = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${body.campaign_id}` });
     assert.equal(detail.statusCode, 200);
-    assert.deepEqual(detail.json(), body, 'the created Campaign must be immediately visible via GET by id');
+    const detailBody = detail.json();
+    assertMatchesSchema(responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200), detailBody, 'detail 200 body must match contract');
+    assert.deepEqual(
+      {
+        campaign_id: detailBody.campaign_id,
+        status: detailBody.status,
+        aggregate_version: detailBody.aggregate_version,
+        created_at: detailBody.created_at,
+        updated_at: detailBody.updated_at
+      },
+      body,
+      'the created Campaign fields must be immediately visible via GET by id'
+    );
+    // H2 (ADR-0009): the detail read additionally exposes the
+    // Analysis-authorized launch context -- not present on the plain POST
+    // response, which stays the unchanged 5-field Campaign shape.
+    assert.deepEqual(detailBody.analysis_context, {
+      technical_assignment_id: ta.id,
+      source_revision: ta.revision,
+      scenario: 'need_tenant'
+    });
   } finally {
     await app.close();
   }
