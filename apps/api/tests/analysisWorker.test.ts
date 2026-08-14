@@ -30,9 +30,9 @@ test('initial post-launch refresh key is deterministic and scoped to the full lo
 
 test('analysis worker is a separate least-privilege entrypoint with safe lifecycle logging', async () => {
   const [rootPackageRaw, apiPackageRaw, workerSource] = await Promise.all([
-    readFile('package.json', 'utf8'),
-    readFile('apps/api/package.json', 'utf8'),
-    readFile('apps/api/src/analysis-worker.ts', 'utf8')
+    readFile(new URL('../../../package.json', import.meta.url), 'utf8'),
+    readFile(new URL('../package.json', import.meta.url), 'utf8'),
+    readFile(new URL('../src/analysis-worker.ts', import.meta.url), 'utf8')
   ]);
   const rootPackage = JSON.parse(rootPackageRaw);
   const apiPackage = JSON.parse(apiPackageRaw);
