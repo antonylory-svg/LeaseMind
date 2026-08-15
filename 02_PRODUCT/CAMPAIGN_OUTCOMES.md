@@ -1,7 +1,7 @@
 # Campaign Outcomes — контракт фиксации исхода Campaign
 
 **Версия:** 0.1
-**Статус:** Proposed — PRODUCT review required
+**Статус:** Approved for synthetic development only
 **Объём:** Sprint 6, synthetic-only
 **Дата:** 2026-08-15
 

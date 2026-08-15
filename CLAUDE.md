@@ -45,9 +45,9 @@ LeaseMind — AI-платформа управления спросом на к�
 
 Campaign — главный объект продукта. Пользователь (собственник или арендатор) запускает Campaign, AI ведет поиск и сопровождение сделки.
 
-Campaign завершается одним из исходов: Success via LeaseMind, Success independently, Success via broker, Paused, Cancelled, Expired.
+Campaign завершается ровно одним из пяти terminal outcomes: Success via LeaseMind, Success independently, Success via broker, Cancelled, Expired. `Paused` — отдельное временное возобновляемое состояние lifecycle, не исход.
 
-Полное определение: `00_VISION/CATEGORY.md`.
+Полное определение: `00_VISION/CATEGORY.md`. Коды исходов и их связь с lifecycle status: `02_PRODUCT/CAMPAIGN_OUTCOMES.md`.
 
 ## Принцип работы AI (продуктовый)
 
