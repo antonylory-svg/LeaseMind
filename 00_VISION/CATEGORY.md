@@ -16,14 +16,17 @@ Campaign — главный объект продукта.
 
 ## Жизненный цикл Campaign
 
-Campaign завершается одним из исходов:
+Campaign завершается ровно одним из пяти terminal outcomes:
 
 - **Success via LeaseMind** — сделка заключена через платформу.
 - **Success independently** — стороны заключили сделку напрямую, без участия платформы.
 - **Success via broker** — сделка заключена через стороннего брокера.
-- **Paused** — пользователь приостановил Campaign.
 - **Cancelled** — пользователь отменил Campaign.
 - **Expired** — срок Campaign истек без результата.
+
+**Paused** — временное, возобновляемое состояние жизненного цикла Campaign. Это не terminal outcome и не завершение Campaign: пользователь может приостановить Campaign и позже вернуть её в активную работу.
+
+Точные коды исходов и их связь с lifecycle status Campaign — `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, PRODUCT-источник истины для бизнес-исходов Campaign.
 
 ## Ограничение AI
 
