@@ -15,6 +15,8 @@ MVP включает:
 - предварительный Analysis до Contacts и его обновление не позднее 15 минут после запуска Campaign (см. `02_PRODUCT/FIRST_ANALYSIS.md` и `02_PRODUCT/ANALYSIS_SNAPSHOT.md`);
 - фиксацию исходов Campaign: Success via LeaseMind, Success independently, Success via broker, Paused, Cancelled, Expired.
 
+**Прогресс (Sprint 3–5):** Campaign launch, preliminary/pre-launch Analysis и post-launch Analysis реализованы технически. Это не означает завершение Stage 3 или готовность к production.
+
 ## Stage 4. Automation
 Автоматизировать AI-анализ, уведомления, matching и отчеты.
 
