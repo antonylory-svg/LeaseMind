@@ -230,6 +230,20 @@ export const CAMPAIGN_STATUS_LABELS: Record<string, string> = {
 };
 
 // ---------------------------------------------------------------------------
+// Campaign business outcome code (ADR-0010 §10, CAMPAIGN_OUTCOMES.md §11,
+// apps/api/src/db/campaigns.ts CampaignOutcomeContext -- exactly the 5
+// approved outcome codes). Closed mapping: the machine code itself is never
+// shown to the user.
+// ---------------------------------------------------------------------------
+export const CAMPAIGN_OUTCOME_CODE_LABELS: Record<string, string> = {
+  success_via_leasemind: 'Успешная сделка через LeaseMind',
+  success_independently: 'Успешная сделка самостоятельно',
+  success_via_broker: 'Успешная сделка через брокера',
+  cancelled: 'Кампания отменена',
+  expired: 'Срок кампании истёк'
+};
+
+// ---------------------------------------------------------------------------
 // /api/v1/health/{live,ready} status values (apps/web/src/api.ts HealthState).
 // ---------------------------------------------------------------------------
 export const HEALTH_STATUS_LABELS: Record<string, string> = {

@@ -118,17 +118,52 @@ const campaignAnalysisContextSchema = {
   ]
 } as const;
 
+// ADR-0010 §10, CAMPAIGN_OUTCOMES.md §11: detail-only, server-owned business
+// outcome context, sourced exclusively from the safe
+// leasemind_app.campaign_outcome_public_projection view. Lifecycle status
+// (this response's own `status` field) and business outcome are
+// independent fields -- neither is derived from the other (CO-C-010).
+// Never exposes operator_ref, correction_reason_code, outcome_record_id,
+// corrects_outcome_record_id, outcome_sequence,
+// resulting_campaign_aggregate_version or mapped_lifecycle_status -- those
+// never leave the database read path (apps/api/src/db/campaigns.ts), let
+// alone reach this schema.
+const campaignOutcomeContextSchema = {
+  anyOf: [
+    { type: 'null' },
+    {
+      type: 'object',
+      additionalProperties: false,
+      required: ['outcome_code', 'recorded_at', 'confirmation_method', 'is_corrected'],
+      properties: {
+        outcome_code: {
+          type: 'string',
+          enum: ['success_via_leasemind', 'success_independently', 'success_via_broker', 'cancelled', 'expired']
+        },
+        recorded_at: { type: 'string', format: 'date-time' },
+        confirmation_method: { type: 'string', enum: ['user_attestation'] },
+        is_corrected: { type: 'boolean' }
+      }
+    }
+  ]
+} as const;
+
 const campaignDetailSchema = {
   type: 'object',
   additionalProperties: false,
-  required: ['campaign_id', 'status', 'aggregate_version', 'created_at', 'updated_at', 'analysis_context'],
+  required: [
+    'campaign_id', 'status', 'aggregate_version', 'created_at', 'updated_at',
+    'analysis_context', 'outcome_context'
+  ],
   properties: {
     campaign_id: { type: 'string', format: 'uuid' },
     status: { type: 'string', enum: [...CAMPAIGN_STATUSES] },
     aggregate_version: { type: 'string', pattern: '^[1-9][0-9]*$' },
     created_at: { type: 'string', format: 'date-time' },
     updated_at: { type: 'string', format: 'date-time' },
-    analysis_context: campaignAnalysisContextSchema
+    analysis_context: campaignAnalysisContextSchema,
+    // detail-only: GET /api/v1/campaigns (list) never returns this field.
+    outcome_context: campaignOutcomeContextSchema
   }
 } as const;
 

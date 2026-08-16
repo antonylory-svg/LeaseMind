@@ -513,6 +513,80 @@ test('accepting a valid Campaign id unconditionally closes out restoring, so the
   assert.ok(!malformedBranchText.includes('setRestoring'), 'the malformed-id branch must not touch restoring at all');
 });
 
+// ---------------------------------------------------------------------------
+// Sprint 6 read-model: Campaign business outcome (ADR-0010 §10,
+// CAMPAIGN_OUTCOMES.md §11, CO-C-010/CO-C-022/CO-C-029). Read-only: no
+// write button, form or network write call exists anywhere in the detail
+// screen for this data; the server (GET /api/v1/campaigns/{id}) is the only
+// source, refetched on every reload (campaigns.ts fetchCampaignById).
+// ---------------------------------------------------------------------------
+
+function outcomeSectionBody(): string {
+  return sectionBetween('id="campaign-outcome-heading"', 'id="post-launch-analysis-heading"');
+}
+
+test('the Campaign outcome section is a separate section, distinct from lifecycle status and from post-launch Analysis', () => {
+  const section = detailStepSection();
+  const lifecycleIndex = section.indexOf('Статус кампании: {campaignStatusLabel}');
+  const outcomeHeadingIndex = section.indexOf('id="campaign-outcome-heading"');
+  const analysisHeadingIndex = section.indexOf('id="post-launch-analysis-heading"');
+  assert.ok(lifecycleIndex >= 0 && outcomeHeadingIndex > lifecycleIndex, 'the outcome section must come after the lifecycle status field');
+  assert.ok(analysisHeadingIndex > outcomeHeadingIndex, 'the outcome section must be its own section, separate from post-launch Analysis');
+  assert.ok(section.includes('<h3 id="campaign-outcome-heading">Результат кампании</h3>'));
+});
+
+test('outcome_context=null shows a distinct safe message, never presented as pending', () => {
+  const body = outcomeSectionBody();
+  const nullMessageIndex = body.indexOf('{!detail.outcome_context && (');
+  assert.ok(nullMessageIndex >= 0);
+  const nullBranch = body.slice(nullMessageIndex, body.indexOf('{detail.outcome_context && ('));
+  assert.ok(nullBranch.includes('Результат кампании пока не зафиксирован.'));
+  assert.ok(!nullBranch.includes('pending') && !nullBranch.includes('15 минут'), 'must not be worded as a pending/waiting state');
+});
+
+test('an effective outcome renders the localized outcome name, server recorded_at, fixed confirmation and fixed operator strings', () => {
+  const body = outcomeSectionBody();
+  const effectiveBranchStart = body.indexOf('{detail.outcome_context && (');
+  assert.ok(effectiveBranchStart >= 0);
+  const effectiveBranch = body.slice(effectiveBranchStart);
+  assert.ok(
+    effectiveBranch.includes('ruLabel(CAMPAIGN_OUTCOME_CODE_LABELS, detail.outcome_context.outcome_code)'),
+    'must render the localized outcome name via the closed CAMPAIGN_OUTCOME_CODE_LABELS mapping, never the raw outcome_code'
+  );
+  assert.ok(
+    effectiveBranch.includes('formatAnalysisTime(detail.outcome_context.recorded_at)'),
+    'must format recorded_at with the existing safe ru-RU time pattern, not a raw timestamp'
+  );
+  assert.ok(effectiveBranch.includes('Явное подтверждение пользователя'), 'confirmation_method=user_attestation must render this exact fixed string');
+  assert.ok(effectiveBranch.includes('Уполномоченный администратор пилота'), 'operator must render this exact fixed string, regardless of any actual operator_ref');
+});
+
+test('a correction shows only the safe "Результат уточнён." marker, gated on is_corrected, and shows nothing when uncorrected', () => {
+  const body = outcomeSectionBody();
+  const correctedLineIndex = body.indexOf('detail.outcome_context.is_corrected && <li>Результат уточнён.</li>');
+  assert.ok(correctedLineIndex >= 0, 'the is_corrected marker must be conditionally rendered');
+  // Nothing else in the outcome section ever mentions correction reasons/history.
+  for (const forbidden of ['correction_reason', 'reason_code', 'corrects_outcome_record_id', 'уточнение:', 'причин']) {
+    assert.ok(!body.toLowerCase().includes(forbidden.toLowerCase()), `outcome section must never reference ${forbidden}`);
+  }
+});
+
+test('the Campaign outcome section never references raw operator_ref, audit or internal record-identity fields', () => {
+  const body = outcomeSectionBody();
+  for (const forbidden of ['operator_ref', 'outcome_record_id', 'outcome_sequence', 'resulting_campaign_aggregate_version', 'mapped_lifecycle_status', 'runtime_mode']) {
+    assert.ok(!body.includes(forbidden), `outcome section must never reference ${forbidden}`);
+  }
+});
+
+test('the Campaign outcome section renders no write button, form or write-shaped network call', () => {
+  const body = outcomeSectionBody();
+  assert.ok(!/<button/.test(body), 'no button of any kind belongs in the read-only outcome section');
+  assert.ok(!/<form/.test(body), 'no form belongs in the read-only outcome section');
+  for (const forbidden of ['fetch(', 'method: \'POST\'', 'method: \'PUT\'', 'method: \'PATCH\'', 'campaign-outcome-cli', 'executeCampaignOutcomeCommand', 'dryRunCampaignOutcomeCommand']) {
+    assert.ok(!body.includes(forbidden), `outcome section must never reference ${forbidden}`);
+  }
+});
+
 test('post-launch results are rendered via the shared AnalysisResultBlocks component, not duplicated markup', () => {
   const section = detailStepSection();
   assert.ok(

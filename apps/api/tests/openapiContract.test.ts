@@ -233,7 +233,8 @@ test('negative mutation: an unexpected extra property on the Campaign schema is 
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-01T00:00:00.000Z',
-    analysis_context: null
+    analysis_context: null,
+    outcome_context: null
   };
   assertMatchesSchema(schema, validCampaign, 'sanity: the valid fixture itself must pass');
   assertViolatesSchema(schema, { ...validCampaign, extra_field: 'unexpected' }, 'an additional property must be rejected');
@@ -247,9 +248,91 @@ test('negative mutation: an unapproved status value is rejected by the Campaign 
     aggregate_version: '1',
     created_at: '2026-01-01T00:00:00.000Z',
     updated_at: '2026-01-01T00:00:00.000Z',
-    analysis_context: null
+    analysis_context: null,
+    outcome_context: null
   };
   assertViolatesSchema(schema, invalidCampaign, 'an unapproved status must be rejected');
+});
+
+// ---------------------------------------------------------------------------
+// outcome_context (ADR-0010 §10, CAMPAIGN_OUTCOMES.md §11, CO-C-010/CO-C-029):
+// pure schema-level coverage. DB-backed proof that a real record/correction
+// round-trips through this exact schema lives in campaignOutcomeCommand.test.ts
+// (isolated final DB block, opt-in LEASEMIND_RUN_CAMPAIGN_OUTCOME_DATABASE_TESTS)
+// -- immutable outcome history must never contaminate this file's shared,
+// teardown-to-empty DB regression lifecycle (see the migration-006-down test
+// below).
+// ---------------------------------------------------------------------------
+
+test('the CampaignDetail schema accepts outcome_context: null and a well-formed effective-outcome object', () => {
+  const schema = responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200);
+  const base = {
+    campaign_id: '00000000-0000-4000-8000-000000000001',
+    status: 'Completed',
+    aggregate_version: '2',
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:05:00.000Z',
+    analysis_context: null
+  };
+  assertMatchesSchema(schema, { ...base, outcome_context: null }, 'null outcome_context must be accepted');
+  assertMatchesSchema(
+    schema,
+    {
+      ...base,
+      outcome_context: {
+        outcome_code: 'success_via_leasemind',
+        recorded_at: '2026-01-01T00:05:00.000Z',
+        confirmation_method: 'user_attestation',
+        is_corrected: false
+      }
+    },
+    'a well-formed effective-outcome object must be accepted'
+  );
+});
+
+test('negative mutation: the CampaignDetail schema rejects internal/extra fields inside outcome_context and unknown outcome_code/confirmation_method values', () => {
+  const schema = responseSchema('/api/v1/campaigns/{campaignId}', 'get', 200);
+  const base = {
+    campaign_id: '00000000-0000-4000-8000-000000000001',
+    status: 'Completed',
+    aggregate_version: '2',
+    created_at: '2026-01-01T00:00:00.000Z',
+    updated_at: '2026-01-01T00:05:00.000Z',
+    analysis_context: null
+  };
+  const validOutcome = {
+    outcome_code: 'success_via_leasemind',
+    recorded_at: '2026-01-01T00:05:00.000Z',
+    confirmation_method: 'user_attestation',
+    is_corrected: false
+  };
+  assertViolatesSchema(
+    schema,
+    { ...base, outcome_context: { ...validOutcome, operator_ref: 'pilot-admin:00000000-0000-4000-8000-000000000009' } },
+    'operator_ref must never be an accepted field on outcome_context'
+  );
+  for (const internal of ['correction_reason_code', 'outcome_record_id', 'corrects_outcome_record_id', 'outcome_sequence', 'resulting_campaign_aggregate_version', 'mapped_lifecycle_status']) {
+    assertViolatesSchema(
+      schema,
+      { ...base, outcome_context: { ...validOutcome, [internal]: 'x' } },
+      `${internal} must never be an accepted field on outcome_context`
+    );
+  }
+  assertViolatesSchema(
+    schema,
+    { ...base, outcome_context: { ...validOutcome, outcome_code: 'withdrawn' } },
+    'an unknown outcome_code must be rejected'
+  );
+  assertViolatesSchema(
+    schema,
+    { ...base, outcome_context: { ...validOutcome, confirmation_method: 'admin_override' } },
+    'an unknown confirmation_method must be rejected'
+  );
+  assertViolatesSchema(
+    schema,
+    { ...base, outcome_context: { outcome_code: 'success_via_leasemind', recorded_at: '2026-01-01T00:05:00.000Z', confirmation_method: 'user_attestation' } },
+    'is_corrected is required'
+  );
 });
 
 test('negative mutation: health/ready 200 schema rejects an error-shaped body', () => {
@@ -334,6 +417,7 @@ test(
       for (const campaign of body.campaigns) {
         assertMatchesSchema(itemSchema, campaign, `campaign ${campaign.campaign_id} must match the Campaign schema`);
         assert.ok(!('analysis_context' in campaign), 'list items must never include the detail-only analysis_context field');
+        assert.ok(!('outcome_context' in campaign), 'list items must never include the detail-only outcome_context field');
       }
     } finally {
       await app.close();
@@ -560,6 +644,10 @@ test('POST /api/v1/campaigns: an Analysis-authorized launch command creates a Ca
       source_revision: ta.revision,
       scenario: 'need_tenant'
     });
+    // A freshly launched Campaign has never gone through the outcome
+    // command core -- outcome_context must be null, independent of the
+    // lifecycle status just asserted above (CO-C-010).
+    assert.equal(detailBody.outcome_context, null);
   } finally {
     await app.close();
   }

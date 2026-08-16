@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import pg from 'pg';
+import { buildApp } from '../src/app.js';
 import { migrateUp } from '../src/db/migrate.js';
 import { saveTechnicalAssignmentDraft } from '../src/db/technicalAssignment.js';
 import { createOrReplayPreLaunchAnalysisSnapshot } from '../src/db/analysisSnapshot.js';
@@ -1437,6 +1438,153 @@ test('dry-run never mutates state, regardless of outcome', { skip: SKIP }, async
     assert.equal(await outcomeRowCount(writerPool, fixture.campaignId), before);
     assert.equal(await currentVersion(commandPool, fixture.campaignId), version);
   } finally {
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), writerPool.end()]);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Read model: GET /api/v1/campaigns/{campaignId} outcome_context
+// (ADR-0010 §10, CAMPAIGN_OUTCOMES.md §11, CO-C-010/CO-C-022/CO-C-029).
+// HTTP-level, against the real lmapp_api_reader connection (API_DATABASE_URL)
+// and the safe leasemind_app.campaign_outcome_public_projection view.
+// Exercised here rather than in openapiContract.test.ts/campaigns.test.ts
+// because every fixture below permanently writes immutable outcome
+// history -- same discipline as the rest of this file (see file header) --
+// which must never contaminate the repository's shared, teardown-to-empty
+// DB regression lifecycle.
+// ---------------------------------------------------------------------------
+
+test('GET /api/v1/campaigns/{campaignId}: outcome_context is null for a launched Campaign with no effective outcome yet', { skip: SKIP }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const readerPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 1 });
+  const app = buildApp({ pool: readerPool, logger: false });
+  try {
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'read-model-null');
+    const response = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${fixture.campaignId}` });
+    assert.equal(response.statusCode, 200);
+    const body = response.json();
+    assert.equal(body.outcome_context, null);
+    // status and outcome_context are read and asserted separately -- the
+    // second assertion is not derived from the first.
+    assert.equal(body.status, 'Created');
+  } finally {
+    await app.close();
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end()]);
+  }
+});
+
+test('GET /api/v1/campaigns/{campaignId}: outcome_context returns exactly the four safe fields after a record, independent of lifecycle status', { skip: SKIP }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const writerPool = new pg.Pool({ connectionString: CAMPAIGN_OUTCOME_DATABASE_URL, max: 2 });
+  const readerPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 1 });
+  const app = buildApp({ pool: readerPool, logger: false });
+  try {
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'read-model-record');
+    const version = await currentVersion(commandPool, fixture.campaignId);
+    await executeCampaignOutcomeCommand(
+      writerPool,
+      buildCommand({ campaignId: fixture.campaignId, expectedCampaignVersion: version, outcomeCode: 'success_via_leasemind' })
+    );
+
+    const response = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${fixture.campaignId}` });
+    assert.equal(response.statusCode, 200);
+    const body = response.json();
+
+    assert.deepEqual(Object.keys(body.outcome_context).sort(), ['confirmation_method', 'is_corrected', 'outcome_code', 'recorded_at']);
+    assert.equal(body.outcome_context.outcome_code, 'success_via_leasemind');
+    assert.equal(body.outcome_context.confirmation_method, 'user_attestation');
+    assert.equal(body.outcome_context.is_corrected, false);
+    assert.match(body.outcome_context.recorded_at, /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+
+    // Lifecycle status (CO-C-005: success_via_leasemind -> Completed) is
+    // checked as an entirely separate field -- the client (and this
+    // assertion) must not derive one from the other (CO-C-010).
+    assert.equal(body.status, 'Completed');
+
+    // Raw operator/audit fields never appear anywhere in the response.
+    const raw = JSON.stringify(body);
+    for (const forbidden of ['operator_ref', 'correction_reason_code', 'outcome_record_id', 'outcome_sequence', 'mapped_lifecycle_status']) {
+      assert.equal(raw.includes(forbidden), false, `response must never include ${forbidden}`);
+    }
+  } finally {
+    await app.close();
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), writerPool.end()]);
+  }
+});
+
+test('GET /api/v1/campaigns/{campaignId}: a correction is reflected on the very next read, is_corrected becomes true, and lifecycle status flips independently (CO-C-022, CO-C-029)', { skip: SKIP }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const writerPool = new pg.Pool({ connectionString: CAMPAIGN_OUTCOME_DATABASE_URL, max: 2 });
+  const readerPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 1 });
+  const app = buildApp({ pool: readerPool, logger: false });
+  try {
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'read-model-correct');
+    const v1 = await currentVersion(commandPool, fixture.campaignId);
+    const record = await executeCampaignOutcomeCommand(
+      writerPool,
+      buildCommand({ campaignId: fixture.campaignId, expectedCampaignVersion: v1, outcomeCode: 'success_via_leasemind' })
+    );
+
+    // Read #1: current server state before any correction -- a fresh HTTP
+    // read, not a cached client value (CO-C-022).
+    const firstRead = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${fixture.campaignId}` });
+    assert.equal(firstRead.statusCode, 200);
+    const firstBody = firstRead.json();
+    assert.equal(firstBody.outcome_context.outcome_code, 'success_via_leasemind');
+    assert.equal(firstBody.outcome_context.is_corrected, false);
+    assert.equal(firstBody.status, 'Completed');
+
+    const v2 = await currentVersion(commandPool, fixture.campaignId);
+    await executeCampaignOutcomeCommand(writerPool, buildCommand({
+      campaignId: fixture.campaignId,
+      expectedCampaignVersion: v2,
+      action: 'correct',
+      outcomeCode: 'cancelled',
+      correctsOutcomeRecordId: record.record.outcomeRecordId,
+      correctionReasonCode: 'OUTCOME_CLASSIFICATION_CORRECTED'
+    }));
+
+    // Read #2: the server, not the client, is the source of truth --
+    // re-reading the same URL now returns the corrected state, proving the
+    // detail endpoint never serves a stale/cached snapshot (CO-C-022).
+    const secondRead = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${fixture.campaignId}` });
+    assert.equal(secondRead.statusCode, 200);
+    const secondBody = secondRead.json();
+    assert.equal(secondBody.outcome_context.outcome_code, 'cancelled');
+    assert.equal(secondBody.outcome_context.is_corrected, true, 'CO-C-029: is_corrected must be true, with no reason code or record id exposed');
+    assert.equal(secondBody.outcome_context.confirmation_method, 'user_attestation');
+    assert.deepEqual(Object.keys(secondBody.outcome_context).sort(), ['confirmation_method', 'is_corrected', 'outcome_code', 'recorded_at']);
+    // Lifecycle status flips Completed -> Failed atomically with the
+    // correction (CO-C-024) -- read and asserted as its own field.
+    assert.equal(secondBody.status, 'Failed');
+    // Both timestamps come from the same wall clock and correction happens
+    // strictly after the original record -- but PostgreSQL's internal
+    // clock_timestamp() precision exceeds the millisecond precision the API
+    // serializes to ISO 8601, so two genuinely distinct, correctly-ordered
+    // transactions can legitimately round to the same millisecond.
+    // notEqual on the raw strings would be flaky; the real invariant is
+    // ordering, not distinctness.
+    const firstRecordedAt = new Date(firstBody.outcome_context.recorded_at);
+    const secondRecordedAt = new Date(secondBody.outcome_context.recorded_at);
+    assert.equal(Number.isNaN(firstRecordedAt.getTime()), false, 'firstBody.outcome_context.recorded_at must parse as a date');
+    assert.equal(Number.isNaN(secondRecordedAt.getTime()), false, 'secondBody.outcome_context.recorded_at must parse as a date');
+    assert.ok(
+      secondRecordedAt.getTime() >= firstRecordedAt.getTime(),
+      'the correction must never be recorded before the original record'
+    );
+
+    const raw = JSON.stringify(secondBody);
+    for (const forbidden of ['operator_ref', 'correction_reason_code', 'OUTCOME_CLASSIFICATION_CORRECTED', record.record.outcomeRecordId]) {
+      assert.equal(raw.includes(forbidden), false, `response must never include ${forbidden}`);
+    }
+  } finally {
+    await app.close();
     await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), writerPool.end()]);
   }
 });
