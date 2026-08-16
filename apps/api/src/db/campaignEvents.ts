@@ -13,8 +13,6 @@ const DOMAIN_SEPARATOR = 'LEASEMIND_CAMPAIGN_EVENT_V1';
 // previous_event_hash of the first event in a stream (no real predecessor).
 export const GENESIS_EVENT_HASH = '0'.repeat(64);
 
-const IDEMPOTENCY_UNIQUE_CONSTRAINT = 'campaign_event_log_idempotency_unique';
-
 function sha256Hex(input: string): string {
   return createHash('sha256').update(input).digest('hex');
 }
@@ -119,17 +117,154 @@ function toCampaignEvent(row: EventRow): CampaignEvent {
   };
 }
 
-function isUniqueViolation(error: unknown, constraintName: string): boolean {
-  return (
-    typeof error === 'object' &&
-    error !== null &&
-    (error as { code?: string }).code === '23505' &&
-    (error as { constraint?: string }).constraint === constraintName
-  );
-}
-
 async function rollbackSafely(client: pg.PoolClient): Promise<void> {
   await client.query('ROLLBACK').catch(() => {});
+}
+
+function validateAppendInput(input: AppendCampaignStatusEventInput): void {
+  if (!isUuidV4OrV7(input.campaignId)) {
+    throw new Error(`INVALID_CAMPAIGN_ID: ${input.campaignId}`);
+  }
+  if (!CAMPAIGN_STATUSES.includes(input.status)) {
+    throw new Error(`INVALID_CAMPAIGN_STATUS: ${input.status}`);
+  }
+  if (input.idempotencyKey.length === 0) {
+    throw new Error('INVALID_IDEMPOTENCY_KEY: must not be empty');
+  }
+}
+
+/**
+ * Transaction-aware append primitive (ADR-0010 §5.1). Composable with an
+ * already-open, wider transaction: does not open/close a transaction, does
+ * not COMMIT/ROLLBACK, does not release the client, does not create a
+ * genesis campaign_stream_head row, and does not take the stream-head lock
+ * itself -- the caller must already hold `SELECT ... FOR UPDATE` on that
+ * row for this campaign_id before calling this function (row locks are
+ * reentrant within one transaction, so a caller that also happens to
+ * re-acquire it is safe, but this primitive never attempts to).
+ *
+ * Otherwise performs the full existing append semantics: idempotency
+ * resolution on (campaign_id, idempotency_key), event_sequence/event_hash
+ * via the existing computeEventHash/DOMAIN_SEPARATOR, INSERT into
+ * campaign_event_log, UPDATE campaign_stream_head, and the same
+ * INSERT ... ON CONFLICT DO UPDATE into campaign_current_state_projection
+ * that appendCampaignStatusEvent already performs today -- this is not a
+ * new responsibility, only where it now lives.
+ */
+export async function appendCampaignStatusEventOnClient(
+  client: pg.PoolClient,
+  input: AppendCampaignStatusEventInput
+): Promise<CampaignEvent> {
+  const { campaignId, status, idempotencyKey } = input;
+  validateAppendInput(input);
+
+  const commandHash = computeCommandHash(campaignId, status);
+
+  const existing = await client.query<EventRow>(
+    `SELECT event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+            idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at
+       FROM leasemind_app.campaign_event_log
+      WHERE campaign_id = $1 AND idempotency_key = $2`,
+    [campaignId, idempotencyKey]
+  );
+  if (existing.rowCount && existing.rowCount > 0) {
+    const row = existing.rows[0];
+    if (row.command_hash !== commandHash) {
+      throw new Error(
+        'IDEMPOTENCY_KEY_CONFLICT: idempotency_key already used with a different command for this campaign'
+      );
+    }
+    return toCampaignEvent(row);
+  }
+
+  // Relies on the caller's already-held FOR UPDATE lock on this row --
+  // deliberately a plain SELECT, not SELECT ... FOR UPDATE (see doc above).
+  const head = await client.query<{ current_sequence: string; current_event_hash: string }>(
+    `SELECT current_sequence, current_event_hash
+       FROM leasemind_app.campaign_stream_head
+      WHERE campaign_id = $1`,
+    [campaignId]
+  );
+  if (head.rowCount === 0) {
+    throw new Error(
+      'CAMPAIGN_STREAM_HEAD_MISSING: caller must ensure the stream head row already exists and is locked before calling appendCampaignStatusEventOnClient'
+    );
+  }
+  const currentSequence = BigInt(head.rows[0].current_sequence);
+  const previousEventHash = head.rows[0].current_event_hash;
+  const nextSequence = (currentSequence + 1n).toString();
+
+  const timeResult = await client.query<{ now: Date }>('SELECT clock_timestamp() AS now');
+  const occurredAt = timeResult.rows[0].now;
+  const occurredAtIso = occurredAt.toISOString();
+
+  const eventId = randomUUID();
+  const payload = { status };
+
+  const eventHash = computeEventHash({
+    eventId,
+    campaignId,
+    eventSequence: nextSequence,
+    eventType: CAMPAIGN_EVENT_TYPE,
+    schemaVersion: CAMPAIGN_EVENT_SCHEMA_VERSION,
+    payload,
+    occurredAt: occurredAtIso,
+    previousEventHash,
+    idempotencyKey,
+    commandHash
+  });
+
+  await client.query(
+    `INSERT INTO leasemind_app.campaign_event_log
+       (event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+        idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+    [
+      eventId,
+      campaignId,
+      nextSequence,
+      CAMPAIGN_EVENT_TYPE,
+      CAMPAIGN_EVENT_SCHEMA_VERSION,
+      JSON.stringify(payload),
+      idempotencyKey,
+      commandHash,
+      previousEventHash,
+      eventHash,
+      occurredAt
+    ]
+  );
+
+  await client.query(
+    `UPDATE leasemind_app.campaign_stream_head
+        SET current_sequence = $2, current_event_hash = $3, updated_at = clock_timestamp()
+      WHERE campaign_id = $1`,
+    [campaignId, nextSequence, eventHash]
+  );
+
+  await client.query(
+    `INSERT INTO leasemind_app.campaign_current_state_projection
+       (campaign_id, status, aggregate_version, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $4)
+     ON CONFLICT (campaign_id) DO UPDATE
+       SET status = EXCLUDED.status,
+           aggregate_version = EXCLUDED.aggregate_version,
+           updated_at = EXCLUDED.updated_at`,
+    [campaignId, status, nextSequence, occurredAt]
+  );
+
+  return {
+    eventId,
+    campaignId,
+    eventSequence: nextSequence,
+    eventType: CAMPAIGN_EVENT_TYPE,
+    schemaVersion: CAMPAIGN_EVENT_SCHEMA_VERSION,
+    status,
+    idempotencyKey,
+    commandHash,
+    previousEventHash,
+    eventHash,
+    occurredAt: occurredAtIso
+  };
 }
 
 /**
@@ -139,22 +274,27 @@ async function rollbackSafely(client: pg.PoolClient): Promise<void> {
  * previous_event_hash, event_hash, event_type, schema_version and
  * command_hash are always computed or assigned here, never accepted as
  * input. Not reachable from any HTTP route.
+ *
+ * Thin wrapper (ADR-0010 §5.1) preserving its full existing external
+ * contract, including genesis creation for a brand-new Campaign (used by
+ * seed.ts): connect -> BEGIN -> fast-path idempotency check -> genesis
+ * INSERT ... ON CONFLICT DO NOTHING -> SELECT ... FOR UPDATE -> a second,
+ * post-lock idempotency recheck (closes the same concurrent-race window the
+ * previous unique-violation catch-and-retry handled, but proactively: by
+ * the time this lock is held, any concurrent committer for this
+ * campaign_id has already committed) -> appendCampaignStatusEventOnClient
+ * -> COMMIT/ROLLBACK -> release. Genesis creation and lock acquisition stay
+ * here, never inside the primitive -- this is exactly why outcome-flow
+ * (which must fail closed when campaign_stream_head is absent, never
+ * create it) calls appendCampaignStatusEventOnClient directly, after its
+ * own non-genesis lock, and never this wrapper.
  */
 export async function appendCampaignStatusEvent(
   pool: pg.Pool,
   input: AppendCampaignStatusEventInput
 ): Promise<AppendCampaignStatusEventResult> {
   const { campaignId, status, idempotencyKey } = input;
-
-  if (!isUuidV4OrV7(campaignId)) {
-    throw new Error(`INVALID_CAMPAIGN_ID: ${campaignId}`);
-  }
-  if (!CAMPAIGN_STATUSES.includes(status)) {
-    throw new Error(`INVALID_CAMPAIGN_STATUS: ${status}`);
-  }
-  if (idempotencyKey.length === 0) {
-    throw new Error('INVALID_IDEMPOTENCY_KEY: must not be empty');
-  }
+  validateAppendInput(input);
 
   const commandHash = computeCommandHash(campaignId, status);
   const client = await pool.connect();
@@ -191,102 +331,35 @@ export async function appendCampaignStatusEvent(
        ON CONFLICT (campaign_id) DO NOTHING`,
       [campaignId, GENESIS_EVENT_HASH]
     );
-    const head = await client.query<{ current_sequence: string; current_event_hash: string }>(
-      `SELECT current_sequence, current_event_hash
-         FROM leasemind_app.campaign_stream_head
-        WHERE campaign_id = $1
-        FOR UPDATE`,
+    await client.query(
+      `SELECT current_sequence FROM leasemind_app.campaign_stream_head WHERE campaign_id = $1 FOR UPDATE`,
       [campaignId]
     );
-    const currentSequence = BigInt(head.rows[0].current_sequence);
-    const previousEventHash = head.rows[0].current_event_hash;
-    const nextSequence = (currentSequence + 1n).toString();
 
-    const timeResult = await client.query<{ now: Date }>('SELECT clock_timestamp() AS now');
-    const occurredAt = timeResult.rows[0].now;
-    const occurredAtIso = occurredAt.toISOString();
-
-    const eventId = randomUUID();
-    const payload = { status };
-
-    const eventHash = computeEventHash({
-      eventId,
-      campaignId,
-      eventSequence: nextSequence,
-      eventType: CAMPAIGN_EVENT_TYPE,
-      schemaVersion: CAMPAIGN_EVENT_SCHEMA_VERSION,
-      payload,
-      occurredAt: occurredAtIso,
-      previousEventHash,
-      idempotencyKey,
-      commandHash
-    });
-
-    try {
-      await client.query(
-        `INSERT INTO leasemind_app.campaign_event_log
-           (event_id, campaign_id, event_sequence, event_type, schema_version, payload,
-            idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
-        [
-          eventId,
-          campaignId,
-          nextSequence,
-          CAMPAIGN_EVENT_TYPE,
-          CAMPAIGN_EVENT_SCHEMA_VERSION,
-          JSON.stringify(payload),
-          idempotencyKey,
-          commandHash,
-          previousEventHash,
-          eventHash,
-          occurredAt
-        ]
-      );
-    } catch (error) {
-      if (isUniqueViolation(error, IDEMPOTENCY_UNIQUE_CONSTRAINT)) {
-        // Lost a concurrent race for the same (campaign_id, idempotency_key):
-        // the other transaction's row now exists. Roll back and re-resolve
-        // via the idempotency path instead of failing the caller.
+    // Post-lock recheck: proactively resolves the same race the removed
+    // unique-violation catch-and-retry used to handle reactively.
+    const recheck = await client.query<EventRow>(
+      `SELECT event_id, campaign_id, event_sequence, event_type, schema_version, payload,
+              idempotency_key, command_hash, previous_event_hash, event_hash, occurred_at
+         FROM leasemind_app.campaign_event_log
+        WHERE campaign_id = $1 AND idempotency_key = $2`,
+      [campaignId, idempotencyKey]
+    );
+    if (recheck.rowCount && recheck.rowCount > 0) {
+      const row = recheck.rows[0];
+      if (row.command_hash !== commandHash) {
         await rollbackSafely(client);
-        return appendCampaignStatusEvent(pool, input);
+        throw new Error(
+          'IDEMPOTENCY_KEY_CONFLICT: idempotency_key already used with a different command for this campaign'
+        );
       }
-      throw error;
+      await client.query('COMMIT');
+      return { ...toCampaignEvent(row), isReplay: true };
     }
 
-    await client.query(
-      `UPDATE leasemind_app.campaign_stream_head
-          SET current_sequence = $2, current_event_hash = $3, updated_at = clock_timestamp()
-        WHERE campaign_id = $1`,
-      [campaignId, nextSequence, eventHash]
-    );
-
-    await client.query(
-      `INSERT INTO leasemind_app.campaign_current_state_projection
-         (campaign_id, status, aggregate_version, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $4)
-       ON CONFLICT (campaign_id) DO UPDATE
-         SET status = EXCLUDED.status,
-             aggregate_version = EXCLUDED.aggregate_version,
-             updated_at = EXCLUDED.updated_at`,
-      [campaignId, status, nextSequence, occurredAt]
-    );
-
+    const event = await appendCampaignStatusEventOnClient(client, input);
     await client.query('COMMIT');
-
-    return {
-      eventId,
-      campaignId,
-      eventSequence: nextSequence,
-      eventType: CAMPAIGN_EVENT_TYPE,
-      schemaVersion: CAMPAIGN_EVENT_SCHEMA_VERSION,
-      status,
-      idempotencyKey,
-      commandHash,
-      previousEventHash,
-      eventHash,
-      occurredAt: occurredAtIso,
-      isReplay: false
-    };
+    return { ...event, isReplay: false };
   } catch (error) {
     await rollbackSafely(client);
     throw error;
