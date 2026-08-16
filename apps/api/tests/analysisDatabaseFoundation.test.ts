@@ -408,7 +408,8 @@ test('Analysis foundation fixtures are removed before the remaining database reg
   const migrationPool = pool(MIGRATION_DATABASE_URL, 2);
   try {
     const result = await migrateDown(migrationPool);
-    assert.deepEqual(result.reverted.slice(0, 3), [
+    assert.deepEqual(result.reverted.slice(0, 4), [
+      '011_campaign_outcome.down.sql',
       '010_evidence_dataset_revocation.down.sql',
       '009_post_launch_refresh_intent.down.sql',
       '008_analysis_snapshot.down.sql'

@@ -12,6 +12,7 @@ export const ANALYSIS_WRITER_ROLE = 'lmapp_analysis_writer';
 export const ANALYSIS_WORKER_ROLE = 'lmapp_analysis_worker';
 export const EVIDENCE_REVOCATION_WRITER_ROLE = 'lmapp_evidence_revocation_writer';
 export const POST_LAUNCH_REFRESH_OWNER_ROLE = 'lmapp_post_launch_refresh_owner';
+export const CAMPAIGN_OUTCOME_WRITER_ROLE = 'lmapp_campaign_outcome_writer';
 
 export interface ProvisionRolesInput {
   migratorPassword: string;
@@ -22,6 +23,7 @@ export interface ProvisionRolesInput {
   analysisWriterPassword: string;
   analysisWorkerPassword: string;
   evidenceRevocationWriterPassword: string;
+  campaignOutcomeWriterPassword: string;
 }
 
 export interface ProvisionRolesResult {
@@ -35,7 +37,7 @@ function quoteLiteral(value: string): string {
   return `'${value.replace(/'/g, "''")}'`;
 }
 
-/** roleName is always one of the three fixed constants above -- never
+/** roleName is always one of the fixed constants above -- never
  * derived from untrusted input -- so direct identifier interpolation here
  * carries no injection risk. */
 async function ensureRoleExists(client: pg.PoolClient, roleName: string): Promise<void> {
@@ -46,7 +48,7 @@ async function ensureRoleExists(client: pg.PoolClient, roleName: string): Promis
 }
 
 /**
- * Idempotently provisions the eight fixed, least-privilege LOGIN roles
+ * Idempotently provisions the nine fixed, least-privilege LOGIN roles
  * and the bootstrap-owned NOLOGIN role required by ADR-0009.
  * Must be run via a bootstrap/admin connection (LEASEMIND_BOOTSTRAP_DATABASE_URL)
  * -- never via the application's own DATABASE_URL/migration/maintenance
@@ -64,7 +66,8 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
     { name: TA_WRITER_ROLE, password: input.taWriterPassword },
     { name: ANALYSIS_WRITER_ROLE, password: input.analysisWriterPassword },
     { name: ANALYSIS_WORKER_ROLE, password: input.analysisWorkerPassword },
-    { name: EVIDENCE_REVOCATION_WRITER_ROLE, password: input.evidenceRevocationWriterPassword }
+    { name: EVIDENCE_REVOCATION_WRITER_ROLE, password: input.evidenceRevocationWriterPassword },
+    { name: CAMPAIGN_OUTCOME_WRITER_ROLE, password: input.campaignOutcomeWriterPassword }
   ];
 
   const client = await pool.connect();
@@ -114,7 +117,7 @@ export async function provisionRoles(pool: pg.Pool, input: ProvisionRolesInput):
     await client.query(`GRANT ${POST_LAUNCH_REFRESH_OWNER_ROLE} TO ${MIGRATOR_ROLE} WITH SET TRUE`);
 
     // Allow-list CONNECT: PUBLIC loses every database-level default
-    // (CONNECT, TEMP, CREATE); only the eight LOGIN roles get CONNECT back,
+    // (CONNECT, TEMP, CREATE); only the nine LOGIN roles get CONNECT back,
     // and only lmapp_migrator additionally gets CREATE (needed once, to
     // create the leasemind_app schema the first time migrate:up runs).
     // GRANT/REVOKE ON DATABASE requires an identifier, not an expression --

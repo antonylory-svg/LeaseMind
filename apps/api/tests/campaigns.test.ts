@@ -917,14 +917,14 @@ function assertNoLeakedSecrets(responseBody: string): void {
   }
 }
 
-test('migration down removes the entire app-foundation catalog (010 through 001)', { skip: !hasDatabase }, async () => {
+test('migration down removes the entire app-foundation catalog (011 through 001)', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     // This file runs first (alphabetically) and its own "migration up"
     // above applies every pending migration in migrations/, not just
     // 001-004 -- 005/006/007 (ADR-0008, Technical Assignment) and 008-010
-    // (ADR-0009, Analysis Snapshot) exist in the repo now, so a full down
-    // from here always reverts all ten. No
+    // (ADR-0009, Analysis Snapshot) plus 011 (ADR-0010, Campaign Outcome)
+    // exist in the repo now, so a full down from here always reverts all eleven. No
     // subject_linked event exists yet at this point in the suite (nothing
     // before this test launches a Campaign), so 006's down migration is
     // not blocked (contrast tests/technicalAssignment.test.ts and
@@ -932,6 +932,7 @@ test('migration down removes the entire app-foundation catalog (010 through 001)
     // after a Campaign has been launched and are correctly rejected).
     const result = await migrateDown(pool);
     assert.deepEqual(result.reverted, [
+      '011_campaign_outcome.down.sql',
       '010_evidence_dataset_revocation.down.sql',
       '009_post_launch_refresh_intent.down.sql',
       '008_analysis_snapshot.down.sql',

@@ -11,6 +11,7 @@ export const TA_DATABASE_URL = process.env.LEASEMIND_TECHNICAL_ASSIGNMENT_DATABA
 export const ANALYSIS_DATABASE_URL = process.env.LEASEMIND_ANALYSIS_DATABASE_URL;
 export const ANALYSIS_WORKER_DATABASE_URL = process.env.LEASEMIND_ANALYSIS_WORKER_DATABASE_URL;
 export const EVIDENCE_REVOCATION_DATABASE_URL = process.env.LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL;
+export const CAMPAIGN_OUTCOME_DATABASE_URL = process.env.LEASEMIND_CAMPAIGN_OUTCOME_DATABASE_URL;
 export const BOOTSTRAP_DATABASE_URL = process.env.LEASEMIND_BOOTSTRAP_DATABASE_URL;
 
 /** True only when all six connection strings are configured -- the same
@@ -28,4 +29,13 @@ export const hasDatabase = Boolean(
 /** Full ADR-0009 database boundary, used only by the new Analysis tests. */
 export const hasAnalysisDatabase = Boolean(
   hasDatabase && ANALYSIS_DATABASE_URL && ANALYSIS_WORKER_DATABASE_URL && EVIDENCE_REVOCATION_DATABASE_URL
+);
+
+/** ADR-0010 database-foundation boundary, used only by the Campaign Outcome
+ * tests. Opt-in because accepted outcome rows are intentionally immutable
+ * and must never contaminate the repository's shared database regression
+ * lifecycle. Independent of hasAnalysisDatabase -- the Campaign Outcome
+ * writer connection has no dependency on the Analysis roles. */
+export const hasCampaignOutcomeDatabase = Boolean(
+  hasDatabase && CAMPAIGN_OUTCOME_DATABASE_URL && process.env.LEASEMIND_RUN_CAMPAIGN_OUTCOME_DATABASE_TESTS === 'true'
 );
