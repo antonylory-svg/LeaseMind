@@ -35,7 +35,7 @@ jobs:
       NODE_ENV: development
       # Least-privilege database boundary (see
       # 03_ARCHITECTURE/decisions/ADR-0005-least-privilege-database-boundary.md).
-      # Eight application LOGIN identities plus the bootstrap connection --
+      # Nine application LOGIN identities plus the bootstrap connection --
       # all synthetic-only and never interchangeable.
       DATABASE_URL: postgres://lmapp_api_reader:synthetic-ci-api-reader-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_MIGRATION_DATABASE_URL: postgres://lmapp_migrator:synthetic-ci-migrator-password@127.0.0.1:5432/lmapp_dev
@@ -45,6 +45,7 @@ jobs:
       LEASEMIND_ANALYSIS_DATABASE_URL: postgres://lmapp_analysis_writer:synthetic-ci-analysis-writer-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_ANALYSIS_WORKER_DATABASE_URL: postgres://lmapp_analysis_worker:synthetic-ci-analysis-worker-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_EVIDENCE_REVOCATION_DATABASE_URL: postgres://lmapp_evidence_revocation_writer:synthetic-ci-evidence-writer-password@127.0.0.1:5432/lmapp_dev
+      LEASEMIND_CAMPAIGN_OUTCOME_DATABASE_URL: postgres://lmapp_campaign_outcome_writer:synthetic-ci-campaign-outcome-writer-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_BOOTSTRAP_DATABASE_URL: postgres://lmapp_dev:synthetic-dev-only-password@127.0.0.1:5432/lmapp_dev
       LEASEMIND_MIGRATOR_PASSWORD: synthetic-ci-migrator-password
       LEASEMIND_MAINTAINER_PASSWORD: synthetic-ci-maintainer-password
@@ -54,6 +55,7 @@ jobs:
       LEASEMIND_ANALYSIS_WRITER_PASSWORD: synthetic-ci-analysis-writer-password
       LEASEMIND_ANALYSIS_WORKER_PASSWORD: synthetic-ci-analysis-worker-password
       LEASEMIND_EVIDENCE_REVOCATION_WRITER_PASSWORD: synthetic-ci-evidence-writer-password
+      LEASEMIND_CAMPAIGN_OUTCOME_WRITER_PASSWORD: synthetic-ci-campaign-outcome-writer-password
       LEASEMIND_RUNTIME_MODE: synthetic
       LEASEMIND_PRODUCTION_LAUNCH_GATE: blocked
       LEASEMIND_ALLOW_REAL_PII: 'false'
@@ -200,3 +202,27 @@ jobs:
       # or the preceding migration rollback.
       - name: Backend tests
         run: npm run test --workspace apps/api
+
+      # Runs last because accepted outcome rows are intentionally immutable
+      # and make migration 011's down path fail closed by design.
+      - name: Campaign Outcome database foundation tests
+        env:
+          LEASEMIND_RUN_CAMPAIGN_OUTCOME_DATABASE_TESTS: 'true'
+        run: node --import tsx --test --test-concurrency=1 apps/api/tests/campaignOutcomeDatabaseFoundation.test.ts
+
+      # Also isolated and last: the Campaign Outcome command core (record/
+      # correct/dry-run/CLI). Creates real launched Campaigns (Technical
+      # Assignment + pre-launch Analysis + launch), which -- unlike the
+      # foundation tests above -- write campaign_subject_link_projection
+      # rows. Running this inside the main "Backend tests" step would leave
+      # those rows behind for campaigns.test.ts's unscoped
+      # "DELETE FROM campaign_current_state_projection" reseed step to trip
+      # over (foreign key violation). Isolating it here, after that step has
+      # already run and finished, avoids the conflict entirely.
+      - name: Campaign Outcome command core and CLI tests
+        env:
+          LEASEMIND_RUN_CAMPAIGN_OUTCOME_DATABASE_TESTS: 'true'
+        run: >-
+          node --import tsx --test --test-concurrency=1
+          apps/api/tests/campaignOutcomeCommand.test.ts
+          apps/api/tests/campaignOutcomeCli.test.ts
