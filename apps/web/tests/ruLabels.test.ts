@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PROPERTY_FIELDS, TENANT_REQUEST_FIELDS } from '../src/technicalAssignmentFields.js';
-import { SCENARIO_LABELS, LIFECYCLE_STATUS_LABELS, CAMPAIGN_STATUS_LABELS, FLOOR_OPTION_LABELS, ruLabel } from '../src/ruLabels.js';
+import { SCENARIO_LABELS, LIFECYCLE_STATUS_LABELS, CAMPAIGN_STATUS_LABELS, CAMPAIGN_OUTCOME_CODE_LABELS, FLOOR_OPTION_LABELS, ruLabel } from '../src/ruLabels.js';
 
 // Exact 11 approved Campaign statuses -- mirrored from
 // apps/api/src/db/campaigns.ts CAMPAIGN_STATUSES (source of truth:
@@ -61,6 +61,20 @@ test('lifecycle_status labels cover draft, ready_for_analysis and campaign_start
 test('every Campaign process status has a Russian label', () => {
   const missing = CAMPAIGN_STATUSES.filter(status => !CAMPAIGN_STATUS_LABELS[status] || CAMPAIGN_STATUS_LABELS[status] === status);
   assert.deepEqual(missing, []);
+});
+
+test('all five Campaign business outcome codes have a distinct Russian label, never the raw machine code', () => {
+  assert.deepEqual(CAMPAIGN_OUTCOME_CODE_LABELS, {
+    success_via_leasemind: 'Успешная сделка через LeaseMind',
+    success_independently: 'Успешная сделка самостоятельно',
+    success_via_broker: 'Успешная сделка через брокера',
+    cancelled: 'Кампания отменена',
+    expired: 'Срок кампании истёк'
+  });
+  const OUTCOME_CODES = ['success_via_leasemind', 'success_independently', 'success_via_broker', 'cancelled', 'expired'];
+  for (const code of OUTCOME_CODES) {
+    assert.notEqual(ruLabel(CAMPAIGN_OUTCOME_CODE_LABELS, code), code, `${code} must not fall back to the raw machine code`);
+  }
 });
 
 test('ruLabel falls back to the raw value only for values genuinely absent from a dictionary', () => {

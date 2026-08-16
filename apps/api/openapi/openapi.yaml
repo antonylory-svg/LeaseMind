@@ -379,7 +379,15 @@ paths:
         (apps/api/src/uuid.ts). Unlike the list endpoint, the detail
         response additionally includes analysis_context (ADR-0009), read via
         a LEFT JOIN against campaign_subject_link_projection -- null for a
-        legacy/unlinked Campaign.
+        legacy/unlinked Campaign -- and outcome_context (ADR-0010 §10,
+        CAMPAIGN_OUTCOMES.md §11), read via a LEFT JOIN against the safe
+        leasemind_app.campaign_outcome_public_projection view -- null when
+        no effective business outcome has been recorded yet. status
+        (lifecycle) and outcome_context.outcome_code (business outcome) are
+        independent fields; neither is derived from the other (CO-C-010).
+        Recording or correcting an outcome is never available through this
+        or any other HTTP endpoint -- only through the synthetic operational
+        CLI (apps/api/src/db/campaign-outcome-cli.ts).
       parameters:
         - name: campaignId
           in: path
@@ -511,6 +519,43 @@ components:
           type: string
           enum: [need_tenant, need_property]
 
+    CampaignOutcomeContext:
+      description: >-
+        Detail-only, server-owned business outcome context (ADR-0010 §10,
+        CAMPAIGN_OUTCOMES.md §11), sourced exclusively from the safe
+        leasemind_app.campaign_outcome_public_projection view -- never from
+        the three private campaign_outcome_* base tables. Lifecycle status
+        (CampaignDetail.status) and business outcome are independent
+        fields; the client must not derive one from the other (CO-C-010).
+        null when no effective outcome has been recorded yet. Never
+        includes operator_ref, correction_reason_code, outcome_record_id,
+        corrects_outcome_record_id, outcome_sequence,
+        resulting_campaign_aggregate_version or mapped_lifecycle_status
+        (redundant with CampaignDetail.status). is_corrected is the only
+        public signal that a correction occurred (CO-C-029) -- no
+        correction reason or history is exposed.
+      nullable: true
+      type: object
+      additionalProperties: false
+      required: [outcome_code, recorded_at, confirmation_method, is_corrected]
+      properties:
+        outcome_code:
+          type: string
+          enum:
+            - success_via_leasemind
+            - success_independently
+            - success_via_broker
+            - cancelled
+            - expired
+        recorded_at:
+          type: string
+          format: date-time
+        confirmation_method:
+          type: string
+          enum: [user_attestation]
+        is_corrected:
+          type: boolean
+
     CampaignDetail:
       description: >-
         Detail-only shape returned by GET /api/v1/campaigns/{campaignId} --
@@ -518,7 +563,7 @@ components:
         keeps the plain Campaign shape).
       type: object
       additionalProperties: false
-      required: [campaign_id, status, aggregate_version, created_at, updated_at, analysis_context]
+      required: [campaign_id, status, aggregate_version, created_at, updated_at, analysis_context, outcome_context]
       properties:
         campaign_id:
           type: string
@@ -548,6 +593,8 @@ components:
           format: date-time
         analysis_context:
           $ref: '#/components/schemas/CampaignAnalysisContext'
+        outcome_context:
+          $ref: '#/components/schemas/CampaignOutcomeContext'
 
     CampaignListResponse:
       type: object

@@ -32,6 +32,7 @@ import {
 } from './campaignUrlState';
 import {
   BUSINESS_CATEGORY_LABELS,
+  CAMPAIGN_OUTCOME_CODE_LABELS,
   CAMPAIGN_STATUS_LABELS,
   LIFECYCLE_STATUS_LABELS,
   PROPERTY_TYPE_LABELS,
@@ -1606,6 +1607,24 @@ export default function CampaignLaunchWizard() {
               <li>Создано: {detail.created_at}</li>
               <li>Обновлено: {detail.updated_at}</li>
             </ul>
+
+            <section aria-labelledby="campaign-outcome-heading">
+              <h3 id="campaign-outcome-heading">Результат кампании</h3>
+
+              {!detail.outcome_context && (
+                <p>Результат кампании пока не зафиксирован.</p>
+              )}
+
+              {detail.outcome_context && (
+                <ul>
+                  <li>{ruLabel(CAMPAIGN_OUTCOME_CODE_LABELS, detail.outcome_context.outcome_code)}</li>
+                  <li>Зафиксировано: {formatAnalysisTime(detail.outcome_context.recorded_at)}</li>
+                  <li>Явное подтверждение пользователя</li>
+                  <li>Уполномоченный администратор пилота</li>
+                  {detail.outcome_context.is_corrected && <li>Результат уточнён.</li>}
+                </ul>
+              )}
+            </section>
 
             <section aria-labelledby="post-launch-analysis-heading">
               <h3 id="post-launch-analysis-heading">Анализ после запуска</h3>

@@ -799,6 +799,10 @@ test('GET /api/v1/campaigns/:campaignId returns analysis_context: null for a leg
     const response = await app.inject({ method: 'GET', url: `/api/v1/campaigns/${target.campaignId}` });
     assert.equal(response.statusCode, 200, response.body);
     assert.deepEqual(response.json().analysis_context, null);
+    // Same seed fixture: never touched the outcome command core either.
+    // outcome_context: null is asserted as its own independent field, not
+    // derived from analysis_context or status (ADR-0010 §10, CO-C-010).
+    assert.deepEqual(response.json().outcome_context, null);
   } finally {
     await app.close();
   }
