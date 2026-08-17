@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import pg from 'pg';
 import { buildApp } from '../src/app.js';
-import { migrateUp, migrateDown } from '../src/db/migrate.js';
+import { migrateUp, migrateDown, canonicalizeLineEndings, computeMigrationChecksum } from '../src/db/migrate.js';
 import { seedCampaigns, SYNTHETIC_CAMPAIGN_SEEDS } from '../src/db/seed.js';
 import { CAMPAIGN_STATUSES } from '../src/db/campaigns.js';
 import {
@@ -270,29 +270,90 @@ test('re-running migration up is idempotent (no error, migration skipped)', { sk
   }
 });
 
-test('a checksum mismatch on an already-applied migration is rejected', { skip: !hasDatabase }, async () => {
+test('a checksum mismatch on an already-applied migration is rejected; the cross-platform canonical and legacy-CRLF checksum forms are both accepted, without ever rewriting the ledger row on an ordinary skip', { skip: !hasDatabase }, async () => {
   const pool = new pg.Pool({ connectionString: MIGRATION_DATABASE_URL, max: 2 });
   try {
     const migrationPath = new URL('../migrations/001_campaign_current_state_projection.up.sql', import.meta.url);
     const realSql = await readFile(migrationPath, 'utf8');
-    const realChecksum = createHash('sha256').update(realSql).digest('hex');
+    const canonicalSql = canonicalizeLineEndings(realSql);
+    const canonicalChecksum = computeMigrationChecksum(realSql);
+    // The exact byte form a pre-fix Windows (`core.autocrlf=true`) checkout
+    // would have hashed -- computed here purely from the canonical helper
+    // plus crypto, independent of migrate.ts's own private legacy-checksum
+    // function (see migrationChecksum.test.ts for the equivalent pure-unit
+    // proof, using a synthetic fixture instead of this real migration file).
+    const legacyCrlfChecksum = createHash('sha256').update(canonicalSql.replace(/\n/g, '\r\n')).digest('hex');
 
-    await pool.query(
-      "UPDATE leasemind_app.schema_migrations SET checksum = repeat('0', 64) WHERE filename = $1",
+    const before = await pool.query<{ checksum: string }>(
+      'SELECT checksum FROM leasemind_app.schema_migrations WHERE filename = $1',
       [MIGRATION_FILE_001]
     );
+    const originalChecksum = before.rows[0].checksum.trim();
 
-    await assert.rejects(migrateUp(pool), /MIGRATION_CHECKSUM_MISMATCH/);
+    try {
+      // This DB was freshly migrated by this same file's own setup, using
+      // the current migrate.ts -- the ledger row it recorded must already
+      // be the canonical LF checksum, regardless of whether this checkout
+      // itself is LF or CRLF (see the preflight `git ls-files --eol` proof
+      // for this exact migration file's working-tree representation).
+      assert.equal(
+        originalChecksum,
+        canonicalChecksum,
+        'a freshly applied migration must be recorded with the canonical LF checksum, regardless of the checkout OS'
+      );
 
-    // Restore the correct checksum so later tests (seed, API, down) proceed
-    // against a consistent, correctly-tracked ledger. The row is fixed in
-    // place, never deleted: up.sql is not safe to re-run against an
-    // already-existing type/table (CREATE TYPE/CREATE TABLE, no IF NOT EXISTS).
-    await pool.query('UPDATE leasemind_app.schema_migrations SET checksum = $1 WHERE filename = $2', [
-      realChecksum,
-      MIGRATION_FILE_001
-    ]);
+      // A genuine mismatch (matches neither the canonical nor the legacy
+      // CRLF form) is still rejected exactly as before.
+      await pool.query(
+        "UPDATE leasemind_app.schema_migrations SET checksum = repeat('0', 64) WHERE filename = $1",
+        [MIGRATION_FILE_001]
+      );
+      await assert.rejects(migrateUp(pool), /MIGRATION_CHECKSUM_MISMATCH/);
 
+      // A legacy pre-fix Windows (CRLF) ledger checksum for this exact,
+      // unmodified migration is accepted as a normal skip -- and the ledger
+      // row is left exactly as-is (never rewritten to the canonical form
+      // on an ordinary skip).
+      await pool.query('UPDATE leasemind_app.schema_migrations SET checksum = $1 WHERE filename = $2', [
+        legacyCrlfChecksum,
+        MIGRATION_FILE_001
+      ]);
+      const legacyResult = await migrateUp(pool);
+      assert.deepEqual(legacyResult.applied, []);
+      assert.ok(legacyResult.skipped.includes(MIGRATION_FILE_001));
+      const afterLegacySkip = await pool.query<{ checksum: string }>(
+        'SELECT checksum FROM leasemind_app.schema_migrations WHERE filename = $1',
+        [MIGRATION_FILE_001]
+      );
+      assert.equal(
+        afterLegacySkip.rows[0].checksum.trim(),
+        legacyCrlfChecksum,
+        'an ordinary skip must never rewrite the ledger row, even when it only matched via the legacy CRLF form'
+      );
+
+      // The canonical LF checksum -- what every migration records from now
+      // on, on any OS -- is of course also accepted.
+      await pool.query('UPDATE leasemind_app.schema_migrations SET checksum = $1 WHERE filename = $2', [
+        canonicalChecksum,
+        MIGRATION_FILE_001
+      ]);
+      const canonicalResult = await migrateUp(pool);
+      assert.deepEqual(canonicalResult.applied, []);
+      assert.ok(canonicalResult.skipped.includes(MIGRATION_FILE_001));
+    } finally {
+      // Restore the ledger to its original recorded value, guaranteed even
+      // if an assertion above throws, so later tests (seed, API, down)
+      // proceed against a consistent, correctly-tracked ledger. The row is
+      // fixed in place, never deleted: up.sql is not safe to re-run against
+      // an already-existing type/table (CREATE TYPE/CREATE TABLE, no IF NOT
+      // EXISTS).
+      await pool.query('UPDATE leasemind_app.schema_migrations SET checksum = $1 WHERE filename = $2', [
+        originalChecksum,
+        MIGRATION_FILE_001
+      ]);
+    }
+
+    // Idempotency holds after the restore, exactly as before this test ran.
     const result = await migrateUp(pool);
     assert.deepEqual(result.applied, []);
     assert.ok(result.skipped.includes(MIGRATION_FILE_001));
