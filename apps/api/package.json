@@ -16,7 +16,8 @@
     "migrate:down": "node --env-file-if-exists=.env --import tsx src/db/migrate-cli.ts down",
     "seed": "node --env-file-if-exists=.env --import tsx src/db/seed-cli.ts",
     "revoke-evidence-dataset": "node --env-file-if-exists=.env --import tsx src/db/revoke-evidence-dataset-cli.ts",
-    "campaign-outcome": "node --env-file-if-exists=.env --import tsx src/db/campaign-outcome-cli.ts"
+    "campaign-outcome": "node --env-file-if-exists=.env --import tsx src/db/campaign-outcome-cli.ts",
+    "campaign-outcome-rebuild": "node --env-file-if-exists=.env --import tsx src/db/campaign-outcome-rebuild-cli.ts"
   },
   "dependencies": {
     "fastify": "^5.0.0",

@@ -211,18 +211,23 @@ jobs:
         run: node --import tsx --test --test-concurrency=1 apps/api/tests/campaignOutcomeDatabaseFoundation.test.ts
 
       # Also isolated and last: the Campaign Outcome command core (record/
-      # correct/dry-run/CLI). Creates real launched Campaigns (Technical
-      # Assignment + pre-launch Analysis + launch), which -- unlike the
-      # foundation tests above -- write campaign_subject_link_projection
-      # rows. Running this inside the main "Backend tests" step would leave
-      # those rows behind for campaigns.test.ts's unscoped
-      # "DELETE FROM campaign_current_state_projection" reseed step to trip
-      # over (foreign key violation). Isolating it here, after that step has
-      # already run and finished, avoids the conflict entirely.
-      - name: Campaign Outcome command core and CLI tests
+      # correct/dry-run/CLI) and the ADR-0010 §12 rebuild/recovery path
+      # (rebuildCampaignOutcomeProjection/rebuildAllCampaignOutcomeProjections/
+      # rebuildCampaignProjections and their maintenance CLI). All four files
+      # create real launched Campaigns (Technical Assignment + pre-launch
+      # Analysis + launch), which -- unlike the foundation tests above --
+      # write campaign_subject_link_projection rows. Running this inside the
+      # main "Backend tests" step would leave those rows behind for
+      # campaigns.test.ts's unscoped "DELETE FROM campaign_current_state_projection"
+      # reseed step to trip over (foreign key violation). Isolating it here,
+      # after that step has already run and finished, avoids the conflict
+      # entirely.
+      - name: Campaign Outcome command core, rebuild and CLI tests
         env:
           LEASEMIND_RUN_CAMPAIGN_OUTCOME_DATABASE_TESTS: 'true'
         run: >-
           node --import tsx --test --test-concurrency=1
           apps/api/tests/campaignOutcomeCommand.test.ts
           apps/api/tests/campaignOutcomeCli.test.ts
+          apps/api/tests/campaignOutcomeRebuild.test.ts
+          apps/api/tests/campaignOutcomeRebuildCli.test.ts

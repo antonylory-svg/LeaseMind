@@ -95,11 +95,10 @@ export function loadEvidenceRevocationDatabaseUrl(env: NodeJS.ProcessEnv = proce
   return databaseUrl;
 }
 
-/** Campaign Outcome operational CLI only (ADR-0010) -- never server.ts,
- * worker.ts or frontend. No fallback to DATABASE_URL, for the same reason
- * as loadMigrationDatabaseUrl. The CLI itself is a separate, future
- * technical block -- this loader exists now only so the database-foundation
- * connection identity/config contract is complete and testable. */
+/** Campaign Outcome operational CLI only (ADR-0010,
+ * apps/api/src/db/campaign-outcome-cli.ts) -- never server.ts, worker.ts or
+ * frontend. No fallback to DATABASE_URL, for the same reason as
+ * loadMigrationDatabaseUrl. */
 export function loadCampaignOutcomeDatabaseUrl(env: NodeJS.ProcessEnv = process.env): string {
   const databaseUrl = env.LEASEMIND_CAMPAIGN_OUTCOME_DATABASE_URL;
   if (!databaseUrl) {

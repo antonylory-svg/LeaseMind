@@ -1,5 +1,12 @@
 import type pg from 'pg';
-import { MIGRATOR_ROLE, MAINTAINER_ROLE, API_READER_ROLE, CAMPAIGN_WRITER_ROLE, TA_WRITER_ROLE } from './db/provisionRoles.js';
+import {
+  MIGRATOR_ROLE,
+  MAINTAINER_ROLE,
+  API_READER_ROLE,
+  CAMPAIGN_WRITER_ROLE,
+  TA_WRITER_ROLE,
+  CAMPAIGN_OUTCOME_WRITER_ROLE
+} from './db/provisionRoles.js';
 import { verifyAnalysisPrivilegeProfile } from './analysisDbPrivilegePolicy.js';
 
 // Pre-launch database-boundary gate. See
@@ -563,11 +570,11 @@ export async function verifyRuntimeEvidenceRevocationPrivileges(pool: pg.Pool): 
 }
 
 // Campaign Outcome database-foundation boundary (ADR-0010). Same fail-closed
-// philosophy as the checks above. The operational CLI that will call this at
-// process startup is a separate, future technical block -- this gate is
-// added now, and independently testable via a direct pool connection, so the
-// database-foundation grant contract (migration 011) has its own runtime
-// proof, matching every other role in this file.
+// philosophy as the checks above. Called at process startup by the
+// operational CLI (apps/api/src/db/campaign-outcome-cli.ts) -- independently
+// testable via a direct pool connection too, so the database-foundation
+// grant contract (migration 011) has its own runtime proof, matching every
+// other role in this file.
 
 interface CampaignOutcomePrivilegeCheckRow {
   rolsuper: boolean;
@@ -843,6 +850,287 @@ export async function verifyRuntimeCampaignOutcomePrivileges(pool: pg.Pool): Pro
     Number(row.mapping_select_count) !== 4 ||
     Number(row.mapping_insert_count) !== 4 ||
     Number(row.current_projection_select_count) !== 2 ||
+    Number(row.current_projection_insert_count) !== 2 ||
+    Number(row.current_projection_update_count) !== 2;
+
+  if (isViolation) {
+    throw new DatabasePrivilegeViolation();
+  }
+}
+
+// Campaign Outcome maintenance/rebuild boundary (ADR-0010 §12). Verifies the
+// FULL lmapp_maintainer profile -- not just its pre-existing Campaign-object
+// grants (migration 003, already relied on by rebuildCampaignProjection) but
+// also its additive, exact column-level Campaign Outcome grants (migration
+// 011). Distinct from verifyRuntimeCampaignOutcomePrivileges above, which
+// verifies the campaign_outcome_writer identity (record/correct), never
+// this one. Called once at startup, for the dedicated maintenance
+// connection only, before any rebuild lock/DML -- same fail-closed
+// philosophy as every other check in this file.
+
+interface CampaignOutcomeMaintainerPrivilegeCheckRow {
+  rolsuper: boolean;
+  rolcreatedb: boolean;
+  rolcreaterole: boolean;
+  rolreplication: boolean;
+  rolbypassrls: boolean;
+  can_create_on_database: boolean;
+  can_create_temp: boolean;
+  can_create_in_schema: boolean;
+
+  can_select_event_log: boolean;
+  can_insert_event_log: boolean;
+  can_mutate_event_log: boolean;
+
+  can_select_stream_head: boolean;
+  can_insert_stream_head: boolean;
+  can_update_stream_head: boolean;
+  can_destructively_write_stream_head: boolean;
+
+  can_select_projection: boolean;
+  can_insert_projection: boolean;
+  can_update_projection: boolean;
+  can_destructively_write_projection: boolean;
+
+  can_access_subject_link: boolean;
+  can_access_ledger: boolean;
+  can_access_protected_address: boolean;
+  can_access_analysis_data: boolean;
+  can_access_evidence_revocation: boolean;
+  has_any_role_membership: boolean;
+
+  outcome_log_select_count: number;
+  outcome_log_can_select_operator_ref: boolean;
+  outcome_log_can_select_correction_reason_code: boolean;
+  outcome_log_can_select_runtime_mode: boolean;
+  outcome_log_can_select_outcome_code: boolean;
+  outcome_log_can_insert: boolean;
+  outcome_log_can_update: boolean;
+  outcome_log_can_delete: boolean;
+  outcome_log_can_truncate: boolean;
+
+  can_access_mapping: boolean;
+
+  current_projection_select_count: number;
+  current_projection_insert_count: number;
+  current_projection_update_count: number;
+  current_projection_can_delete: boolean;
+  current_projection_can_truncate: boolean;
+
+  can_select_public_view: boolean;
+
+  is_member_of_migrator: boolean;
+  is_member_of_api_reader: boolean;
+  is_member_of_campaign_writer: boolean;
+  is_member_of_ta_writer: boolean;
+  is_member_of_campaign_outcome_writer: boolean;
+}
+
+const CAMPAIGN_OUTCOME_MAINTAINER_PRIVILEGE_CHECK_QUERY = `
+  SELECT
+    r.rolsuper,
+    r.rolcreatedb,
+    r.rolcreaterole,
+    r.rolreplication,
+    r.rolbypassrls,
+    has_database_privilege(current_database(), 'CREATE') AS can_create_on_database,
+    has_database_privilege(current_database(), 'TEMP') AS can_create_temp,
+    has_schema_privilege('leasemind_app', 'CREATE') AS can_create_in_schema,
+
+    has_table_privilege('leasemind_app.campaign_event_log', 'SELECT') AS can_select_event_log,
+    has_table_privilege('leasemind_app.campaign_event_log', 'INSERT') AS can_insert_event_log,
+    (
+      has_table_privilege('leasemind_app.campaign_event_log', 'UPDATE')
+      OR has_table_privilege('leasemind_app.campaign_event_log', 'DELETE')
+      OR has_table_privilege('leasemind_app.campaign_event_log', 'TRUNCATE')
+    ) AS can_mutate_event_log,
+
+    has_table_privilege('leasemind_app.campaign_stream_head', 'SELECT') AS can_select_stream_head,
+    has_table_privilege('leasemind_app.campaign_stream_head', 'INSERT') AS can_insert_stream_head,
+    has_table_privilege('leasemind_app.campaign_stream_head', 'UPDATE') AS can_update_stream_head,
+    (
+      has_table_privilege('leasemind_app.campaign_stream_head', 'DELETE')
+      OR has_table_privilege('leasemind_app.campaign_stream_head', 'TRUNCATE')
+    ) AS can_destructively_write_stream_head,
+
+    has_table_privilege('leasemind_app.campaign_current_state_projection', 'SELECT') AS can_select_projection,
+    has_table_privilege('leasemind_app.campaign_current_state_projection', 'INSERT') AS can_insert_projection,
+    has_table_privilege('leasemind_app.campaign_current_state_projection', 'UPDATE') AS can_update_projection,
+    (
+      has_table_privilege('leasemind_app.campaign_current_state_projection', 'DELETE')
+      OR has_table_privilege('leasemind_app.campaign_current_state_projection', 'TRUNCATE')
+    ) AS can_destructively_write_projection,
+
+    (
+      has_table_privilege('leasemind_app.campaign_subject_link_projection', 'SELECT')
+      OR has_table_privilege('leasemind_app.campaign_subject_link_projection', 'INSERT')
+      OR has_table_privilege('leasemind_app.campaign_subject_link_projection', 'UPDATE')
+      OR has_table_privilege('leasemind_app.campaign_subject_link_projection', 'DELETE')
+    ) AS can_access_subject_link,
+    (
+      has_table_privilege('leasemind_app.schema_migrations', 'SELECT')
+      OR has_table_privilege('leasemind_app.schema_migrations', 'INSERT')
+      OR has_table_privilege('leasemind_app.schema_migrations', 'UPDATE')
+      OR has_table_privilege('leasemind_app.schema_migrations', 'DELETE')
+    ) AS can_access_ledger,
+    (
+      has_table_privilege('leasemind_app.property_protected_address', 'SELECT')
+      OR has_table_privilege('leasemind_app.property_protected_address', 'INSERT')
+      OR has_table_privilege('leasemind_app.property_protected_address', 'UPDATE')
+      OR has_table_privilege('leasemind_app.property_protected_address', 'DELETE')
+    ) AS can_access_protected_address,
+    (
+      has_table_privilege('leasemind_app.analysis_snapshot', 'SELECT')
+      OR has_table_privilege('leasemind_app.analysis_snapshot', 'INSERT')
+      OR has_table_privilege('leasemind_app.analysis_snapshot', 'UPDATE')
+      OR has_table_privilege('leasemind_app.analysis_snapshot', 'DELETE')
+      OR has_table_privilege('leasemind_app.analysis_snapshot', 'TRUNCATE')
+      OR has_table_privilege('leasemind_app.analysis_snapshot_idempotency_mapping', 'SELECT')
+      OR has_table_privilege('leasemind_app.analysis_snapshot_idempotency_mapping', 'INSERT')
+      OR has_table_privilege('leasemind_app.analysis_snapshot_idempotency_mapping', 'UPDATE')
+      OR has_table_privilege('leasemind_app.analysis_snapshot_idempotency_mapping', 'DELETE')
+      OR has_table_privilege('leasemind_app.analysis_snapshot_idempotency_mapping', 'TRUNCATE')
+      OR has_table_privilege('leasemind_app.post_launch_refresh_intent', 'SELECT')
+      OR has_table_privilege('leasemind_app.post_launch_refresh_intent', 'INSERT')
+      OR has_table_privilege('leasemind_app.post_launch_refresh_intent', 'UPDATE')
+      OR has_table_privilege('leasemind_app.post_launch_refresh_intent', 'DELETE')
+      OR has_table_privilege('leasemind_app.post_launch_refresh_intent', 'TRUNCATE')
+    ) AS can_access_analysis_data,
+    (
+      has_table_privilege('leasemind_app.evidence_dataset_revocation', 'SELECT')
+      OR has_table_privilege('leasemind_app.evidence_dataset_revocation', 'INSERT')
+      OR has_table_privilege('leasemind_app.evidence_dataset_revocation', 'UPDATE')
+      OR has_table_privilege('leasemind_app.evidence_dataset_revocation', 'DELETE')
+      OR has_table_privilege('leasemind_app.evidence_dataset_revocation', 'TRUNCATE')
+    ) AS can_access_evidence_revocation,
+    EXISTS (
+      SELECT 1
+      FROM pg_auth_members membership
+      WHERE membership.member = r.oid
+    ) AS has_any_role_membership,
+
+    (SELECT COUNT(*) FROM information_schema.column_privileges
+       WHERE grantee = current_user AND table_schema = 'leasemind_app'
+         AND table_name = 'campaign_outcome_event_log' AND privilege_type = 'SELECT')::int AS outcome_log_select_count,
+    has_column_privilege('leasemind_app.campaign_outcome_event_log', 'operator_ref', 'SELECT') AS outcome_log_can_select_operator_ref,
+    has_column_privilege('leasemind_app.campaign_outcome_event_log', 'correction_reason_code', 'SELECT') AS outcome_log_can_select_correction_reason_code,
+    has_column_privilege('leasemind_app.campaign_outcome_event_log', 'runtime_mode', 'SELECT') AS outcome_log_can_select_runtime_mode,
+    has_column_privilege('leasemind_app.campaign_outcome_event_log', 'outcome_code', 'SELECT') AS outcome_log_can_select_outcome_code,
+    has_table_privilege('leasemind_app.campaign_outcome_event_log', 'INSERT') AS outcome_log_can_insert,
+    has_table_privilege('leasemind_app.campaign_outcome_event_log', 'UPDATE') AS outcome_log_can_update,
+    has_table_privilege('leasemind_app.campaign_outcome_event_log', 'DELETE') AS outcome_log_can_delete,
+    has_table_privilege('leasemind_app.campaign_outcome_event_log', 'TRUNCATE') AS outcome_log_can_truncate,
+
+    (
+      has_table_privilege('leasemind_app.campaign_outcome_idempotency_mapping', 'SELECT')
+      OR has_table_privilege('leasemind_app.campaign_outcome_idempotency_mapping', 'INSERT')
+      OR has_table_privilege('leasemind_app.campaign_outcome_idempotency_mapping', 'UPDATE')
+      OR has_table_privilege('leasemind_app.campaign_outcome_idempotency_mapping', 'DELETE')
+      OR has_table_privilege('leasemind_app.campaign_outcome_idempotency_mapping', 'TRUNCATE')
+    ) AS can_access_mapping,
+
+    (SELECT COUNT(*) FROM information_schema.column_privileges
+       WHERE grantee = current_user AND table_schema = 'leasemind_app'
+         AND table_name = 'campaign_outcome_current_projection' AND privilege_type = 'SELECT')::int AS current_projection_select_count,
+    (SELECT COUNT(*) FROM information_schema.column_privileges
+       WHERE grantee = current_user AND table_schema = 'leasemind_app'
+         AND table_name = 'campaign_outcome_current_projection' AND privilege_type = 'INSERT')::int AS current_projection_insert_count,
+    (SELECT COUNT(*) FROM information_schema.column_privileges
+       WHERE grantee = current_user AND table_schema = 'leasemind_app'
+         AND table_name = 'campaign_outcome_current_projection' AND privilege_type = 'UPDATE')::int AS current_projection_update_count,
+    has_table_privilege('leasemind_app.campaign_outcome_current_projection', 'DELETE') AS current_projection_can_delete,
+    has_table_privilege('leasemind_app.campaign_outcome_current_projection', 'TRUNCATE') AS current_projection_can_truncate,
+
+    has_table_privilege('leasemind_app.campaign_outcome_public_projection', 'SELECT') AS can_select_public_view,
+
+    pg_has_role(current_user, $1, 'MEMBER') AS is_member_of_migrator,
+    pg_has_role(current_user, $2, 'MEMBER') AS is_member_of_api_reader,
+    pg_has_role(current_user, $3, 'MEMBER') AS is_member_of_campaign_writer,
+    pg_has_role(current_user, $4, 'MEMBER') AS is_member_of_ta_writer,
+    pg_has_role(current_user, $5, 'MEMBER') AS is_member_of_campaign_outcome_writer
+  FROM pg_roles r
+  WHERE r.rolname = current_user
+`;
+
+/**
+ * Verifies that the connected maintenance role matches exactly the
+ * lmapp_maintainer allowlist relevant to Campaign/Campaign-Outcome rebuild:
+ * its pre-existing table-wide Campaign-object grants (migration 003 --
+ * SELECT+INSERT on campaign_event_log, SELECT+INSERT+UPDATE on
+ * campaign_stream_head and campaign_current_state_projection, needed for
+ * the coordinated stream-head lock and lifecycle rebuild) plus its additive
+ * exact column-level Campaign Outcome grants (migration 011 -- SELECT-only
+ * rebuild columns on campaign_outcome_event_log, SELECT/INSERT/UPDATE on
+ * exactly the pointer columns of campaign_outcome_current_projection, zero
+ * access to campaign_outcome_idempotency_mapping, no DELETE/TRUNCATE
+ * anywhere, no operator_ref/correction_reason_code/runtime_mode readback,
+ * and no direct access to the public view -- that grant belongs to
+ * lmapp_api_reader only). Called once at startup, for the dedicated
+ * maintenance connection only, before any rebuild lock/DML.
+ */
+export async function verifyRuntimeCampaignOutcomeMaintainerPrivileges(pool: pg.Pool): Promise<void> {
+  let row: CampaignOutcomeMaintainerPrivilegeCheckRow;
+  try {
+    const result = await pool.query<CampaignOutcomeMaintainerPrivilegeCheckRow>(CAMPAIGN_OUTCOME_MAINTAINER_PRIVILEGE_CHECK_QUERY, [
+      MIGRATOR_ROLE,
+      API_READER_ROLE,
+      CAMPAIGN_WRITER_ROLE,
+      TA_WRITER_ROLE,
+      CAMPAIGN_OUTCOME_WRITER_ROLE
+    ]);
+    if (result.rows.length !== 1) {
+      throw new Error('unable to resolve current_user role row');
+    }
+    row = result.rows[0];
+  } catch {
+    throw new DatabasePrivilegeViolation();
+  }
+
+  const isViolation =
+    row.rolsuper ||
+    row.rolcreatedb ||
+    row.rolcreaterole ||
+    row.rolreplication ||
+    row.rolbypassrls ||
+    row.can_create_on_database ||
+    row.can_create_temp ||
+    row.can_create_in_schema ||
+    row.can_mutate_event_log ||
+    row.can_destructively_write_stream_head ||
+    row.can_destructively_write_projection ||
+    row.can_access_subject_link ||
+    row.can_access_ledger ||
+    row.can_access_protected_address ||
+    row.can_access_analysis_data ||
+    row.can_access_evidence_revocation ||
+    row.has_any_role_membership ||
+    row.outcome_log_can_select_operator_ref ||
+    row.outcome_log_can_select_correction_reason_code ||
+    row.outcome_log_can_select_runtime_mode ||
+    row.outcome_log_can_insert ||
+    row.outcome_log_can_update ||
+    row.outcome_log_can_delete ||
+    row.outcome_log_can_truncate ||
+    row.can_access_mapping ||
+    row.current_projection_can_delete ||
+    row.current_projection_can_truncate ||
+    row.can_select_public_view ||
+    row.is_member_of_migrator ||
+    row.is_member_of_api_reader ||
+    row.is_member_of_campaign_writer ||
+    row.is_member_of_ta_writer ||
+    row.is_member_of_campaign_outcome_writer ||
+    !row.can_select_event_log ||
+    !row.can_insert_event_log ||
+    !row.can_select_stream_head ||
+    !row.can_insert_stream_head ||
+    !row.can_update_stream_head ||
+    !row.can_select_projection ||
+    !row.can_insert_projection ||
+    !row.can_update_projection ||
+    !row.outcome_log_can_select_outcome_code ||
+    Number(row.outcome_log_select_count) !== 6 ||
+    Number(row.current_projection_select_count) !== 3 ||
     Number(row.current_projection_insert_count) !== 2 ||
     Number(row.current_projection_update_count) !== 2;
 
