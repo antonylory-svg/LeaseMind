@@ -13,7 +13,11 @@ import {
   EVIDENCE_REVOCATION_WRITER_ROLE,
   CAMPAIGN_OUTCOME_WRITER_ROLE
 } from '../src/db/provisionRoles.js';
-import { verifyRuntimeCampaignOutcomePrivileges, DatabasePrivilegeViolation } from '../src/dbPrivilegePolicy.js';
+import {
+  verifyRuntimeCampaignOutcomePrivileges,
+  verifyRuntimeCampaignOutcomeMaintainerPrivileges,
+  DatabasePrivilegeViolation
+} from '../src/dbPrivilegePolicy.js';
 import { loadCampaignOutcomeDatabaseUrl } from '../src/config.js';
 import { appendCampaignStatusEvent } from '../src/db/campaignEvents.js';
 import {
@@ -35,11 +39,11 @@ import {
 // 03_ARCHITECTURE/decisions/ADR-0010-campaign-outcome-implementation.md.
 //
 // This file proves migration 011 and the new lmapp_campaign_outcome_writer
-// identity in isolation. It does NOT exercise a record/correct command
-// flow (no such TypeScript module exists yet -- that is a separate, future
-// technical block) -- rows are inserted directly through the real
-// CAMPAIGN_OUTCOME_DATABASE_URL connection, proving the grant contract
-// itself, exactly the way a future command module would use it.
+// identity in isolation. It does NOT exercise the record/correct command
+// flow (that lives in campaignOutcomes.ts, covered separately by
+// campaignOutcomeCommand.test.ts) -- rows are inserted directly through the
+// real CAMPAIGN_OUTCOME_DATABASE_URL connection, proving the grant contract
+// itself, the same way the command module uses it.
 //
 // campaign_outcome_event_log and campaign_outcome_idempotency_mapping are
 // genuinely immutable -- once a row is inserted here, it can never be
@@ -554,6 +558,107 @@ test('a record with outcome_sequence != 1 is rejected by the sequence-shape CHEC
 });
 
 // ---------------------------------------------------------------------------
+// 3b. campaign_outcome_event_log_mapping_valid and the mapped_lifecycle_status
+// non-terminal CHECK, fired by real rejected INSERTs -- not just confirmed
+// to exist via pg_constraint catalog introspection (section 1 above only
+// checks the constraint NAME is present). Neither test disables or weakens
+// the insert-verification trigger: each is deliberately constructed so the
+// trigger's own check (linked lifecycle event status vs NEW.mapped_lifecycle_status)
+// passes cleanly, isolating the failure to the CHECK constraint alone.
+// ---------------------------------------------------------------------------
+
+const CAMPAIGN_MAPPING_CHECK = uuidV4('10');
+const CAMPAIGN_NON_TERMINAL_CHECK = uuidV4('11');
+
+test('campaign_outcome_event_log_mapping_valid rejects a mismatched outcome_code/mapped_lifecycle_status pairing, even though the linked lifecycle event genuinely has status=Failed (isolating the CHECK from the insert-verification trigger, never disabled)', { skip: !hasCampaignOutcomeDatabase }, async () => {
+  const maintenancePool = pool(MAINTENANCE_DATABASE_URL);
+  await appendCampaignStatusEvent(maintenancePool, {
+    campaignId: CAMPAIGN_MAPPING_CHECK,
+    status: 'Failed',
+    idempotencyKey: 'campaign-outcome-foundation:mapping-check:failed'
+  });
+  await maintenancePool.end();
+
+  const writerPool = pool(CAMPAIGN_OUTCOME_DATABASE_URL);
+  try {
+    const before = await writerPool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_outcome_event_log WHERE campaign_id = $1',
+      [CAMPAIGN_MAPPING_CHECK]
+    );
+
+    // mapped_lifecycle_status='Failed' matches the real linked event exactly
+    // (event_sequence=1, payload.status='Failed') -- the trigger's own
+    // cross-check passes. Only campaign_outcome_event_log_mapping_valid can
+    // reject this: outcome_code='success_via_leasemind' requires
+    // mapped_lifecycle_status='Completed', never 'Failed'.
+    await assert.rejects(
+      writerPool.query(
+        `INSERT INTO leasemind_app.campaign_outcome_event_log
+           (outcome_record_id, campaign_id, outcome_sequence, command_type, outcome_code, mapped_lifecycle_status,
+            confirmation_method, operator_ref, corrects_outcome_record_id, correction_reason_code, runtime_mode,
+            resulting_campaign_aggregate_version)
+         VALUES ('11111111-1111-4111-8111-000000000010', $1, 1, 'record', 'success_via_leasemind', 'Failed', 'user_attestation', $2, NULL, NULL, 'synthetic', 1)`,
+        [CAMPAIGN_MAPPING_CHECK, OPERATOR_REF]
+      ),
+      /violates check constraint "campaign_outcome_event_log_mapping_valid"/
+    );
+
+    const after = await writerPool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_outcome_event_log WHERE campaign_id = $1',
+      [CAMPAIGN_MAPPING_CHECK]
+    );
+    assert.equal(after.rows[0].count, before.rows[0].count, 'no partial row must be written after the rejection');
+  } finally {
+    await writerPool.end();
+  }
+});
+
+test('mapped_lifecycle_status is rejected for a non-terminal value (Paused), even though the linked lifecycle event genuinely has status=Paused', { skip: !hasCampaignOutcomeDatabase }, async () => {
+  const maintenancePool = pool(MAINTENANCE_DATABASE_URL);
+  await appendCampaignStatusEvent(maintenancePool, {
+    campaignId: CAMPAIGN_NON_TERMINAL_CHECK,
+    status: 'Paused',
+    idempotencyKey: 'campaign-outcome-foundation:non-terminal-check:paused'
+  });
+  await maintenancePool.end();
+
+  const writerPool = pool(CAMPAIGN_OUTCOME_DATABASE_URL);
+  try {
+    const before = await writerPool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_outcome_event_log WHERE campaign_id = $1',
+      [CAMPAIGN_NON_TERMINAL_CHECK]
+    );
+
+    // mapped_lifecycle_status='Paused' matches the real linked event exactly
+    // (event_sequence=1, payload.status='Paused') -- the trigger's own
+    // cross-check passes. No outcome_code can legally pair with a
+    // non-terminal mapped_lifecycle_status at all (campaign_outcome_event_log_mapping_valid
+    // structurally only allows Completed/Failed), so both that CHECK and
+    // mapped_lifecycle_status's own base CHECK necessarily reject this row
+    // together -- asserted generically rather than pinned to one name.
+    await assert.rejects(
+      writerPool.query(
+        `INSERT INTO leasemind_app.campaign_outcome_event_log
+           (outcome_record_id, campaign_id, outcome_sequence, command_type, outcome_code, mapped_lifecycle_status,
+            confirmation_method, operator_ref, corrects_outcome_record_id, correction_reason_code, runtime_mode,
+            resulting_campaign_aggregate_version)
+         VALUES ('11111111-1111-4111-8111-000000000011', $1, 1, 'record', 'cancelled', 'Paused', 'user_attestation', $2, NULL, NULL, 'synthetic', 1)`,
+        [CAMPAIGN_NON_TERMINAL_CHECK, OPERATOR_REF]
+      ),
+      /violates check constraint/i
+    );
+
+    const after = await writerPool.query(
+      'SELECT count(*)::int AS count FROM leasemind_app.campaign_outcome_event_log WHERE campaign_id = $1',
+      [CAMPAIGN_NON_TERMINAL_CHECK]
+    );
+    assert.equal(after.rows[0].count, before.rows[0].count, 'no partial row must be written after the rejection');
+  } finally {
+    await writerPool.end();
+  }
+});
+
+// ---------------------------------------------------------------------------
 // 4. Cross-Campaign references are rejected (composite FKs).
 // ---------------------------------------------------------------------------
 
@@ -871,6 +976,50 @@ test('maintainer: can SELECT the rebuild-relevant event-log columns and fully ma
     await maintenancePool.end();
   }
 });
+
+// ---------------------------------------------------------------------------
+// 6b. Maintenance/rebuild privilege gate (ADR-0010 §8/§12): the FULL
+// lmapp_maintainer profile, not just the outcome-specific additions above --
+// pre-existing Campaign-object grants (migration 003) needed for the
+// coordinated stream-head lock/lifecycle rebuild, plus the exact
+// column-level Campaign Outcome grants (migration 011), plus every negative
+// boundary (no DELETE/TRUNCATE, zero access to the idempotency mapping, zero
+// access to the public view, zero dangerous role membership). Actually
+// called by the rebuild CLI (campaign-outcome-rebuild-cli.ts) before any
+// lock/DML -- see campaignOutcomeRebuild.test.ts for that end-to-end proof.
+// ---------------------------------------------------------------------------
+
+test('the Campaign Outcome maintenance privilege check passes for the real maintainer connection', { skip: !hasCampaignOutcomeDatabase }, async () => {
+  const maintenancePool = pool(MAINTENANCE_DATABASE_URL);
+  try {
+    await assert.doesNotReject(verifyRuntimeCampaignOutcomeMaintainerPrivileges(maintenancePool));
+  } finally {
+    await maintenancePool.end();
+  }
+});
+
+const OTHER_MAINTAINER_CONNECTIONS: Array<[string, string | undefined]> = [
+  ['migrator', MIGRATION_DATABASE_URL],
+  ['api reader', API_DATABASE_URL],
+  ['campaign writer', COMMAND_DATABASE_URL],
+  ['ta writer', TA_DATABASE_URL],
+  ['analysis writer', ANALYSIS_DATABASE_URL],
+  ['analysis worker', ANALYSIS_WORKER_DATABASE_URL],
+  ['evidence revocation writer', EVIDENCE_REVOCATION_DATABASE_URL],
+  ['campaign outcome writer', CAMPAIGN_OUTCOME_DATABASE_URL],
+  ['bootstrap/admin', BOOTSTRAP_DATABASE_URL]
+];
+
+for (const [label, connectionString] of OTHER_MAINTAINER_CONNECTIONS) {
+  test(`the Campaign Outcome maintenance privilege check rejects the ${label} connection`, { skip: !hasCampaignOutcomeDatabase }, async () => {
+    const rolePool = pool(connectionString);
+    try {
+      await assert.rejects(verifyRuntimeCampaignOutcomeMaintainerPrivileges(rolePool), DatabasePrivilegeViolation);
+    } finally {
+      await rolePool.end();
+    }
+  });
+}
 
 test('no other application role has any Campaign Outcome write privilege', { skip: !hasCampaignOutcomeDatabase }, async () => {
   for (const [role] of [

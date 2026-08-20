@@ -19,6 +19,7 @@
     "migrate:down": "npm run migrate:down --workspace apps/api",
     "seed": "npm run seed --workspace apps/api",
     "revoke-evidence-dataset": "npm run revoke-evidence-dataset --workspace apps/api --",
-    "campaign-outcome": "npm run campaign-outcome --workspace apps/api --"
+    "campaign-outcome": "npm run campaign-outcome --workspace apps/api --",
+    "campaign-outcome-rebuild": "npm run campaign-outcome-rebuild --workspace apps/api --"
   }
 }

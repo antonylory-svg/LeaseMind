@@ -368,6 +368,48 @@ export async function appendCampaignStatusEvent(
   }
 }
 
+/** Transaction-aware core of rebuildCampaignProjection (below). Runs
+ * entirely on an already-open client; the caller owns the transaction (and,
+ * for the coordinated Campaign Outcome rebuild in campaignOutcomeRebuild.ts,
+ * the campaign_stream_head row lock). A Campaign with no events is a
+ * no-op. */
+export async function rebuildCampaignProjectionOnClient(client: pg.PoolClient, campaignId: string): Promise<void> {
+  const latest = await client.query<{ event_sequence: string; payload: { status: CampaignStatus }; occurred_at: Date }>(
+    `SELECT event_sequence, payload, occurred_at
+       FROM leasemind_app.campaign_event_log
+      WHERE campaign_id = $1
+      ORDER BY event_sequence DESC
+      LIMIT 1`,
+    [campaignId]
+  );
+
+  if (latest.rowCount === 0) {
+    return;
+  }
+
+  const first = await client.query<{ occurred_at: Date }>(
+    `SELECT occurred_at
+       FROM leasemind_app.campaign_event_log
+      WHERE campaign_id = $1
+      ORDER BY event_sequence ASC
+      LIMIT 1`,
+    [campaignId]
+  );
+
+  const latestRow = latest.rows[0];
+  await client.query(
+    `INSERT INTO leasemind_app.campaign_current_state_projection
+       (campaign_id, status, aggregate_version, created_at, updated_at)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (campaign_id) DO UPDATE
+       SET status = EXCLUDED.status,
+           aggregate_version = EXCLUDED.aggregate_version,
+           created_at = EXCLUDED.created_at,
+           updated_at = EXCLUDED.updated_at`,
+    [campaignId, latestRow.payload.status, latestRow.event_sequence, first.rows[0].occurred_at, latestRow.occurred_at]
+  );
+}
+
 /** Recomputes campaign_current_state_projection for one campaign from its
  * Event Log stream. Read-only with respect to campaign_event_log. A no-op
  * if the campaign has no events. */
@@ -375,43 +417,7 @@ export async function rebuildCampaignProjection(pool: pg.Pool, campaignId: strin
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-
-    const latest = await client.query<{ event_sequence: string; payload: { status: CampaignStatus }; occurred_at: Date }>(
-      `SELECT event_sequence, payload, occurred_at
-         FROM leasemind_app.campaign_event_log
-        WHERE campaign_id = $1
-        ORDER BY event_sequence DESC
-        LIMIT 1`,
-      [campaignId]
-    );
-
-    if (latest.rowCount === 0) {
-      await client.query('ROLLBACK');
-      return;
-    }
-
-    const first = await client.query<{ occurred_at: Date }>(
-      `SELECT occurred_at
-         FROM leasemind_app.campaign_event_log
-        WHERE campaign_id = $1
-        ORDER BY event_sequence ASC
-        LIMIT 1`,
-      [campaignId]
-    );
-
-    const latestRow = latest.rows[0];
-    await client.query(
-      `INSERT INTO leasemind_app.campaign_current_state_projection
-         (campaign_id, status, aggregate_version, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (campaign_id) DO UPDATE
-         SET status = EXCLUDED.status,
-             aggregate_version = EXCLUDED.aggregate_version,
-             created_at = EXCLUDED.created_at,
-             updated_at = EXCLUDED.updated_at`,
-      [campaignId, latestRow.payload.status, latestRow.event_sequence, first.rows[0].occurred_at, latestRow.occurred_at]
-    );
-
+    await rebuildCampaignProjectionOnClient(client, campaignId);
     await client.query('COMMIT');
   } catch (error) {
     await rollbackSafely(client);

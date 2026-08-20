@@ -1024,6 +1024,125 @@ test('correct on the current target succeeds, repoints the current projection, a
   }
 });
 
+test('correct on a failure-class effective outcome to a success code flips lifecycle Failed -> Completed (CO-C-025), and replaying the correction key creates no new rows', { skip: SKIP }, async () => {
+  const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
+  const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
+  const commandPool = new pg.Pool({ connectionString: COMMAND_DATABASE_URL, max: 2 });
+  const writerPool = new pg.Pool({ connectionString: CAMPAIGN_OUTCOME_DATABASE_URL, max: 2 });
+  const readerPool = new pg.Pool({ connectionString: API_DATABASE_URL, max: 1 });
+  try {
+    const fixture = await createLaunchedFixture(taPool, analysisPool, commandPool, 'co-c-025');
+    const v1 = await currentVersion(commandPool, fixture.campaignId);
+    const record = await executeCampaignOutcomeCommand(writerPool, buildCommand({ campaignId: fixture.campaignId, expectedCampaignVersion: v1, outcomeCode: 'cancelled' }));
+    assert.equal(record.record.mappedLifecycleStatus, 'Failed');
+    const campaignAfterRecord = await commandPool.query<{ status: string }>(
+      'SELECT status FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [fixture.campaignId]
+    );
+    assert.equal(campaignAfterRecord.rows[0].status, 'Failed');
+
+    const v2 = await currentVersion(commandPool, fixture.campaignId);
+    const correctionCommand = buildCommand({
+      campaignId: fixture.campaignId,
+      expectedCampaignVersion: v2,
+      action: 'correct',
+      outcomeCode: 'success_via_leasemind',
+      correctsOutcomeRecordId: record.record.outcomeRecordId,
+      correctionReasonCode: 'OUTCOME_CLASSIFICATION_CORRECTED'
+    });
+    const correction = await executeCampaignOutcomeCommand(writerPool, correctionCommand);
+
+    assert.equal(correction.isReplay, false);
+    assert.equal(correction.record.mappedLifecycleStatus, 'Completed');
+    assert.equal(correction.record.commandType, 'correct');
+    assert.equal(correction.record.outcomeSequence, '2');
+    assert.equal(correction.record.correctsOutcomeRecordId, record.record.outcomeRecordId);
+
+    // Current pointer now references the correction, not the original record.
+    const pointer = await writerPool.query(
+      'SELECT current_outcome_record_id FROM leasemind_app.campaign_outcome_current_projection WHERE campaign_id = $1',
+      [fixture.campaignId]
+    );
+    assert.equal(pointer.rows[0].current_outcome_record_id, correction.record.outcomeRecordId);
+
+    // The correction's own idempotency mapping is durably created, and maps
+    // its exact idempotency_key to this exact (campaign_id, outcome_record_id) --
+    // not the original record's.
+    const mappingAfterCorrection = await writerPool.query<{ campaign_id: string; outcome_record_id: string }>(
+      'SELECT campaign_id, outcome_record_id FROM leasemind_app.campaign_outcome_idempotency_mapping WHERE idempotency_key = $1',
+      [correctionCommand.idempotencyKey]
+    );
+    assert.equal(mappingAfterCorrection.rowCount, 1, 'the correction command must create exactly one mapping row for its own idempotency_key');
+    assert.deepEqual(mappingAfterCorrection.rows[0], {
+      campaign_id: fixture.campaignId,
+      outcome_record_id: correction.record.outcomeRecordId
+    });
+
+    // Lifecycle atomically flips Failed -> Completed; version increases by
+    // exactly 1; this is terminal-to-terminal -- never an active or Paused
+    // status.
+    const v3 = await currentVersion(commandPool, fixture.campaignId);
+    assert.equal(v3, versionPlus(v2, 1), 'aggregate version must increase by exactly 1 for the correction');
+    const campaignAfterCorrection = await commandPool.query<{ status: string }>(
+      'SELECT status FROM leasemind_app.campaign_current_state_projection WHERE campaign_id = $1',
+      [fixture.campaignId]
+    );
+    assert.equal(campaignAfterCorrection.rows[0].status, 'Completed');
+    const nonTerminalStatuses = [
+      'Analyzing', 'Strategy Building', 'Searching', 'Qualifying', 'Negotiating', 'Viewing', 'Deal Support', 'Paused'
+    ];
+    assert.ok(
+      !nonTerminalStatuses.includes(campaignAfterCorrection.rows[0].status),
+      'correction must never leave the Campaign in a non-terminal status'
+    );
+
+    // The original record itself is untouched: immutable, still sequence 1.
+    const originalRow = await writerPool.query<{ outcome_sequence: string; command_type: string }>(
+      'SELECT outcome_sequence::text AS outcome_sequence, command_type FROM leasemind_app.campaign_outcome_event_log WHERE outcome_record_id = $1',
+      [record.record.outcomeRecordId]
+    );
+    assert.equal(originalRow.rows[0].outcome_sequence, '1');
+    assert.equal(originalRow.rows[0].command_type, 'record');
+
+    // The read model reflects the corrected effective outcome and
+    // is_corrected=true immediately.
+    const detail = await readerPool.query<{ outcome_code: string; is_corrected: boolean }>(
+      'SELECT outcome_code, is_corrected FROM leasemind_app.campaign_outcome_public_projection WHERE campaign_id = $1',
+      [fixture.campaignId]
+    );
+    assert.deepEqual(detail.rows[0], { outcome_code: 'success_via_leasemind', is_corrected: true });
+
+    // Replaying the same correction idempotency key creates no new
+    // rows/events, does not change the Campaign version, and -- explicitly,
+    // not just implied by row counts -- never reassigns the mapping to a
+    // different outcome_record_id: exactly one mapping row for this key,
+    // before and after replay, both pointing at the same correction.
+    const mappingBeforeReplay = await writerPool.query<{ campaign_id: string; outcome_record_id: string }>(
+      'SELECT campaign_id, outcome_record_id FROM leasemind_app.campaign_outcome_idempotency_mapping WHERE idempotency_key = $1',
+      [correctionCommand.idempotencyKey]
+    );
+    assert.equal(mappingBeforeReplay.rowCount, 1);
+    assert.equal(mappingBeforeReplay.rows[0].outcome_record_id, correction.record.outcomeRecordId);
+
+    const beforeReplayCount = await outcomeRowCount(writerPool, fixture.campaignId);
+    const replay = await executeCampaignOutcomeCommand(writerPool, correctionCommand);
+    assert.equal(replay.isReplay, true);
+    assert.equal(replay.record.outcomeRecordId, correction.record.outcomeRecordId);
+    assert.equal(await outcomeRowCount(writerPool, fixture.campaignId), beforeReplayCount, 'replay must not create a new outcome row');
+    const v4 = await currentVersion(commandPool, fixture.campaignId);
+    assert.equal(v4, v3, 'replay must not change the Campaign version');
+
+    const mappingAfterReplay = await writerPool.query<{ campaign_id: string; outcome_record_id: string }>(
+      'SELECT campaign_id, outcome_record_id FROM leasemind_app.campaign_outcome_idempotency_mapping WHERE idempotency_key = $1',
+      [correctionCommand.idempotencyKey]
+    );
+    assert.equal(mappingAfterReplay.rowCount, 1, 'replay must never create a second mapping row for the same idempotency_key');
+    assert.deepEqual(mappingAfterReplay.rows[0], mappingBeforeReplay.rows[0], 'replay must never reassign the mapping to a different outcome_record_id');
+  } finally {
+    await Promise.all([taPool.end(), analysisPool.end(), commandPool.end(), writerPool.end(), readerPool.end()]);
+  }
+});
+
 test('a correction that keeps the same mapped lifecycle status still creates a new status event and advances the version', { skip: SKIP }, async () => {
   const taPool = new pg.Pool({ connectionString: TA_DATABASE_URL, max: 2 });
   const analysisPool = new pg.Pool({ connectionString: ANALYSIS_DATABASE_URL, max: 2 });
