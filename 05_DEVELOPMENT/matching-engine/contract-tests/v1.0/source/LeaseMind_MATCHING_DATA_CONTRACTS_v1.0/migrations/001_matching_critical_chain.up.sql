@@ -1430,6 +1430,76 @@ as $$
   select regexp_replace(normalize(coalesce(p_value, ''), NFKC), '[^0-9]', '', 'g');
 $$;
 
+-- SEVENTH-B02 corrective pass (DLP forbidden-KEY parity), V2: the same class
+-- of punctuation/format/whitespace evasion characters already normalized
+-- away for scalar VALUES (normalize_dlp_scalar) is normalized away here for
+-- object KEYS. Mirrors leasemind_security.normalizeDlpKey(text) in
+-- tests/synthetic_service_models.mjs -- identical normalization order
+-- (NFKC, then case-fold, then strip evasion characters).
+create function leasemind_security.normalize_dlp_key(p_key text)
+returns text
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+declare
+  evasion_pattern text := '[-_./' || chr(160) || chr(8239) || chr(8203) || chr(8204) || chr(8205) || '[:space:]]';
+begin
+  return regexp_replace(
+    lower(normalize(coalesce(p_key, ''), NFKC)),
+    evasion_pattern,
+    '',
+    'g'
+  );
+end;
+$$;
+
+-- DLP_FORBIDDEN_KEY_MATCH_V2: the V1 exact-match strategy was fail-open --
+-- it missed composite/prefixed/suffixed identifier keys such as
+-- customer_email, contact_email, user_phone, passport_data, bank_account,
+-- payment_card, delivery_address or full_name_value, which never equal a
+-- bare forbidden token exactly. V2 matches a forbidden token as a
+-- SUBSTRING of the normalized key, which catches all such composites,
+-- gated by a closed, exact, normative allowlist of the only real required
+-- schema field names that would otherwise be false-positively blocked.
+-- The allowlist was derived by exhaustively checking every `properties`
+-- key across openapi.yaml and asyncapi.yaml against all 8 forbidden
+-- tokens (not hand-picked): exactly four fields exist and all four belong
+-- to the same normative concept (Previous Contact) --
+-- previous_contact_decision_id, previous_contact_decision_version,
+-- previous_contact_policy_hash, previous_contact_policy_version. No other
+-- forbidden token appears as a substring of any of the 128 distinct
+-- schema field names. Mirrors leasemind_security.isForbiddenDlpKey(...) /
+-- DLP_NORMATIVE_KEY_ALLOWLIST in tests/synthetic_service_models.mjs --
+-- identical allowlist (normalized the same way) and identical 8-token set.
+create function leasemind_security.is_forbidden_dlp_key(p_key text)
+returns boolean
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+declare
+  normalized text;
+  token text;
+begin
+  normalized := leasemind_security.normalize_dlp_key(p_key);
+  if normalized = any(array[
+    'previouscontactdecisionid',
+    'previouscontactdecisionversion',
+    'previouscontactpolicyhash',
+    'previouscontactpolicyversion'
+  ]) then
+    return false;
+  end if;
+  foreach token in array array['email','phone','passport','bank','card','address','contact','fullname'] loop
+    if position(token in normalized) > 0 then
+      return true;
+    end if;
+  end loop;
+  return false;
+end;
+$$;
+
 create function leasemind_security.scan_dlp_scalar(p_value jsonb)
 returns void
 language plpgsql
@@ -1461,9 +1531,7 @@ begin
   when 'object' then
     if exists (
       select 1 from jsonb_object_keys(p_value) as key
-       where lower(key) = any(array[
-         'email','phone','passport','bank','card','address','contact','full_name'
-       ])
+       where leasemind_security.is_forbidden_dlp_key(key)
     ) then
       raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
       raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
@@ -1821,6 +1889,8 @@ revoke all on function leasemind_security.validate_event_payload(text, text, jso
 revoke all on function leasemind_security.validate_no_direct_identifiers(jsonb) from public;
 revoke all on function leasemind_security.is_valid_rfc3339_timestamp(text) from public;
 revoke all on function leasemind_security.normalize_dlp_scalar(text) from public;
+revoke all on function leasemind_security.normalize_dlp_key(text) from public;
+revoke all on function leasemind_security.is_forbidden_dlp_key(text) from public;
 revoke all on function leasemind_security.scan_dlp_scalar(jsonb) from public;
 
 create function validate_event_outbox_domain()
@@ -2221,6 +2291,28 @@ grant execute on function leasemind_security.is_valid_rfc3339_timestamp(text) to
   leasemind_reveal_writer;
 
 grant execute on function leasemind_security.normalize_dlp_scalar(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.normalize_dlp_key(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.is_forbidden_dlp_key(text) to
   leasemind_guard_owner,
   leasemind_payer_writer,
   leasemind_participation_writer,

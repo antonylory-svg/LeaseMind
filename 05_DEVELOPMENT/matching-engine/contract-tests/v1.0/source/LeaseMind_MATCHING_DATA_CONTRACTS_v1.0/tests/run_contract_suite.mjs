@@ -11,10 +11,15 @@ import {
   IdempotencyStore, RevealGuardModel, RevealTokenStore, classifySchemaChange,
   containsDirectIdentifier, cryptoUnlink, resolveTrustedRevealContext,
   transitionRecord, validateFinancialIntent, validateLeaseSet,
-  canonicalJson, sha256, DELETION_ACT_DOMAIN_TAG
+  canonicalJson, sha256, DELETION_ACT_DOMAIN_TAG,
+  normalizeDlpKey, isForbiddenDlpKey, DLP_NORMATIVE_KEY_ALLOWLIST
 } from './synthetic_service_models.mjs';
 import {
-  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS, computeDlpMatrixCoverage
+  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS,
+  DLP_FORBIDDEN_KEY_VECTORS, DLP_SAFE_KEY_CONTROL_VECTORS,
+  DLP_SAFE_ORDINARY_KEY_VECTORS, DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS,
+  DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS,
+  computeDlpMatrixCoverage
 } from './fixtures/dlp_golden_vectors.mjs';
 
 const loadYaml = async path => YAML.parse(await readFile(new URL(path, import.meta.url), 'utf8'));
@@ -382,6 +387,66 @@ await test('CT-023', 'Direct identifiers violate event DLP classifier', 'service
       `golden safe control accepted-expected but rejected: ${vector.id}`);
   }
 
+  // SEVENTH-B02 corrective pass: forbidden-KEY parity. Malicious key vectors
+  // are injected as a top-level object key (mirrors the pre-existing
+  // 'forbidden-key' PG-026 probe shape); safe-key controls are checked the
+  // same way -- containsDirectIdentifier has no payload-shape allowlist to
+  // route around, unlike the PostgreSQL probe in PG-026.
+  for(const vector of DLP_FORBIDDEN_KEY_VECTORS){
+    assert.equal(containsDirectIdentifier({[vector.key]: 'synthetic-marker-value'}), true,
+      `golden forbidden-key vector accepted-expected-rejected but was accepted: ${vector.id} (${JSON.stringify(vector.key)})`);
+  }
+  for(const vector of DLP_SAFE_KEY_CONTROL_VECTORS){
+    assert.equal(containsDirectIdentifier({[vector.key]: 'synthetic-marker-value'}), false,
+      `golden safe-key control rejected-expected-accepted but was rejected: ${vector.id} (${vector.key})`);
+  }
+  // DLP_FORBIDDEN_KEY_MATCH_V2: ordinary real field names with no forbidden
+  // substring must still be accepted (substring scan does not over-trigger).
+  for(const vector of DLP_SAFE_ORDINARY_KEY_VECTORS){
+    assert.equal(containsDirectIdentifier({[vector.key]: 'synthetic-marker-value'}), false,
+      `golden safe ordinary-key vector rejected-expected-accepted but was rejected: ${vector.id} (${vector.key})`);
+  }
+  // Composite/prefixed/suffixed keys -- the exact class V1's exact-match
+  // strategy missed. Every one MUST now be rejected.
+  for(const vector of DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS){
+    assert.equal(containsDirectIdentifier({[vector.key]: 'synthetic-marker-value'}), true,
+      `golden composite-key vector accepted-expected-rejected but was accepted: ${vector.id} (${vector.key})`);
+  }
+  for(const vector of DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS){
+    assert.equal(containsDirectIdentifier(vector.value), true,
+      `golden composite-container vector accepted-expected-rejected but was accepted: ${vector.id}`);
+  }
+
+  // Permanent in-suite regression proof (independent of any temp-copy
+  // mutation run elsewhere): a literal reconstruction of the OLD V1
+  // exact-only strategy would (a) miss every composite key above and
+  // (b) still correctly accept the allowlist exceptions only because they
+  // happen to equal an allowlist entry exactly, not because of the
+  // allowlist mechanism itself. This proves the V2 substring+allowlist
+  // strategy is doing real, non-vacuous work over the composite corpus.
+  const oldExactOnlyTokens = ['email','phone','passport','bank','card','address','contact','fullname'];
+  const oldExactOnlyIsForbidden = key => oldExactOnlyTokens.includes(normalizeDlpKey(key));
+  let exactOnlyWouldHaveMissed = 0;
+  for(const vector of DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS){
+    if(!oldExactOnlyIsForbidden(vector.key)) exactOnlyWouldHaveMissed += 1;
+  }
+  assert.equal(exactOnlyWouldHaveMissed, DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS.length,
+    'V1 exact-only regression check: every composite vector must be a case the old strategy would have missed');
+
+  // Allowlist load-bearing proof: without the allowlist exception, plain
+  // substring matching WOULD reject all four normative safe-key vectors.
+  const rawForbiddenTokens = ['email','phone','passport','bank','card','address','contact','full_name'];
+  let allowlistPreventedRejections = 0;
+  for(const vector of DLP_SAFE_KEY_CONTROL_VECTORS){
+    const normalized = normalizeDlpKey(vector.key);
+    const wouldBeRejectedWithoutAllowlist = rawForbiddenTokens.some(token => normalized.includes(normalizeDlpKey(token)));
+    assert.ok(DLP_NORMATIVE_KEY_ALLOWLIST.includes(normalized),
+      `${vector.id}: expected in DLP_NORMATIVE_KEY_ALLOWLIST`);
+    if(wouldBeRejectedWithoutAllowlist) allowlistPreventedRejections += 1;
+  }
+  assert.equal(allowlistPreventedRejections, DLP_SAFE_KEY_CONTROL_VECTORS.length,
+    'allowlist regression check: every safe-key vector must be a case plain substring matching would have rejected');
+
   const coverage = computeDlpMatrixCoverage();
   for(const klass of Object.keys(coverage.classCoverage)){
     assert.equal(coverage.classCoverage[klass], coverage.expectedSeparators,
@@ -389,6 +454,14 @@ await test('CT-023', 'Direct identifiers violate event DLP classifier', 'service
     assert.equal(coverage.containerCoverage[klass], coverage.expectedContainers,
       `DLP golden corpus incomplete for class ${klass}: ${coverage.containerCoverage[klass]}/${coverage.expectedContainers} container vectors`);
   }
+  for(const token of Object.keys(coverage.keyCoverage)){
+    assert.equal(coverage.keyCoverage[token], coverage.expectedKeyVariants,
+      `DLP golden key corpus incomplete for token ${token}: ${coverage.keyCoverage[token]}/${coverage.expectedKeyVariants} variants`);
+  }
+  assert.equal(Object.keys(coverage.compositeCoverage).length, 8, 'expected exactly 8 composite key vectors');
+  assert.ok(Object.values(coverage.compositeCoverage).every(Boolean), 'every composite key vector must be present');
+  assert.ok(coverage.compositeContainerCoverage['nested-object'] && coverage.compositeContainerCoverage.array,
+    'composite corpus must cover both nested-object and array containers');
   assert.ok(coverage.isComplete, 'DLP golden corpus matrix is not complete');
 
   return {
@@ -397,7 +470,16 @@ await test('CT-023', 'Direct identifiers violate event DLP classifier', 'service
     golden_malicious_vectors:DLP_MALICIOUS_VECTORS.length,
     golden_safe_vectors:DLP_SAFE_CONTROL_VECTORS.length,
     golden_matrix_coverage:coverage.classCoverage,
-    golden_container_coverage:coverage.containerCoverage
+    golden_container_coverage:coverage.containerCoverage,
+    golden_forbidden_key_vectors:DLP_FORBIDDEN_KEY_VECTORS.length,
+    golden_safe_key_vectors:DLP_SAFE_KEY_CONTROL_VECTORS.length,
+    golden_safe_ordinary_key_vectors:DLP_SAFE_ORDINARY_KEY_VECTORS.length,
+    golden_composite_key_vectors:DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS.length,
+    golden_composite_container_vectors:DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS.length,
+    golden_key_coverage:coverage.keyCoverage,
+    normative_key_allowlist:DLP_NORMATIVE_KEY_ALLOWLIST,
+    exact_only_regression_misses:exactOnlyWouldHaveMissed,
+    allowlist_load_bearing_proofs:allowlistPreventedRejections
   };
 });
 await test('CT-024', 'Crypto-unlink preserves immutable hashes and removes PII linkage', 'service_behavior', () => {

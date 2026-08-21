@@ -80,6 +80,21 @@
 | `SIXTH-B04` — token redemption не создавал Attempt атомарно и доверял result hash | 5–8; migration/service/PostgreSQL suite | Сигнатура больше не принимает result/hash. SECURITY DEFINER transaction создаёт immutable Attempt, server-owned result и SHA-256, затем погашает token; same-key replay возвращает тот же Attempt. Выполнены rollback, two-connection race и failure injection до/после DB side effects | Token без Attempt и caller-controlled result невозможны |
 | `SIXTH-B05` — CT semantic evidence оставалась шире probes | 4, 8, 10; AsyncAPI/evidence runners | Добавлены semantic evidence requirements/counters и self-tests. `PG-014` делает duplicate inbox insert; AsyncAPI содержит 33 routing rows; `PG-027` делает пять отдельных mismatches; `CT-024` проверяет exact retention tombstone allowlist | Missing/undersized evidence получает `BLOCKED`, даже если dependency ID присутствует и имеет `PASS` |
 
+### 1.6. Change Log седьмой проверки DEVELOPMENT и corrective pass от 2026-08-20
+
+| Блокер | Изменённые разделы и артефакты | Исправление | Влияние на gate |
+| --- | --- | --- | --- |
+| `SEVENTH-B01` — UUID contract разрешал версии 1–8 вместо только v4/v7 | 2.1, 4–5, 8, 10; OpenAPI/AsyncAPI/DB regex | Введён переиспользуемый `UuidV4OrV7` (`format: uuid` + pattern на version nibble `[47]`) во всех OpenAPI/AsyncAPI uuid-полях; DB `validate_event_payload` regex приведён к тому же диапазону. Positive v7 и negative v1/v2/v3/v5/v6/v8 probes на каждом uuid-поле | Запрещённые версии UUID отклоняются на всех трёх слоях |
+| `SEVENTH-B02` — DLP-классификаторы значений расходились на нестандартных разделителях | 5, 8, 10; DDL/service classifier | Унифицирована normalize-стратегия значений (`normalize_dlp_scalar`, NFKC + digit-strip) в JS и PostgreSQL; единый golden corpus (51 malicious + 5 safe value vectors, полная 15-разделительная матрица) исполняется обоими слоями | Service/DB parity для VALUE-классификации подтверждена |
+| `SEVENTH-B03` — `redeem_reveal_token` принимал `p_redeemed_at` от вызывающей стороны | 3, 5–8; migration/service/PostgreSQL suite | Параметр удалён из сигнатуры (5→4 аргумента); время редемпшна вычисляется один раз внутри транзакции после всех locks (`clock_timestamp()`) | Backdating погашения технически невозможен — параметра для этого больше нет |
+| `SEVENTH-B04` — Redemption не блокировал guard/lease rows перед commit | 5, 8; `redeem_reveal_token`/`apply_safety_critical_invalidation` | Единый lock order (token → lease, упорядоченно → guard), зеркальный обеим операциям; race в обоих направлениях (invalidation-first, redemption-first) доказан two-connection тестами с barrier по `pg_stat_activity` | Устранена гонка redemption/invalidation |
+| `SEVENTH-B05` — `CT-028` не проверял соответствие payload/schema фактическому `event_type` | 4, 8, 10; AsyncAPI/evidence runner | `resolveConsumerBinding` разрешает `consumer_operation → channel → message → payload schema → event_type` исключительно от routing table; 264 ordered mismatch probes, structural-indistinguishability guard, explicit negative swap self-test | Неверная маршрутизация обнаруживается машинно, а не только по существованию operation |
+| `SEVENTH-B06` — `cryptoUnlink` принимал caller-supplied `deletion_act_hash` | 5, 7–8, 10; service model/evidence | Hash вычисляется server-side из domain-separated canonical preimage (`unlink_operation_id`, `deletion_category`, `policy_version`, `deleted_at`); caller-supplied значение никогда не читается. 6 caller-controlled-hash probes, independent recompute, hash-reuse probe | Запрещённый stable source hash не может быть сохранён как deletion-act hash |
+| DLP forbidden-KEY parity, V1→V2 (corrective pass) | 5, 8, 10; DDL/service classifier/golden corpus | V1 (exact-match) заменён на `DLP_FORBIDDEN_KEY_MATCH_V2`: forbidden token ищется как substring нормализованного ключа, кроме закрытого нормативного allowlist (`previous_contact_decision_id`/`_version`, `previous_contact_policy_hash`/`_version` — exhaustively проверено по всем 128 schema field names). 112 case/evasion vectors, 8 composite/prefixed/suffixed vectors (`customer_email`, `contact_email` и др.), 4 allowlist-safe и 4 ordinary-safe controls, 0 parity mismatches | Composite/prefixed identifier keys (`customer_email`, `contact_email`, `user_phone`, `passport_data`, `bank_account`, `payment_card`, `delivery_address`, `full_name_value`) больше не обходят DLP |
+| Controlled ZIP/manifest не отражали ни одно из вышеперечисленных исправлений | 8, 10; `contract-tests/v1.0/artifacts/` | Воспроизводимый packaging tool (`contract-tests/v1.0/tools/build_controlled_zip.mjs`) пересобирает ZIP из актуального `source/`; два последовательных запуска дают побайтово идентичный результат | Controlled set синхронизирован с рабочей копией; статус — `candidate for eighth DEVELOPMENT review`, не `APPROVED` |
+
+Версия `1.0` и статус `Proposal for DEVELOPMENT review` не изменены. Продуктовая, юридическая и платёжная механика, а также `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` не затрагивались.
+
 ---
 
 ## 2. Общие типы и правила
@@ -334,12 +349,12 @@ components:
       name: encounter_id
       in: path
       required: true
-      schema: {type: string, format: uuid}
+      schema: {$ref: '#/components/schemas/UuidV4OrV7'}
     PaymentIntentId:
       name: payment_intent_id
       in: path
       required: true
-      schema: {type: string, format: uuid}
+      schema: {$ref: '#/components/schemas/UuidV4OrV7'}
     RevealTokenCredential:
       name: Reveal-Token
       in: header
@@ -350,12 +365,12 @@ components:
       name: introduction_record_id
       in: path
       required: true
-      schema: {type: string, format: uuid}
+      schema: {$ref: '#/components/schemas/UuidV4OrV7'}
     DisputeId:
       name: dispute_id
       in: path
       required: true
-      schema: {type: string, format: uuid}
+      schema: {$ref: '#/components/schemas/UuidV4OrV7'}
     IdempotencyKey:
       name: Idempotency-Key
       in: header
@@ -368,6 +383,10 @@ components:
       schema: {type: integer, format: int64, minimum: 0}
 
   schemas:
+    UuidV4OrV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
     AssignPayerCommand:
       type: object
       additionalProperties: false
@@ -379,12 +398,12 @@ components:
         - assignment_rule_version
         - accepted_event_id
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_pair_id: {type: string, format: uuid}
-        payer_party_id: {type: string, format: uuid}
-        payer_campaign_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_pair_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_campaign_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         assignment_rule_version: {type: string, minLength: 1}
-        accepted_event_id: {type: string, format: uuid}
+        accepted_event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
 
     CreateAcceptanceCommand:
       type: object
@@ -414,28 +433,28 @@ components:
         - signature_evidence_ref
         - accepted_at
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_id: {type: string, format: uuid}
-        party_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         party_role: {type: string, enum: [PAYER, NON_PAYER]}
-        payer_party_id: {type: string, format: uuid}
-        payer_campaign_id: {type: string, format: uuid}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_campaign_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         identity_version: {type: integer, format: int64, minimum: 1}
         identity_method: {type: string, minLength: 1, maxLength: 64}
-        identity_evidence_ref: {type: string, format: uuid}
+        identity_evidence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
         authority_version: {type: integer, format: int64, minimum: 1}
         authority_status: {type: string, enum: [VERIFIED, NOT_REQUIRED]}
-        authority_evidence_ref: {type: string, format: uuid}
+        authority_evidence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
         terms_version: {type: string, minLength: 1}
         terms_hash: {$ref: '#/components/schemas/Sha256'}
         consent_version: {type: string, minLength: 1}
         consent_hash: {$ref: '#/components/schemas/Sha256'}
         payer_notice_version: {type: string, minLength: 1}
-        confirmed_account_id: {type: string, format: uuid}
-        signature_operation_id: {type: string, format: uuid}
+        confirmed_account_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        signature_operation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         signed_action: {type: string, minLength: 1, maxLength: 128}
         signature_verification_result: {const: VERIFIED}
-        signature_evidence_ref: {type: string, format: uuid}
+        signature_evidence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
         accepted_at: {type: string, format: date-time}
 
     CreateAdvanceIntentCommand:
@@ -452,8 +471,8 @@ components:
         - debit_amount_minor
         - currency
       properties:
-        encounter_id: {type: string, format: uuid}
-        payer_party_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 1}
         fencing_token: {type: integer, format: int64, minimum: 1}
         payment_path: {$ref: '#/components/schemas/PaymentPath'}
@@ -469,8 +488,8 @@ components:
       additionalProperties: false
       required: [encounter_id, party_id, reason_code, payer_assignment_version]
       properties:
-        encounter_id: {type: string, format: uuid}
-        party_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         reason_code: {enum: [SECOND_PARTY_NOT_PAYER, PAYER_ASSIGNMENT_CHANGED, PRE_REVEAL_VOID]}
         payer_assignment_version: {type: integer, format: int64, minimum: 1}
 
@@ -487,7 +506,7 @@ components:
         - expires_at
         - lease_state
       properties:
-        lease_id: {type: string, format: uuid}
+        lease_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         source_system:
           enum:
             - PARTICIPATION_SERVICE
@@ -496,7 +515,7 @@ components:
             - PAYMENT_FISCAL_LEDGER
             - IDENTITY_AUTHORITY_REGISTRY
             - LAWFUL_BASIS_CONSENT_REGISTRY
-        aggregate_id: {type: string, format: uuid}
+        aggregate_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         source_version: {type: integer, format: int64, minimum: 1}
         fencing_token: {type: integer, format: int64, minimum: 1}
         issued_at: {type: string, format: date-time}
@@ -530,22 +549,22 @@ components:
         - delivery_policy_version
         - delivery_policy_hash
       properties:
-        introduction_record_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
-        match_pair_id: {type: string, format: uuid}
-        match_id: {type: string, format: uuid}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_pair_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         campaign_ids:
           type: array
           minItems: 1
           maxItems: 2
           uniqueItems: true
-          items: {type: string, format: uuid}
+          items: {$ref: '#/components/schemas/UuidV4OrV7'}
         campaign_versions:
           type: array
           minItems: 1
           maxItems: 2
           items: {type: integer, format: int64, minimum: 1}
-        payer_party_id: {type: string, format: uuid}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 1}
         parties:
           type: array
@@ -554,7 +573,7 @@ components:
           uniqueItems: true
           items: {$ref: '#/components/schemas/SnapshotPartyBinding'}
           description: Exactly one OWNER and one TENANT binding; the handler and deferred DDL constraints enforce exact role and party equality with the Introduction Record.
-        previous_contact_decision_id: {type: string, format: uuid}
+        previous_contact_decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         previous_contact_decision_version: {type: integer, format: int64, minimum: 1}
         previous_contact_policy_version: {type: string, minLength: 1}
         previous_contact_policy_hash: {$ref: '#/components/schemas/Sha256'}
@@ -587,13 +606,13 @@ components:
         - lawful_basis_id
         - lawful_basis_version
       properties:
-        party_id: {type: string, format: uuid}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         party_role: {type: string, enum: [OWNER, TENANT]}
-        acceptance_record_id: {type: string, format: uuid}
+        acceptance_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         acceptance_version: {type: integer, format: int64, minimum: 1}
         terms_hash: {$ref: '#/components/schemas/Sha256'}
         identity_authority_version: {type: integer, format: int64, minimum: 1}
-        lawful_basis_id: {type: string, format: uuid}
+        lawful_basis_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         lawful_basis_version: {type: integer, format: int64, minimum: 1}
 
     CreateRevealTokenCommand:
@@ -606,9 +625,9 @@ components:
         - manifest_hash
         - expires_at
       properties:
-        introduction_record_id: {type: string, format: uuid}
-        recipient_party_id: {type: string, format: uuid}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        recipient_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         manifest_hash: {$ref: '#/components/schemas/Sha256'}
         expires_at: {type: string, format: date-time}
       description: Internal mTLS command. Reveal Service MUST resolve snapshot hash, guard epoch and six leases from its trusted projection and MUST verify recipient against Introduction Record. No caller-supplied lease is authoritative.
@@ -628,10 +647,10 @@ components:
         - attempted_at
         - evidence_classification
       properties:
-        reveal_attempt_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
-        recipient_party_id: {type: string, format: uuid}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        reveal_attempt_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        recipient_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         manifest_hash: {$ref: '#/components/schemas/Sha256'}
         evidence_manifest_hash: {$ref: '#/components/schemas/Sha256'}
         delivery_policy_version: {type: string}
@@ -674,13 +693,13 @@ components:
         - decision_order
         - decided_at
       properties:
-        dispute_id: {type: string, format: uuid}
-        introduction_record_id: {type: string, format: uuid}
+        dispute_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         decision_type: {$ref: '#/components/schemas/DecisionType'}
-        reviewer_id: {type: string, format: uuid}
+        reviewer_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         reviewer_role: {type: string}
-        appointment_id: {type: string, format: uuid}
-        conflict_check_id: {type: string, format: uuid}
+        appointment_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        conflict_check_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         policy_version: {type: string}
         policy_hash: {$ref: '#/components/schemas/Sha256'}
         evidence_bundle_hash: {$ref: '#/components/schemas/Sha256'}
@@ -688,8 +707,8 @@ components:
           type: string
           format: date-time
           description: Required only for DELIVERY_CONFIRMED_BY_DECISION; the proven first sufficient delivery instant, not decision time
-        second_level_approver_id: {type: string, format: uuid}
-        financial_consequence_ref: {type: string, format: uuid}
+        second_level_approver_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        financial_consequence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
         appeal_status: {type: string, enum: [NOT_APPEALED, APPEALED, FINAL]}
         decision_order: {type: integer, format: int64, minimum: 1}
         decided_at: {type: string, format: date-time}
@@ -727,13 +746,13 @@ components:
         title: {type: string}
         status: {type: integer}
         code: {type: string}
-        correlation_id: {type: string, format: uuid}
+        correlation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         retryable: {type: boolean}
     RevealAttemptResult:
       type: object
       required: [reveal_attempt_id, operation_state, evidence_submission_required]
       properties:
-        reveal_attempt_id: {type: string, format: uuid}
+        reveal_attempt_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         operation_state: {enum: [IN_PROGRESS, SUCCEEDED, UNKNOWN]}
         evidence_submission_required: {const: true}
 
@@ -746,9 +765,9 @@ components:
             type: object
             required: [payer_resolution_aggregate_id, payer_party_id, payer_campaign_id, payer_assignment_version]
             properties:
-              payer_resolution_aggregate_id: {type: string, format: uuid}
-              payer_party_id: {type: string, format: uuid}
-              payer_campaign_id: {type: string, format: uuid}
+              payer_resolution_aggregate_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+              payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+              payer_campaign_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               payer_assignment_version: {type: integer, format: int64}
     Acceptance:
       description: Immutable acceptance record
@@ -758,7 +777,7 @@ components:
             type: object
             required: [acceptance_record_id, aggregate_version]
             properties:
-              acceptance_record_id: {type: string, format: uuid}
+              acceptance_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               aggregate_version: {type: integer, format: int64}
     AdvanceIntent:
       description: Advance intent
@@ -768,7 +787,7 @@ components:
             type: object
             required: [payment_intent_id, payment_path, operation_state]
             properties:
-              payment_intent_id: {type: string, format: uuid}
+              payment_intent_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               payment_path: {$ref: '#/components/schemas/PaymentPath'}
               operation_state: {enum: [PENDING, IN_PROGRESS, SUCCEEDED, UNKNOWN]}
     FinancialOperation:
@@ -779,7 +798,7 @@ components:
             type: object
             required: [financial_event_id, event_type, operation_state]
             properties:
-              financial_event_id: {type: string, format: uuid}
+              financial_event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               event_type: {type: string}
               operation_state: {type: string}
     RevealSnapshot:
@@ -790,7 +809,7 @@ components:
             type: object
             required: [reveal_gate_snapshot_id, snapshot_hash, valid_until, fencing_token, aggregate_version]
             properties:
-              reveal_gate_snapshot_id: {type: string, format: uuid}
+              reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               snapshot_hash: {$ref: '#/components/schemas/Sha256'}
               valid_until: {type: string, format: date-time}
               fencing_token: {type: integer, format: int64}
@@ -804,10 +823,10 @@ components:
             additionalProperties: false
             required: [reveal_token_id, reveal_token, reveal_gate_snapshot_id, recipient_party_id, expires_at]
             properties:
-              reveal_token_id: {type: string, format: uuid}
+              reveal_token_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               reveal_token: {type: string, minLength: 32, maxLength: 512}
-              reveal_gate_snapshot_id: {type: string, format: uuid}
-              recipient_party_id: {type: string, format: uuid}
+              reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+              recipient_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               expires_at: {type: string, format: date-time}
     IntroductionRecord:
       description: Current record state
@@ -817,7 +836,7 @@ components:
             type: object
             required: [introduction_record_id, record_state, aggregate_version]
             properties:
-              introduction_record_id: {type: string, format: uuid}
+              introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               record_state:
                 enum:
                   - REVEAL_COMMITTED
@@ -836,7 +855,7 @@ components:
             type: object
             required: [decision_id, decision_type, created_at]
             properties:
-              decision_id: {type: string, format: uuid}
+              decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
               decision_type: {$ref: '#/components/schemas/DecisionType'}
               created_at: {type: string, format: date-time}
     Conflict:
@@ -1019,6 +1038,10 @@ components:
     DecisionRecorded:
       payload: {$ref: '#/components/schemas/DecisionEventEnvelope'}
   schemas:
+    UuidV4OrV7:
+      type: string
+      format: uuid
+      pattern: '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[47][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$'
     EventEnvelopeBase:
       type: object
       required:
@@ -1035,14 +1058,14 @@ components:
         - payload_hash
         - data_classification
       properties:
-        event_id: {type: string, format: uuid}
+        event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         schema_version: {type: string, pattern: '^[0-9]+\.[0-9]+\.[0-9]+$'}
-        aggregate_id: {type: string, format: uuid}
+        aggregate_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         aggregate_version: {type: integer, format: int64, minimum: 1}
         occurred_at: {type: string, format: date-time}
         producer: {type: string, minLength: 1}
-        correlation_id: {type: string, format: uuid}
-        causation_id: {type: string, format: uuid}
+        correlation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        causation_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         trace_id: {type: string, minLength: 16, maxLength: 64}
         idempotency_key: {type: string, minLength: 16, maxLength: 128}
         payload_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
@@ -1068,11 +1091,11 @@ components:
       additionalProperties: false
       required: [encounter_id, match_pair_id, resolution_state, payer_assignment_version]
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_pair_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_pair_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         resolution_state: {enum: [ASSIGNED, PAYER_RESOLUTION_REQUIRED]}
-        payer_party_id: {type: string, format: uuid}
-        payer_campaign_id: {type: string, format: uuid}
+        payer_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payer_campaign_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 0}
         reason_code: {enum: [FIRST_VERIFIED_ACCEPTANCE, PAYER_ASSIGNMENT_CHANGED, CONCURRENT_ORDER_UNPROVABLE]}
 
@@ -1091,10 +1114,10 @@ components:
       additionalProperties: false
       required: [encounter_id, match_id, acceptance_record_id, party_id, acceptance_aggregate_version, acceptance_status]
       properties:
-        encounter_id: {type: string, format: uuid}
-        match_id: {type: string, format: uuid}
-        acceptance_record_id: {type: string, format: uuid}
-        party_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        match_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        acceptance_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         acceptance_aggregate_version: {type: integer, format: int64, minimum: 1}
         acceptance_status: {enum: [ACCEPTED, SUPERSEDED, INVALIDATED]}
         reason_code:
@@ -1115,7 +1138,7 @@ components:
       additionalProperties: false
       required: [party_id, identity_authority_version, reason_code, effective_at]
       properties:
-        party_id: {type: string, format: uuid}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         identity_authority_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [IDENTITY_INVALIDATED, AUTHORITY_INVALIDATED, AUTHORITY_EXPIRED]}
         effective_at: {type: string, format: date-time}
@@ -1135,8 +1158,8 @@ components:
       additionalProperties: false
       required: [party_id, lawful_basis_id, purpose_code, lawful_basis_version, reason_code, effective_at]
       properties:
-        party_id: {type: string, format: uuid}
-        lawful_basis_id: {type: string, format: uuid}
+        party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        lawful_basis_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         purpose_code: {type: string, maxLength: 64}
         lawful_basis_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [INVALIDATED, REVOKED, EXPIRED, PROCESSING_PURPOSE_CHANGED]}
@@ -1157,8 +1180,8 @@ components:
       additionalProperties: false
       required: [encounter_id, previous_contact_decision_id, previous_contact_decision_version, decision_status, reason_code, effective_at]
       properties:
-        encounter_id: {type: string, format: uuid}
-        previous_contact_decision_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        previous_contact_decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         previous_contact_decision_version: {type: integer, format: int64, minimum: 1}
         decision_status: {enum: [NO_PREVIOUS_CONTACT_CONFIRMED, PREVIOUS_CONTACT_CONFIRMED, UNDER_REVIEW, INCONCLUSIVE]}
         reason_code: {enum: [DECISION_CREATED, EVIDENCE_ADDED, DECISION_REOPENED, DECISION_INVALIDATED]}
@@ -1194,15 +1217,15 @@ components:
       additionalProperties: false
       required: [encounter_id, financial_event_id, payment_path, amount_minor, currency]
       properties:
-        encounter_id: {type: string, format: uuid}
-        payment_intent_id: {type: string, format: uuid}
-        financial_event_id: {type: string, format: uuid}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        payment_intent_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        financial_event_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payment_path: {enum: [DEBIT, CREDIT, MIXED]}
         amount_minor: {type: integer, format: int64, minimum: 0, maximum: 1000000}
         currency: {const: RUB}
-        provider_operation_ref: {type: string, format: uuid}
-        receipt_ref: {type: string, format: uuid}
-        credit_application_id: {type: string, format: uuid}
+        provider_operation_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
+        receipt_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
+        credit_application_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         payer_assignment_version: {type: integer, format: int64, minimum: 1}
         reason_code: {enum: [PROVIDER_RECONCILIATION_MISMATCH, KKT_OFD_RECONCILIATION_MISMATCH, CREDIT_REVERSED, SECOND_PARTY_EXPOSURE_CHANGED, REFUND_AND_CORRECTION_COMPLETED]}
 
@@ -1279,11 +1302,11 @@ components:
       additionalProperties: false
       required: [introduction_record_id, encounter_id, from_state, to_state]
       properties:
-        introduction_record_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         from_state: {$ref: '#/components/schemas/RecordState'}
         to_state: {$ref: '#/components/schemas/RecordState'}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         established_delivery_at: {type: string, format: date-time}
         protection_starts_at: {type: string, format: date-time}
         protection_ends_at: {type: string, format: date-time}
@@ -1303,11 +1326,11 @@ components:
       additionalProperties: false
       required: [reveal_attempt_id, introduction_record_id, encounter_id, recipient_party_id, reveal_gate_snapshot_id, manifest_hash, evidence_manifest_hash, evidence_classification, attempted_at]
       properties:
-        reveal_attempt_id: {type: string, format: uuid}
-        introduction_record_id: {type: string, format: uuid}
-        encounter_id: {type: string, format: uuid}
-        recipient_party_id: {type: string, format: uuid}
-        reveal_gate_snapshot_id: {type: string, format: uuid}
+        reveal_attempt_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        encounter_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        recipient_party_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        reveal_gate_snapshot_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
         evidence_manifest_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
         evidence_classification: {enum: [SUFFICIENT, PARTIAL, CONTRADICTORY, ABSENT]}
@@ -1339,13 +1362,13 @@ components:
       additionalProperties: false
       required: [decision_id, dispute_id, introduction_record_id, decision_type, decided_at]
       properties:
-        decision_id: {type: string, format: uuid}
-        dispute_id: {type: string, format: uuid}
-        introduction_record_id: {type: string, format: uuid}
+        decision_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        dispute_id: {$ref: '#/components/schemas/UuidV4OrV7'}
+        introduction_record_id: {$ref: '#/components/schemas/UuidV4OrV7'}
         decision_type: {enum: [DELIVERY_CONFIRMED_BY_DECISION, NO_DELIVERY_CONFIRMED_BY_DECISION, DISPUTE_REJECTED, DISPUTE_UPHELD]}
         established_delivery_at: {type: string, format: date-time}
         decided_at: {type: string, format: date-time}
-        financial_consequence_ref: {type: string, format: uuid}
+        financial_consequence_ref: {$ref: '#/components/schemas/UuidV4OrV7'}
       allOf:
         - if:
             properties:
@@ -2576,8 +2599,7 @@ create function leasemind_security.redeem_reveal_token(
   p_reveal_token_id uuid,
   p_token_hash char(64),
   p_idempotency_key text,
-  p_request_hash char(64),
-  p_redeemed_at timestamptz
+  p_request_hash char(64)
 )
 returns jsonb
 language plpgsql
@@ -2593,6 +2615,7 @@ declare
   v_reveal_attempt_id uuid;
   v_result jsonb;
   v_result_hash char(64);
+  v_redeemed_at timestamptz;
 begin
   if char_length(p_idempotency_key) not between 16 and 128
      or p_request_hash !~ '^[a-f0-9]{64}$' then
@@ -2632,15 +2655,38 @@ begin
     end if;
   end if;
 
-  if p_redeemed_at >= token_row.expires_at then
+  -- Lock order matches apply_safety_critical_invalidation exactly:
+  -- reveal_token (above) -> source_reveal_lease (ordered) -> reveal_guard.
+  -- No aggregate inside the locking statement; rows are locked first,
+  -- counted separately below.
+  perform 1
+    from public.reveal_gate_snapshot_source snapshot_source
+    join public.source_reveal_lease lease
+      on lease.lease_id = snapshot_source.source_lease_id
+   where snapshot_source.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id
+   order by lease.lease_id
+     for update of lease;
+
+  select guard.guard_epoch into current_epoch
+    from leasemind_security.reveal_guard guard
+   where guard.encounter_id = token_row.encounter_id
+   for update;
+
+  -- Server-owned time, computed once, after all locks are held, so a token
+  -- that expires while waiting on a lock cannot be redeemed.
+  v_redeemed_at := clock_timestamp();
+
+  if token_row.issued_at > v_redeemed_at then
+    raise exception using errcode = '22023', message = 'LM-REVEAL-TOKEN-NOT-YET-VALID';
+  end if;
+
+  if v_redeemed_at >= token_row.expires_at then
     raise exception using errcode = '22023', message = 'LM-REVEAL-TOKEN-EXPIRED';
   end if;
 
-  select snapshot.reveal_guard_epoch, guard.guard_epoch
-    into snapshot_epoch, current_epoch
+  select snapshot.reveal_guard_epoch
+    into snapshot_epoch
     from public.reveal_gate_snapshot snapshot
-    join leasemind_security.reveal_guard guard
-      on guard.encounter_id = snapshot.encounter_id
    where snapshot.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id;
   if snapshot_epoch <> current_epoch then
     raise exception using errcode = '40001', message = 'LM-GATE-GUARD-EPOCH-STALE';
@@ -2652,7 +2698,7 @@ begin
       on lease.lease_id = snapshot_source.source_lease_id
    where snapshot_source.reveal_gate_snapshot_id = token_row.reveal_gate_snapshot_id
      and lease.lease_state = 'ACTIVE'
-     and lease.expires_at > p_redeemed_at;
+     and lease.expires_at > v_redeemed_at;
   if active_source_count <> 6 then
     raise exception using errcode = '23514', message = 'LM-GATE-LEASE-SET-INCOMPLETE';
   end if;
@@ -2677,12 +2723,12 @@ begin
     token_row.recipient_party_id,
     token_row.manifest_hash,
     'SUCCEEDED',
-    p_redeemed_at
+    v_redeemed_at
   );
 
   v_result := jsonb_build_object(
     'status', 'REDEEMED',
-    'redeemed_at', p_redeemed_at,
+    'redeemed_at', v_redeemed_at,
     'reveal_attempt_id', v_reveal_attempt_id
   );
   v_result_hash := encode(
@@ -2691,7 +2737,7 @@ begin
   );
 
   update public.reveal_token
-     set redeemed_at = p_redeemed_at,
+     set redeemed_at = v_redeemed_at,
          redeem_idempotency_key = p_idempotency_key,
          redeem_request_hash = p_request_hash,
          redeem_result = v_result,
@@ -2708,10 +2754,10 @@ end;
 $$;
 
 alter function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) owner to leasemind_guard_owner;
 revoke all on function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) from public;
 
 create table reveal_attempt (
@@ -2805,29 +2851,137 @@ create table event_outbox (
 alter table event_outbox enable row level security;
 alter table event_outbox force row level security;
 
-create function leasemind_security.validate_no_direct_identifiers(p_document jsonb)
+create function leasemind_security.normalize_dlp_scalar(p_value text)
+returns text
+language sql
+immutable
+set search_path = pg_catalog
+as $$
+  select regexp_replace(normalize(coalesce(p_value, ''), NFKC), '[^0-9]', '', 'g');
+$$;
+
+-- SEVENTH-B02 corrective pass (DLP forbidden-KEY parity), V2: the same class
+-- of punctuation/format/whitespace evasion characters already normalized
+-- away for scalar VALUES (normalize_dlp_scalar) is normalized away here for
+-- object KEYS. Mirrors leasemind_security.normalizeDlpKey(text) in
+-- tests/synthetic_service_models.mjs -- identical normalization order
+-- (NFKC, then case-fold, then strip evasion characters).
+create function leasemind_security.normalize_dlp_key(p_key text)
+returns text
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+declare
+  evasion_pattern text := '[-_./' || chr(160) || chr(8239) || chr(8203) || chr(8204) || chr(8205) || '[:space:]]';
+begin
+  return regexp_replace(
+    lower(normalize(coalesce(p_key, ''), NFKC)),
+    evasion_pattern,
+    '',
+    'g'
+  );
+end;
+$$;
+
+-- DLP_FORBIDDEN_KEY_MATCH_V2: the V1 exact-match strategy was fail-open --
+-- it missed composite/prefixed/suffixed identifier keys such as
+-- customer_email, contact_email, user_phone, passport_data, bank_account,
+-- payment_card, delivery_address or full_name_value, which never equal a
+-- bare forbidden token exactly. V2 matches a forbidden token as a
+-- SUBSTRING of the normalized key, which catches all such composites,
+-- gated by a closed, exact, normative allowlist of the only real required
+-- schema field names that would otherwise be false-positively blocked.
+-- The allowlist was derived by exhaustively checking every `properties`
+-- key across openapi.yaml and asyncapi.yaml against all 8 forbidden
+-- tokens (not hand-picked): exactly four fields exist and all four belong
+-- to the same normative concept (Previous Contact) --
+-- previous_contact_decision_id, previous_contact_decision_version,
+-- previous_contact_policy_hash, previous_contact_policy_version. No other
+-- forbidden token appears as a substring of any of the 128 distinct
+-- schema field names. Mirrors leasemind_security.isForbiddenDlpKey(...) /
+-- DLP_NORMATIVE_KEY_ALLOWLIST in tests/synthetic_service_models.mjs --
+-- identical allowlist (normalized the same way) and identical 8-token set.
+create function leasemind_security.is_forbidden_dlp_key(p_key text)
 returns boolean
 language plpgsql
 immutable
 set search_path = pg_catalog
 as $$
 declare
-  serialized text := p_document::text;
+  normalized text;
+  token text;
 begin
-  if serialized ~* '"(email|phone|passport|bank|card|address|contact|full_name)"[[:space:]]*:'
-     or serialized ~* '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
-     or serialized ~ '([+]7[[:space:]() -]*|8[[:space:](]+)[0-9]{3}[[:space:]() -]*[0-9]{3}[[:space:] -]*[0-9]{2}[[:space:] -]*[0-9]{2}'
-     or serialized ~ '(^|[^0-9])[78]([[:space:]()\\-]*[0-9]){10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[78][0-9]{10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{4}[[:space:]]+[0-9]{6}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])([0-9][[:space:]\\-]*){10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{10}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])([0-9]{4}[[:space:]\\-]){3}[0-9]{4}([^0-9]|$)'
-     or serialized ~ '(^|[^0-9])[0-9]{16,19}([^0-9]|$)'
-     or serialized ~* '(^|[^[:alpha:]])(улица|ул\.|проспект|дом|квартира|street|address)([^[:alpha:]]|$)' then
-    raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
-    raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
+  normalized := leasemind_security.normalize_dlp_key(p_key);
+  if normalized = any(array[
+    'previouscontactdecisionid',
+    'previouscontactdecisionversion',
+    'previouscontactpolicyhash',
+    'previouscontactpolicyversion'
+  ]) then
+    return false;
   end if;
+  foreach token in array array['email','phone','passport','bank','card','address','contact','fullname'] loop
+    if position(token in normalized) > 0 then
+      return true;
+    end if;
+  end loop;
+  return false;
+end;
+$$;
+
+create function leasemind_security.scan_dlp_scalar(p_value jsonb)
+returns void
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+declare
+  as_text text;
+  digits text;
+begin
+  case jsonb_typeof(p_value)
+  when 'string', 'number' then
+    as_text := case jsonb_typeof(p_value)
+      when 'string' then p_value #>> '{}'
+      else p_value::text
+    end;
+    digits := leasemind_security.normalize_dlp_scalar(as_text);
+    if digits ~ '^[78][0-9]{10}$'
+       or digits ~ '^[0-9]{10}$'
+       or digits ~ '^[0-9]{16,19}$'
+       or as_text ~* '[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}'
+       or as_text ~* '(^|[^[:alpha:]])(улица|ул\.|проспект|дом|квартира|street|address)([^[:alpha:]]|$)' then
+      raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
+      raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
+    end if;
+  when 'array' then
+    perform leasemind_security.scan_dlp_scalar(elem)
+      from jsonb_array_elements(p_value) as elem;
+  when 'object' then
+    if exists (
+      select 1 from jsonb_object_keys(p_value) as key
+       where leasemind_security.is_forbidden_dlp_key(key)
+    ) then
+      raise log 'LM-DLP-DIRECT-IDENTIFIER-DETECTED';
+      raise exception using errcode = '22023', message = 'LM-DATA-CLASSIFICATION-VIOLATION';
+    end if;
+    perform leasemind_security.scan_dlp_scalar(kv.value)
+      from jsonb_each(p_value) as kv(key, value);
+  else
+    null;
+  end case;
+end;
+$$;
+
+create function leasemind_security.validate_no_direct_identifiers(p_document jsonb)
+returns boolean
+language plpgsql
+immutable
+set search_path = pg_catalog
+as $$
+begin
+  perform leasemind_security.scan_dlp_scalar(p_document);
   return true;
 end;
 $$;
@@ -2974,7 +3128,7 @@ begin
       if jsonb_typeof(p_payload -> field_name) <> 'string' then
         raise exception using errcode = '22023', message = 'LM-OUTBOX-PAYLOAD-TYPE';
       end if;
-      if p_payload ->> field_name !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' then
+      if p_payload ->> field_name !~* '^[0-9a-f]{8}-[0-9a-f]{4}-[47][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' then
         raise exception using errcode = '22023', message = 'LM-OUTBOX-PAYLOAD-FORMAT';
       end if;
     elsif field_name = any(integer_fields) then
@@ -3164,6 +3318,10 @@ $$;
 revoke all on function leasemind_security.validate_event_payload(text, text, jsonb) from public;
 revoke all on function leasemind_security.validate_no_direct_identifiers(jsonb) from public;
 revoke all on function leasemind_security.is_valid_rfc3339_timestamp(text) from public;
+revoke all on function leasemind_security.normalize_dlp_scalar(text) from public;
+revoke all on function leasemind_security.normalize_dlp_key(text) from public;
+revoke all on function leasemind_security.is_forbidden_dlp_key(text) from public;
+revoke all on function leasemind_security.scan_dlp_scalar(jsonb) from public;
 
 create function validate_event_outbox_domain()
 returns trigger
@@ -3505,7 +3663,7 @@ grant select, insert on reveal_token to leasemind_reveal_writer;
 grant select on reveal_attempt to leasemind_reveal_writer;
 grant select, insert on reveal_delivery_evidence to leasemind_reveal_writer;
 grant execute on function leasemind_security.redeem_reveal_token(
-  uuid, char, text, char, timestamptz
+  uuid, char, text, char
 ) to leasemind_reveal_writer;
 grant select, insert on decision_record to leasemind_previous_contact_writer;
 
@@ -3552,6 +3710,50 @@ grant execute on function leasemind_security.validate_no_direct_identifiers(json
   leasemind_reveal_writer;
 
 grant execute on function leasemind_security.is_valid_rfc3339_timestamp(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.normalize_dlp_scalar(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.normalize_dlp_key(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.is_forbidden_dlp_key(text) to
+  leasemind_guard_owner,
+  leasemind_payer_writer,
+  leasemind_participation_writer,
+  leasemind_financial_writer,
+  leasemind_previous_contact_writer,
+  leasemind_identity_authority_writer,
+  leasemind_lawful_basis_writer,
+  leasemind_introduction_writer,
+  leasemind_reveal_writer;
+
+grant execute on function leasemind_security.scan_dlp_scalar(jsonb) to
   leasemind_guard_owner,
   leasemind_payer_writer,
   leasemind_participation_writer,

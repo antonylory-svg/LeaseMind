@@ -257,7 +257,58 @@ const DIRECT_IDENTIFIER_PATTERNS = [
   /(?:^|\D)\d{16,19}(?:\D|$)/,
   /(?:^|[^\p{L}])(?:улица|ул\.|проспект|дом|квартира|street|address)(?:[^\p{L}]|$)/iu
 ];
-const FORBIDDEN_KEYS = /(?:email|phone|passport|bank|card|address|contact|full_name)/i;
+// SEVENTH-B02 corrective pass (DLP forbidden-KEY parity), V2. Mirrors
+// leasemind_security.normalize_dlp_key(text) in the PostgreSQL migration --
+// same order (NFKC, then case-fold, then strip the same evasion character
+// class already normative for scalar VALUES below: hyphen, underscore, dot,
+// slash, ASCII/Unicode whitespace, NBSP, narrow NBSP, zero-width
+// space/non-joiner/joiner).
+const KEY_EVASION_CHARACTERS = /[-_./\s  ​‌‍]/gu;
+export function normalizeDlpKey(key) {
+  return String(key).normalize('NFKC').toLowerCase().replace(KEY_EVASION_CHARACTERS, '');
+}
+const FORBIDDEN_KEY_TOKENS = Object.freeze(
+  ['email', 'phone', 'passport', 'bank', 'card', 'address', 'contact', 'full_name'].map(normalizeDlpKey)
+);
+
+// DLP_FORBIDDEN_KEY_MATCH_V2: the V1 exact-match strategy was fail-open --
+// it missed composite/prefixed/suffixed identifier keys such as
+// customer_email, contact_email, user_phone, passport_data, bank_account,
+// payment_card, delivery_address or full_name_value, which never equal a
+// bare forbidden token exactly. V2 matches a forbidden token as a
+// SUBSTRING of the normalized key, gated by a closed, exact, normative
+// allowlist of the only real required schema field names that would
+// otherwise be false-positively blocked.
+//
+// The allowlist below was derived by exhaustively checking every
+// `properties` key across openapi.yaml and asyncapi.yaml (128 distinct
+// field names) against all 8 forbidden tokens -- not hand-picked, not
+// guessed. Exactly four fields exist, and all four belong to the same
+// normative concept (Previous Contact): previous_contact_decision_id,
+// previous_contact_decision_version, previous_contact_policy_hash,
+// previous_contact_policy_version (the last two were not previously
+// covered by V1's minimal exception set). No other forbidden token
+// appears as a substring of any real schema field name. Mirrors
+// leasemind_security.is_forbidden_dlp_key(text) in the PostgreSQL
+// migration -- identical allowlist (normalized the same way) and
+// identical 8-token set, so both layers accept and reject the identical
+// set of object keys. Broadening this allowlist, or the matching
+// strategy itself, beyond what is provably required by the current
+// normative schema is a PRODUCT/LEGAL classification-policy decision,
+// not something this pass invents unilaterally; see PATCHLOG.md
+// corrective-pass entry.
+export const DLP_NORMATIVE_KEY_ALLOWLIST = Object.freeze([
+  'previous_contact_decision_id',
+  'previous_contact_decision_version',
+  'previous_contact_policy_hash',
+  'previous_contact_policy_version'
+].map(normalizeDlpKey));
+
+export function isForbiddenDlpKey(key) {
+  const normalized = normalizeDlpKey(key);
+  if (DLP_NORMATIVE_KEY_ALLOWLIST.includes(normalized)) return false;
+  return FORBIDDEN_KEY_TOKENS.some(token => normalized.includes(token));
+}
 
 // Canonical DLP scalar normalization, shared in intent with
 // leasemind_security.normalize_dlp_scalar(text) in the PostgreSQL migration:
@@ -280,7 +331,8 @@ export function containsDirectIdentifier(value) {
     }
     if (Array.isArray(current)) return current.some(visit);
     if (current && typeof current === 'object') {
-      return Object.entries(current).some(([key,nested]) => FORBIDDEN_KEYS.test(key) || visit(nested));
+      return Object.entries(current).some(([key,nested]) =>
+        isForbiddenDlpKey(key) || visit(nested));
     }
     return false;
   };

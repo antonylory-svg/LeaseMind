@@ -2,7 +2,7 @@
   "suite": "LeaseMind Matching Data Contracts Offline Suite",
   "contract_version": "1.0",
   "architecture_version": "1.1",
-  "executed_at": "2026-07-26T07:21:46.863Z",
+  "executed_at": "2026-08-21T05:49:51.789Z",
   "synthetic_data_only": true,
   "production_adapters_used": false,
   "status": "PASS",
@@ -106,14 +106,14 @@
           "dependency": "PG-019",
           "path": "negative_payload_mutations",
           "minimum": 232,
-          "actual": 1020,
+          "actual": 2021,
           "status": "PASS"
         },
         {
           "dependency": "PG-019",
           "path": "rollback_absence_checks",
           "minimum": 232,
-          "actual": 1020,
+          "actual": 2021,
           "status": "PASS"
         },
         {
@@ -614,7 +614,7 @@
           "dependency": "PG-019",
           "path": "negative_payload_mutations",
           "minimum": 232,
-          "actual": 1020,
+          "actual": 2021,
           "status": "PASS"
         },
         {
@@ -718,12 +718,121 @@
           "dependency": "PG-026",
           "path": "rollback_absence_checks",
           "minimum": 15,
-          "actual": 15,
+          "actual": 188,
           "status": "PASS"
         },
         {
           "dependency": "PG-026",
           "path": "unsafe_value_echoes",
+          "equals": 0,
+          "actual": 0,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_forbidden_key_vectors",
+          "equals": 112,
+          "actual": 112,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_forbidden_key_rejected",
+          "equals": 112,
+          "actual": 112,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_key_coverage",
+          "equals": {
+            "email": 14,
+            "phone": 14,
+            "passport": 14,
+            "bank": 14,
+            "card": 14,
+            "address": 14,
+            "contact": 14,
+            "full_name": 14
+          },
+          "actual": {
+            "email": 14,
+            "phone": 14,
+            "passport": 14,
+            "bank": 14,
+            "card": 14,
+            "address": 14,
+            "contact": 14,
+            "full_name": 14
+          },
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_safe_key_vectors",
+          "equals": 4,
+          "actual": 4,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_safe_key_accepted",
+          "equals": 4,
+          "actual": 4,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_safe_ordinary_key_vectors",
+          "equals": 4,
+          "actual": 4,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_safe_ordinary_key_accepted",
+          "equals": 4,
+          "actual": 4,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_composite_key_vectors",
+          "equals": 8,
+          "actual": 8,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_composite_key_rejected",
+          "equals": 8,
+          "actual": 8,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_composite_container_vectors",
+          "equals": 2,
+          "actual": 2,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "golden_composite_container_rejected",
+          "equals": 2,
+          "actual": 2,
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "dlp_forbidden_key_match_version",
+          "equals": "V2",
+          "actual": "V2",
+          "status": "PASS"
+        },
+        {
+          "dependency": "PG-026",
+          "path": "service_db_parity_mismatches",
           "equals": 0,
           "actual": 0,
           "status": "PASS"
@@ -782,7 +891,28 @@
         },
         {
           "dependency": "CT-024",
-          "path": "deletion_act_hash_preserved",
+          "path": "caller_controlled_hash_probes",
+          "equals": 6,
+          "actual": 6,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "derivation_recompute_matches",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "hash_reuse_prevented",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-024",
+          "path": "hash_format_valid",
           "equals": 1,
           "actual": 1,
           "status": "PASS"
@@ -943,6 +1073,512 @@
           "equals": 33,
           "actual": 33,
           "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "valid_exact_bindings",
+          "equals": 33,
+          "actual": 33,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "ordered_mismatch_probes",
+          "equals": 264,
+          "actual": 264,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "accepted_mismatches",
+          "equals": 0,
+          "actual": 0,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "structurally_indistinguishable_pairs",
+          "equals": 0,
+          "actual": 0,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "swap_self_test_blocked",
+          "equals": 1,
+          "actual": 1,
+          "status": "PASS"
+        },
+        {
+          "dependency": "CT-028",
+          "path": "bindings",
+          "equals": [
+            {
+              "event_type": "ADVANCE_DEBIT_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "ADVANCE_RECEIPT_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "ADVANCE_SETTLED_AND_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "CREDIT_APPLIED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "CREDIT_REVERSED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "DELIVERY_CONFIRMED_BY_DECISION",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "DISCLOSURE_CHALLENGED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "DISPUTE_REJECTED",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "DISPUTE_UPHELD",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "FINAL_SETTLEMENT_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "FINANCIAL_READINESS_INVALIDATED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "FISCAL_CORRECTION_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "IDENTITY_AUTHORITY_INVALIDATED",
+              "consumer_operation": "consumeIdentityAuthorityChanged",
+              "channel": "identityAuthority",
+              "message": "identityAuthorityChanged",
+              "payload_schema": "IdentityAuthorityEventEnvelope"
+            },
+            {
+              "event_type": "LAWFUL_BASIS_INVALIDATED",
+              "consumer_operation": "consumeLawfulBasisChanged",
+              "channel": "lawfulBasis",
+              "message": "lawfulBasisChanged",
+              "payload_schema": "LawfulBasisEventEnvelope"
+            },
+            {
+              "event_type": "LAWFUL_BASIS_REVOKED",
+              "consumer_operation": "consumeLawfulBasisChanged",
+              "channel": "lawfulBasis",
+              "message": "lawfulBasisChanged",
+              "payload_schema": "LawfulBasisEventEnvelope"
+            },
+            {
+              "event_type": "NO_DELIVERY_CONFIRMED_BY_DECISION",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "PARTICIPATION_ACCEPTED",
+              "consumer_operation": "consumeAcceptanceChanged",
+              "channel": "participation",
+              "message": "acceptanceChanged",
+              "payload_schema": "ParticipationEventEnvelope"
+            },
+            {
+              "event_type": "PARTICIPATION_INVALIDATED",
+              "consumer_operation": "consumeAcceptanceChanged",
+              "channel": "participation",
+              "message": "acceptanceChanged",
+              "payload_schema": "ParticipationEventEnvelope"
+            },
+            {
+              "event_type": "PAYER_ASSIGNED",
+              "consumer_operation": "consumePayerAssigned",
+              "channel": "payerResolution",
+              "message": "payerAssigned",
+              "payload_schema": "PayerEventEnvelope"
+            },
+            {
+              "event_type": "PAYER_RESOLUTION_REQUIRED",
+              "consumer_operation": "consumePayerAssigned",
+              "channel": "payerResolution",
+              "message": "payerAssigned",
+              "payload_schema": "PayerEventEnvelope"
+            },
+            {
+              "event_type": "PAYMENT_AUTHORIZATION_RELEASED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "PAYMENT_AUTHORIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "PREVIOUS_CONTACT_DECISION_CHANGED",
+              "consumer_operation": "consumePreviousContactChanged",
+              "channel": "previousContact",
+              "message": "previousContactChanged",
+              "payload_schema": "PreviousContactEventEnvelope"
+            },
+            {
+              "event_type": "PRE_REVEAL_VOIDED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "PROTECTION_END_REACHED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "RECORD_PRE_REVEAL_LOCKED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REFUND_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_COMMITTED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_CONFIRMED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_EVIDENCE_SUBMITTED",
+              "consumer_operation": "consumeEvidenceSubmitted",
+              "channel": "revealEvidence",
+              "message": "evidenceSubmitted",
+              "payload_schema": "EvidenceEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_UNCERTAIN",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            }
+          ],
+          "actual": [
+            {
+              "event_type": "ADVANCE_DEBIT_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "ADVANCE_RECEIPT_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "ADVANCE_SETTLED_AND_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "CREDIT_APPLIED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "CREDIT_REVERSED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "DELIVERY_CONFIRMED_BY_DECISION",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "DISCLOSURE_CHALLENGED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "DISPUTE_REJECTED",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "DISPUTE_UPHELD",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "FINAL_SETTLEMENT_FISCALIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "FINANCIAL_READINESS_INVALIDATED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "FISCAL_CORRECTION_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "IDENTITY_AUTHORITY_INVALIDATED",
+              "consumer_operation": "consumeIdentityAuthorityChanged",
+              "channel": "identityAuthority",
+              "message": "identityAuthorityChanged",
+              "payload_schema": "IdentityAuthorityEventEnvelope"
+            },
+            {
+              "event_type": "LAWFUL_BASIS_INVALIDATED",
+              "consumer_operation": "consumeLawfulBasisChanged",
+              "channel": "lawfulBasis",
+              "message": "lawfulBasisChanged",
+              "payload_schema": "LawfulBasisEventEnvelope"
+            },
+            {
+              "event_type": "LAWFUL_BASIS_REVOKED",
+              "consumer_operation": "consumeLawfulBasisChanged",
+              "channel": "lawfulBasis",
+              "message": "lawfulBasisChanged",
+              "payload_schema": "LawfulBasisEventEnvelope"
+            },
+            {
+              "event_type": "NO_DELIVERY_CONFIRMED_BY_DECISION",
+              "consumer_operation": "consumeDecisionRecorded",
+              "channel": "decisions",
+              "message": "decisionRecorded",
+              "payload_schema": "DecisionEventEnvelope"
+            },
+            {
+              "event_type": "PARTICIPATION_ACCEPTED",
+              "consumer_operation": "consumeAcceptanceChanged",
+              "channel": "participation",
+              "message": "acceptanceChanged",
+              "payload_schema": "ParticipationEventEnvelope"
+            },
+            {
+              "event_type": "PARTICIPATION_INVALIDATED",
+              "consumer_operation": "consumeAcceptanceChanged",
+              "channel": "participation",
+              "message": "acceptanceChanged",
+              "payload_schema": "ParticipationEventEnvelope"
+            },
+            {
+              "event_type": "PAYER_ASSIGNED",
+              "consumer_operation": "consumePayerAssigned",
+              "channel": "payerResolution",
+              "message": "payerAssigned",
+              "payload_schema": "PayerEventEnvelope"
+            },
+            {
+              "event_type": "PAYER_RESOLUTION_REQUIRED",
+              "consumer_operation": "consumePayerAssigned",
+              "channel": "payerResolution",
+              "message": "payerAssigned",
+              "payload_schema": "PayerEventEnvelope"
+            },
+            {
+              "event_type": "PAYMENT_AUTHORIZATION_RELEASED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "PAYMENT_AUTHORIZED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "PREVIOUS_CONTACT_DECISION_CHANGED",
+              "consumer_operation": "consumePreviousContactChanged",
+              "channel": "previousContact",
+              "message": "previousContactChanged",
+              "payload_schema": "PreviousContactEventEnvelope"
+            },
+            {
+              "event_type": "PRE_REVEAL_VOIDED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "PROTECTION_END_REACHED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "RECORD_PRE_REVEAL_LOCKED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REFUND_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_COMMITTED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_CONFIRMED",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_EVIDENCE_SUBMITTED",
+              "consumer_operation": "consumeEvidenceSubmitted",
+              "channel": "revealEvidence",
+              "message": "evidenceSubmitted",
+              "payload_schema": "EvidenceEventEnvelope"
+            },
+            {
+              "event_type": "REVEAL_DELIVERY_UNCERTAIN",
+              "consumer_operation": "consumeRecordTransitioned",
+              "channel": "introductionRecord",
+              "message": "recordTransitioned",
+              "payload_schema": "RecordEventEnvelope"
+            },
+            {
+              "event_type": "SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            },
+            {
+              "event_type": "SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED",
+              "consumer_operation": "consumeFinancialFact",
+              "channel": "financial",
+              "message": "financialFact",
+              "payload_schema": "FinancialEventEnvelope"
+            }
+          ],
+          "status": "PASS"
         }
       ],
       "semantic_gaps": []
@@ -1098,7 +1734,10 @@
       "evidence": {
         "typed_events": 33,
         "positive": 33,
-        "malformed_rejected": 33
+        "malformed_rejected": 33,
+        "uuid_fields_checked": 208,
+        "forbidden_uuid_version_rejections": 1248,
+        "uuid_v7_acceptances": 208
       }
     },
     {
@@ -1107,7 +1746,10 @@
       "level": "validator_fixture",
       "name": "Unknown fields are rejected for every command schema",
       "evidence": {
-        "negative_fixtures": 8
+        "negative_fixtures": 8,
+        "uuid_fields_checked": 56,
+        "forbidden_uuid_version_rejections": 336,
+        "uuid_v7_acceptances": 56
       }
     },
     {
@@ -1302,7 +1944,42 @@
       "name": "Direct identifiers violate event DLP classifier",
       "evidence": {
         "negative_patterns": 13,
-        "safe_control": 1
+        "safe_control": 1,
+        "golden_malicious_vectors": 51,
+        "golden_safe_vectors": 5,
+        "golden_matrix_coverage": {
+          "phone": 15,
+          "passport": 15,
+          "card": 15
+        },
+        "golden_container_coverage": {
+          "phone": 2,
+          "passport": 2,
+          "card": 2
+        },
+        "golden_forbidden_key_vectors": 112,
+        "golden_safe_key_vectors": 4,
+        "golden_safe_ordinary_key_vectors": 4,
+        "golden_composite_key_vectors": 8,
+        "golden_composite_container_vectors": 2,
+        "golden_key_coverage": {
+          "email": 14,
+          "phone": 14,
+          "passport": 14,
+          "bank": 14,
+          "card": 14,
+          "address": 14,
+          "contact": 14,
+          "full_name": 14
+        },
+        "normative_key_allowlist": [
+          "previouscontactdecisionid",
+          "previouscontactdecisionversion",
+          "previouscontactpolicyhash",
+          "previouscontactpolicyversion"
+        ],
+        "exact_only_regression_misses": 8,
+        "allowlist_load_bearing_proofs": 4
       }
     },
     {
@@ -1320,7 +1997,10 @@
         ],
         "prohibited_source_fields_absent": 8,
         "stable_source_hashes_absent": 2,
-        "deletion_act_hash_preserved": 1
+        "caller_controlled_hash_probes": 6,
+        "derivation_recompute_matches": 1,
+        "hash_reuse_prevented": 1,
+        "hash_format_valid": 1
       }
     },
     {
@@ -1370,7 +2050,245 @@
         "reason_codes": 22,
         "explicit_routing_rows": 33,
         "owner_consumer_bindings": 33,
-        "consumer_operations_checked": 33
+        "consumer_operations_checked": 33,
+        "valid_exact_bindings": 33,
+        "ordered_mismatch_probes": 264,
+        "accepted_mismatches": 0,
+        "structurally_indistinguishable_pairs": 0,
+        "swap_self_test_blocked": 1,
+        "bindings": [
+          {
+            "event_type": "ADVANCE_DEBIT_CONFIRMED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "ADVANCE_RECEIPT_FISCALIZED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "ADVANCE_SETTLED_AND_FISCALIZED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "CREDIT_APPLIED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "CREDIT_REVERSED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "DELIVERY_CONFIRMED_BY_DECISION",
+            "consumer_operation": "consumeDecisionRecorded",
+            "channel": "decisions",
+            "message": "decisionRecorded",
+            "payload_schema": "DecisionEventEnvelope"
+          },
+          {
+            "event_type": "DISCLOSURE_CHALLENGED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "DISPUTE_REJECTED",
+            "consumer_operation": "consumeDecisionRecorded",
+            "channel": "decisions",
+            "message": "decisionRecorded",
+            "payload_schema": "DecisionEventEnvelope"
+          },
+          {
+            "event_type": "DISPUTE_UPHELD",
+            "consumer_operation": "consumeDecisionRecorded",
+            "channel": "decisions",
+            "message": "decisionRecorded",
+            "payload_schema": "DecisionEventEnvelope"
+          },
+          {
+            "event_type": "FINAL_SETTLEMENT_FISCALIZED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "FINANCIAL_READINESS_INVALIDATED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "FISCAL_CORRECTION_CONFIRMED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "IDENTITY_AUTHORITY_INVALIDATED",
+            "consumer_operation": "consumeIdentityAuthorityChanged",
+            "channel": "identityAuthority",
+            "message": "identityAuthorityChanged",
+            "payload_schema": "IdentityAuthorityEventEnvelope"
+          },
+          {
+            "event_type": "LAWFUL_BASIS_INVALIDATED",
+            "consumer_operation": "consumeLawfulBasisChanged",
+            "channel": "lawfulBasis",
+            "message": "lawfulBasisChanged",
+            "payload_schema": "LawfulBasisEventEnvelope"
+          },
+          {
+            "event_type": "LAWFUL_BASIS_REVOKED",
+            "consumer_operation": "consumeLawfulBasisChanged",
+            "channel": "lawfulBasis",
+            "message": "lawfulBasisChanged",
+            "payload_schema": "LawfulBasisEventEnvelope"
+          },
+          {
+            "event_type": "NO_DELIVERY_CONFIRMED_BY_DECISION",
+            "consumer_operation": "consumeDecisionRecorded",
+            "channel": "decisions",
+            "message": "decisionRecorded",
+            "payload_schema": "DecisionEventEnvelope"
+          },
+          {
+            "event_type": "PARTICIPATION_ACCEPTED",
+            "consumer_operation": "consumeAcceptanceChanged",
+            "channel": "participation",
+            "message": "acceptanceChanged",
+            "payload_schema": "ParticipationEventEnvelope"
+          },
+          {
+            "event_type": "PARTICIPATION_INVALIDATED",
+            "consumer_operation": "consumeAcceptanceChanged",
+            "channel": "participation",
+            "message": "acceptanceChanged",
+            "payload_schema": "ParticipationEventEnvelope"
+          },
+          {
+            "event_type": "PAYER_ASSIGNED",
+            "consumer_operation": "consumePayerAssigned",
+            "channel": "payerResolution",
+            "message": "payerAssigned",
+            "payload_schema": "PayerEventEnvelope"
+          },
+          {
+            "event_type": "PAYER_RESOLUTION_REQUIRED",
+            "consumer_operation": "consumePayerAssigned",
+            "channel": "payerResolution",
+            "message": "payerAssigned",
+            "payload_schema": "PayerEventEnvelope"
+          },
+          {
+            "event_type": "PAYMENT_AUTHORIZATION_RELEASED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "PAYMENT_AUTHORIZED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "PREVIOUS_CONTACT_DECISION_CHANGED",
+            "consumer_operation": "consumePreviousContactChanged",
+            "channel": "previousContact",
+            "message": "previousContactChanged",
+            "payload_schema": "PreviousContactEventEnvelope"
+          },
+          {
+            "event_type": "PRE_REVEAL_VOIDED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "PROTECTION_END_REACHED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "RECORD_PRE_REVEAL_LOCKED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "REFUND_CONFIRMED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "REVEAL_COMMITTED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "REVEAL_DELIVERY_CONFIRMED",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "REVEAL_DELIVERY_EVIDENCE_SUBMITTED",
+            "consumer_operation": "consumeEvidenceSubmitted",
+            "channel": "revealEvidence",
+            "message": "evidenceSubmitted",
+            "payload_schema": "EvidenceEventEnvelope"
+          },
+          {
+            "event_type": "REVEAL_DELIVERY_UNCERTAIN",
+            "consumer_operation": "consumeRecordTransitioned",
+            "channel": "introductionRecord",
+            "message": "recordTransitioned",
+            "payload_schema": "RecordEventEnvelope"
+          },
+          {
+            "event_type": "SECOND_PARTY_FINANCIAL_EXPOSURE_CLEARED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          },
+          {
+            "event_type": "SECOND_PARTY_REFUND_AND_FISCAL_CORRECTION_CONFIRMED",
+            "consumer_operation": "consumeFinancialFact",
+            "channel": "financial",
+            "message": "financialFact",
+            "payload_schema": "FinancialEventEnvelope"
+          }
+        ]
       }
     },
     {
@@ -1385,7 +2303,7 @@
     }
   ],
   "postgres": {
-    "version": "18.4 embedded disposable cluster",
+    "version": "15+ external disposable instance via DATABASE_URL",
     "lifecycle": "up → catalog/behavior assertions → down → empty post-down catalog",
     "tests": [
       {
@@ -1496,15 +2414,24 @@
       {
         "id": "PG-019",
         "status": "PASS",
-        "detail": "33 valid event payloads and 1020 per-constrained-field negative mutations executed; every rejection rolled back",
+        "detail": "33 valid event payloads (plus 33 UUID v7 positive probes) and 2021 per-constrained-field negative mutations executed; every rejection rolled back",
         "evidence": {
           "valid_event_payloads": 33,
-          "negative_payload_mutations": 1020,
+          "positive_uuid_v7_probes": 33,
+          "negative_payload_mutations": 2021,
+          "forbidden_uuid_version_mutations": 858,
           "mutation_kinds": {
             "missing-required": 164,
             "null-required": 164,
             "wrong-type": 289,
             "invalid-uuid": 143,
+            "invalid-uuid-v1": 143,
+            "invalid-uuid-v2": 143,
+            "invalid-uuid-v3": 143,
+            "invalid-uuid-v5": 143,
+            "invalid-uuid-v6": 143,
+            "invalid-uuid-v8": 143,
+            "pattern": 146,
             "enum": 58,
             "minimum": 34,
             "unknown-field": 33,
@@ -1513,11 +2440,10 @@
             "invalid-rfc3339-day": 35,
             "maxLength": 2,
             "minLength": 1,
-            "pattern": 3,
             "maximum": 13,
             "const": 13
           },
-          "rollback_absence_checks": 1020,
+          "rollback_absence_checks": 2021,
           "independent_regression_probes": {
             "invalid_calendar_timestamp": 1,
             "identity_authority_version_below_minimum": 1,
@@ -1535,17 +2461,53 @@
       {
         "id": "PG-026",
         "status": "PASS",
-        "detail": "versioned content DLP rejected 15 formatted/normalized identifiers across payload, trace and metadata with rollback and safe diagnostic",
+        "detail": "versioned content DLP rejected 15 formatted/normalized identifiers plus 51 golden malicious value vectors (full 15x3 separator matrix + nested/array), 112 golden forbidden-key vectors (14 case/evasion variants x 8 tokens) and 10 golden composite/prefixed/suffixed key vectors (DLP_FORBIDDEN_KEY_MATCH_V2) across payload, trace and metadata; accepted 5 golden safe value controls, 4 normative-allowlist safe key controls and 4 ordinary safe key controls; service/DB parity mismatches: 0",
         "evidence": {
           "classifier_version": "DLP_EVENT_CONTENT_V1",
+          "dlp_forbidden_key_match_version": "V2",
           "probes": 15,
           "payload_probes": 9,
           "trace_probes": 5,
           "metadata_probes": 1,
           "normalized_phone_probes": 6,
           "normalized_passport_probes": 3,
-          "rollback_absence_checks": 15,
-          "unsafe_value_echoes": 0
+          "rollback_absence_checks": 188,
+          "unsafe_value_echoes": 0,
+          "golden_malicious_vectors": 51,
+          "golden_malicious_rejected": 51,
+          "golden_safe_vectors": 5,
+          "golden_safe_accepted": 5,
+          "golden_matrix_coverage": {
+            "phone": 15,
+            "passport": 15,
+            "card": 15
+          },
+          "golden_container_coverage": {
+            "phone": 2,
+            "passport": 2,
+            "card": 2
+          },
+          "golden_forbidden_key_vectors": 112,
+          "golden_forbidden_key_rejected": 112,
+          "golden_safe_key_vectors": 4,
+          "golden_safe_key_accepted": 4,
+          "golden_safe_ordinary_key_vectors": 4,
+          "golden_safe_ordinary_key_accepted": 4,
+          "golden_composite_key_vectors": 8,
+          "golden_composite_key_rejected": 8,
+          "golden_composite_container_vectors": 2,
+          "golden_composite_container_rejected": 2,
+          "golden_key_coverage": {
+            "email": 14,
+            "phone": 14,
+            "passport": 14,
+            "bank": 14,
+            "card": 14,
+            "address": 14,
+            "contact": 14,
+            "full_name": 14
+          },
+          "service_db_parity_mismatches": 0
         }
       },
       {
@@ -1575,7 +2537,7 @@
       {
         "id": "PG-030",
         "status": "PASS",
-        "detail": "one server-owned transaction creates immutable attempt, calculates result hash, redeems token and persists replay result; rollback, replay and two-connection race proven",
+        "detail": "one server-owned transaction creates immutable attempt, calculates result hash, redeems token and persists replay result; rollback, replay, two-connection race, expired/future-issued/backdated rejection and invalidation/redemption lock-order races proven",
         "evidence": {
           "rollback_before_commit": {
             "token_pending": 1,
@@ -1586,6 +2548,11 @@
           "same_key_different_request_rejected": 1,
           "server_calculated_result_hash": 1,
           "caller_supplied_result_fields": 0,
+          "server_owned_time": 1,
+          "old_five_arg_signature_present": 0,
+          "backdated_call_rejected": 1,
+          "expired_token_rejected": 1,
+          "future_issued_token_rejected": 1,
           "immutable_attempt_created_atomically": 1,
           "failure_injection_points": {
             "before_attempt_insert": 1,
@@ -1595,7 +2562,9 @@
           "concurrent_connections": 2,
           "concurrent_successes": 1,
           "concurrent_used_rejections": 1,
-          "concurrent_attempt_rows": 1
+          "concurrent_attempt_rows": 1,
+          "invalidation_first_race_rejected": 1,
+          "redemption_first_race_completed": 1
         }
       },
       {
@@ -1646,7 +2615,7 @@
         "evidence": {}
       }
     ],
-    "stderr_log_sha256": "f1b1cfa281bfec104b8a17c5cd7efa50791f0175c3d2f0996632a7e511c4ea27"
+    "stderr_log_sha256": "63905fbe67a4e6c40270ac620796e6fba1581a0d359277250bf5e6f1365309d3"
   },
-  "source_manifest_sha256": "2b71e4baf16ce3b34bd492c463112bcd8f0c5e287bc8829af382841ec578c1f5"
+  "source_manifest_sha256": "487facad1c8bd6465692365e8a89bbd91aabf42e13afa80e7742dba590a9657a"
 }
