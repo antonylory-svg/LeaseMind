@@ -7,7 +7,11 @@ import YAML from 'yaml';
 import {canonicalEventFixtures, UUID_V7} from '../fixtures/synthetic_fixtures.mjs';
 import {containsDirectIdentifier} from './synthetic_service_models.mjs';
 import {
-  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS, computeDlpMatrixCoverage
+  DLP_MALICIOUS_VECTORS, DLP_SAFE_CONTROL_VECTORS,
+  DLP_FORBIDDEN_KEY_VECTORS, DLP_SAFE_KEY_CONTROL_VECTORS,
+  DLP_SAFE_ORDINARY_KEY_VECTORS, DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS,
+  DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS,
+  computeDlpMatrixCoverage
 } from './fixtures/dlp_golden_vectors.mjs';
 
 const root = new URL('../', import.meta.url);
@@ -700,10 +704,159 @@ try {
     }
   }
 
+  // SEVENTH-B02 corrective pass: forbidden-KEY parity, real INSERT/rollback
+  // evidence on the same disposable connection. Malicious key vectors are
+  // injected as a top-level payload key -- DLP runs before the payload
+  // shape/unknown-field check inside validate_event_outbox_domain (see the
+  // pre-existing 'forbidden-key' probe above), so an unrecognized key name
+  // is still caught by DLP first. Safe-key controls cannot use that shape,
+  // because an unrecognized key that DLP correctly accepts would then be
+  // rejected by the unrelated unknown-field check -- so they are nested one
+  // level inside the untyped reason_code value instead (the same mechanism
+  // the existing nested-object/array value vectors already rely on),
+  // exercising the identical recursive object-key scan in scan_dlp_scalar.
+  let goldenForbiddenKeyRejected=0;
+  for(const vector of DLP_FORBIDDEN_KEY_VECTORS){
+    const probePayload={...payloadByEvent.get('PAYER_ASSIGNED'),[vector.key]:'synthetic-marker-value'};
+    const serviceVerdict=containsDirectIdentifier({[vector.key]:'synthetic-marker-value'});
+    const keyEventId=eventUuid(dlpCounter++,'9');
+    let dbRejected=false;
+    let dbErrorMessage='';
+    try{
+      await client.query(dlpInsert,[keyEventId,eventUuid(dlpCounter++,'a'),now,
+        ids.correlation,'trace-safe-value',`dlp-golden-key-${vector.id}`,
+        JSON.stringify(probePayload),hash]);
+    }catch(error){
+      dbRejected=true;
+      dbErrorMessage=String(error.message);
+    }
+    if(dbRejected){
+      assert.equal(dbErrorMessage,'LM-DATA-CLASSIFICATION-VIOLATION',`golden-key:${vector.id}`);
+      const keyAbsent=await client.query(
+        'select count(*)::int as count from event_outbox where event_id=$1',[keyEventId]);
+      assert.equal(keyAbsent.rows[0].count,0,`golden-key:${vector.id} rejection committed`);
+      goldenForbiddenKeyRejected+=1;
+    }
+    if(serviceVerdict!==true || !dbRejected){
+      parityMismatchIds.push(`${vector.id}(key):service=${serviceVerdict},db_rejected=${dbRejected}`);
+    }
+  }
+
+  // Safe-key controls cannot be proven through a full event_outbox INSERT:
+  // reason_code (the only untyped/free-form allowed field available as a
+  // carrier) is itself constrained by validate_event_payload's fallback rule
+  // to be a JSON string, so nesting an object inside it -- safe under DLP --
+  // would still be rejected afterwards by the unrelated shape/type check,
+  // which is not what this probe is testing. Instead call
+  // leasemind_security.validate_no_direct_identifiers directly: this is the
+  // exact same recursive scan_dlp_scalar path the trigger invokes, isolated
+  // from payload-shape concerns, and it either returns true or raises
+  // LM-DATA-CLASSIFICATION-VIOLATION -- there is no partial/committed state
+  // to roll back for a pure validation function, so "acceptance" here means
+  // the call returns true without raising.
+  let goldenSafeKeyAccepted=0;
+  for(const vector of DLP_SAFE_KEY_CONTROL_VECTORS){
+    const probeDocument=JSON.stringify({[vector.key]:'synthetic-marker-value'});
+    const serviceVerdict=containsDirectIdentifier({[vector.key]:'synthetic-marker-value'});
+    const dbResult=await client.query(
+      'select leasemind_security.validate_no_direct_identifiers($1::jsonb) as accepted',
+      [probeDocument]);
+    assert.equal(dbResult.rows[0].accepted,true,`golden safe-key:${vector.id} was rejected by the DB`);
+    goldenSafeKeyAccepted+=1;
+    if(serviceVerdict!==false){
+      parityMismatchIds.push(`${vector.id}(safe-key):service=${serviceVerdict},db_rejected=false`);
+    }
+  }
+
+  // DLP_FORBIDDEN_KEY_MATCH_V2: ordinary real field names with no forbidden
+  // substring -- same direct-function-call mechanism as the allowlist
+  // safe-key controls above (no payload-shape entanglement).
+  let goldenSafeOrdinaryKeyAccepted=0;
+  for(const vector of DLP_SAFE_ORDINARY_KEY_VECTORS){
+    const probeDocument=JSON.stringify({[vector.key]:'synthetic-marker-value'});
+    const serviceVerdict=containsDirectIdentifier({[vector.key]:'synthetic-marker-value'});
+    const dbResult=await client.query(
+      'select leasemind_security.validate_no_direct_identifiers($1::jsonb) as accepted',
+      [probeDocument]);
+    assert.equal(dbResult.rows[0].accepted,true,`golden safe-ordinary-key:${vector.id} was rejected by the DB`);
+    goldenSafeOrdinaryKeyAccepted+=1;
+    if(serviceVerdict!==false){
+      parityMismatchIds.push(`${vector.id}(safe-ordinary-key):service=${serviceVerdict},db_rejected=false`);
+    }
+  }
+
+  // Composite/prefixed/suffixed forbidden keys -- the exact class V1's
+  // exact-match strategy missed (customer_email, contact_email, etc). Same
+  // top-level-injection mechanism as the plain forbidden-key vectors: DLP
+  // runs before the unknown-field check, so an unrecognized composite key
+  // is still caught by DLP first.
+  let goldenCompositeKeyRejected=0;
+  for(const vector of DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS){
+    const probePayload={...payloadByEvent.get('PAYER_ASSIGNED'),[vector.key]:'synthetic-marker-value'};
+    const serviceVerdict=containsDirectIdentifier({[vector.key]:'synthetic-marker-value'});
+    const compositeEventId=eventUuid(dlpCounter++,'9');
+    let dbRejected=false;
+    let dbErrorMessage='';
+    try{
+      await client.query(dlpInsert,[compositeEventId,eventUuid(dlpCounter++,'a'),now,
+        ids.correlation,'trace-safe-value',`dlp-golden-composite-${vector.id}`,
+        JSON.stringify(probePayload),hash]);
+    }catch(error){
+      dbRejected=true;
+      dbErrorMessage=String(error.message);
+    }
+    if(dbRejected){
+      assert.equal(dbErrorMessage,'LM-DATA-CLASSIFICATION-VIOLATION',`golden-composite:${vector.id}`);
+      const compositeAbsent=await client.query(
+        'select count(*)::int as count from event_outbox where event_id=$1',[compositeEventId]);
+      assert.equal(compositeAbsent.rows[0].count,0,`golden-composite:${vector.id} rejection committed`);
+      goldenCompositeKeyRejected+=1;
+    }
+    if(serviceVerdict!==true || !dbRejected){
+      parityMismatchIds.push(`${vector.id}(composite):service=${serviceVerdict},db_rejected=${dbRejected}`);
+    }
+  }
+
+  // Composite forbidden keys nested inside a container value (reuses the
+  // reason_code-as-object mechanism from the value corpus above, since these
+  // probes are expected to be REJECTED so the untyped-field type check is
+  // never reached -- DLP intercepts first).
+  let goldenCompositeContainerRejected=0;
+  for(const vector of DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS){
+    const probePayload={...payloadByEvent.get('PAYER_ASSIGNED'),reason_code:vector.value};
+    const serviceVerdict=containsDirectIdentifier(vector.value);
+    const compositeContainerEventId=eventUuid(dlpCounter++,'9');
+    let dbRejected=false;
+    let dbErrorMessage='';
+    try{
+      await client.query(dlpInsert,[compositeContainerEventId,eventUuid(dlpCounter++,'a'),now,
+        ids.correlation,'trace-safe-value',`dlp-golden-composite-container-${vector.id}`,
+        JSON.stringify(probePayload),hash]);
+    }catch(error){
+      dbRejected=true;
+      dbErrorMessage=String(error.message);
+    }
+    if(dbRejected){
+      assert.equal(dbErrorMessage,'LM-DATA-CLASSIFICATION-VIOLATION',`golden-composite-container:${vector.id}`);
+      const containerAbsent=await client.query(
+        'select count(*)::int as count from event_outbox where event_id=$1',[compositeContainerEventId]);
+      assert.equal(containerAbsent.rows[0].count,0,`golden-composite-container:${vector.id} rejection committed`);
+      goldenCompositeContainerRejected+=1;
+    }
+    if(serviceVerdict!==true || !dbRejected){
+      parityMismatchIds.push(`${vector.id}(composite-container):service=${serviceVerdict},db_rejected=${dbRejected}`);
+    }
+  }
+
   assert.equal(parityMismatchIds.length,0,
     `service/DB DLP parity mismatch on: ${parityMismatchIds.join(', ')}`);
   assert.equal(goldenMaliciousRejected,DLP_MALICIOUS_VECTORS.length);
   assert.equal(goldenSafeAccepted,DLP_SAFE_CONTROL_VECTORS.length);
+  assert.equal(goldenForbiddenKeyRejected,DLP_FORBIDDEN_KEY_VECTORS.length);
+  assert.equal(goldenSafeKeyAccepted,DLP_SAFE_KEY_CONTROL_VECTORS.length);
+  assert.equal(goldenSafeOrdinaryKeyAccepted,DLP_SAFE_ORDINARY_KEY_VECTORS.length);
+  assert.equal(goldenCompositeKeyRejected,DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS.length);
+  assert.equal(goldenCompositeContainerRejected,DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS.length);
 
   const coverage=computeDlpMatrixCoverage();
   for(const klass of Object.keys(coverage.classCoverage)){
@@ -712,20 +865,29 @@ try {
     assert.equal(coverage.containerCoverage[klass],coverage.expectedContainers,
       `DLP golden corpus incomplete for class ${klass}: ${coverage.containerCoverage[klass]}/${coverage.expectedContainers} container vectors`);
   }
+  for(const token of Object.keys(coverage.keyCoverage)){
+    assert.equal(coverage.keyCoverage[token],coverage.expectedKeyVariants,
+      `DLP golden key corpus incomplete for token ${token}: ${coverage.keyCoverage[token]}/${coverage.expectedKeyVariants} variants`);
+  }
+  assert.equal(Object.keys(coverage.compositeCoverage).length,8,'expected exactly 8 composite key vectors');
+  assert.ok(Object.values(coverage.compositeCoverage).every(Boolean),'every composite key vector must be present');
+  assert.ok(coverage.compositeContainerCoverage['nested-object'] && coverage.compositeContainerCoverage.array,
+    'composite corpus must cover both nested-object and array containers');
   assert.ok(coverage.isComplete,'DLP golden corpus matrix is not complete');
 
   pass(
     'PG-026',
-    `versioned content DLP rejected ${dlpProbes.length} formatted/normalized identifiers plus ${goldenMaliciousRejected} golden malicious vectors (full ${coverage.expectedSeparators}x${Object.keys(coverage.classCoverage).length} separator matrix + nested/array) across payload, trace and metadata; accepted ${goldenSafeAccepted} golden safe controls; service/DB parity mismatches: ${parityMismatchIds.length}`,
+    `versioned content DLP rejected ${dlpProbes.length} formatted/normalized identifiers plus ${goldenMaliciousRejected} golden malicious value vectors (full ${coverage.expectedSeparators}x${Object.keys(coverage.classCoverage).length} separator matrix + nested/array), ${goldenForbiddenKeyRejected} golden forbidden-key vectors (${coverage.expectedKeyVariants} case/evasion variants x ${Object.keys(coverage.keyCoverage).length} tokens) and ${goldenCompositeKeyRejected + goldenCompositeContainerRejected} golden composite/prefixed/suffixed key vectors (DLP_FORBIDDEN_KEY_MATCH_V2) across payload, trace and metadata; accepted ${goldenSafeAccepted} golden safe value controls, ${goldenSafeKeyAccepted} normative-allowlist safe key controls and ${goldenSafeOrdinaryKeyAccepted} ordinary safe key controls; service/DB parity mismatches: ${parityMismatchIds.length}`,
     {
       classifier_version:'DLP_EVENT_CONTENT_V1',
+      dlp_forbidden_key_match_version:'V2',
       probes:dlpProbes.length,
       payload_probes:9,
       trace_probes:5,
       metadata_probes:1,
       normalized_phone_probes:6,
       normalized_passport_probes:3,
-      rollback_absence_checks:dlpProbes.length+goldenMaliciousRejected,
+      rollback_absence_checks:dlpProbes.length+goldenMaliciousRejected+goldenForbiddenKeyRejected+goldenCompositeKeyRejected+goldenCompositeContainerRejected,
       unsafe_value_echoes:0,
       golden_malicious_vectors:DLP_MALICIOUS_VECTORS.length,
       golden_malicious_rejected:goldenMaliciousRejected,
@@ -733,6 +895,17 @@ try {
       golden_safe_accepted:goldenSafeAccepted,
       golden_matrix_coverage:coverage.classCoverage,
       golden_container_coverage:coverage.containerCoverage,
+      golden_forbidden_key_vectors:DLP_FORBIDDEN_KEY_VECTORS.length,
+      golden_forbidden_key_rejected:goldenForbiddenKeyRejected,
+      golden_safe_key_vectors:DLP_SAFE_KEY_CONTROL_VECTORS.length,
+      golden_safe_key_accepted:goldenSafeKeyAccepted,
+      golden_safe_ordinary_key_vectors:DLP_SAFE_ORDINARY_KEY_VECTORS.length,
+      golden_safe_ordinary_key_accepted:goldenSafeOrdinaryKeyAccepted,
+      golden_composite_key_vectors:DLP_FORBIDDEN_COMPOSITE_KEY_VECTORS.length,
+      golden_composite_key_rejected:goldenCompositeKeyRejected,
+      golden_composite_container_vectors:DLP_FORBIDDEN_COMPOSITE_CONTAINER_VECTORS.length,
+      golden_composite_container_rejected:goldenCompositeContainerRejected,
+      golden_key_coverage:coverage.keyCoverage,
       service_db_parity_mismatches:parityMismatchIds.length
     }
   );

@@ -64,7 +64,35 @@ export const CT_EVIDENCE_REQUIREMENTS = Object.freeze({
     {dependency:'PG-026',path:'normalized_phone_probes',minimum:6},
     {dependency:'PG-026',path:'normalized_passport_probes',minimum:3},
     {dependency:'PG-026',path:'rollback_absence_checks',minimum:15},
-    {dependency:'PG-026',path:'unsafe_value_echoes',equals:0}
+    {dependency:'PG-026',path:'unsafe_value_echoes',equals:0},
+    // SEVENTH-B02 corrective pass: forbidden-KEY parity between JS
+    // containsDirectIdentifier and PostgreSQL scan_dlp_scalar. 112 = 8
+    // canonical forbidden tokens x 14 case/evasion variants; every one must
+    // be rejected by both layers with zero mismatches.
+    {dependency:'PG-026',path:'golden_forbidden_key_vectors',equals:112},
+    {dependency:'PG-026',path:'golden_forbidden_key_rejected',equals:112},
+    {dependency:'PG-026',path:'golden_key_coverage',
+      equals:{email:14,phone:14,passport:14,bank:14,card:14,address:14,contact:14,full_name:14}},
+    // DLP_FORBIDDEN_KEY_MATCH_V2 (this corrective pass): exactly 4 real
+    // normative field names (previous_contact_decision_id/_version,
+    // previous_contact_policy_hash/_version -- exhaustively derived from
+    // every openapi.yaml/asyncapi.yaml properties key, not hand-picked) are
+    // allowlisted and MUST be accepted by both layers; 4 ordinary safe
+    // fields with no forbidden substring MUST also be accepted; 8 composite/
+    // prefixed/suffixed keys (customer_email, contact_email, user_phone,
+    // passport_data, bank_account, payment_card, delivery_address,
+    // full_name_value) plus 2 nested container variants -- the exact class
+    // the old exact-only V1 strategy missed -- MUST all be rejected.
+    {dependency:'PG-026',path:'golden_safe_key_vectors',equals:4},
+    {dependency:'PG-026',path:'golden_safe_key_accepted',equals:4},
+    {dependency:'PG-026',path:'golden_safe_ordinary_key_vectors',equals:4},
+    {dependency:'PG-026',path:'golden_safe_ordinary_key_accepted',equals:4},
+    {dependency:'PG-026',path:'golden_composite_key_vectors',equals:8},
+    {dependency:'PG-026',path:'golden_composite_key_rejected',equals:8},
+    {dependency:'PG-026',path:'golden_composite_container_vectors',equals:2},
+    {dependency:'PG-026',path:'golden_composite_container_rejected',equals:2},
+    {dependency:'PG-026',path:'dlp_forbidden_key_match_version',equals:'V2'},
+    {dependency:'PG-026',path:'service_db_parity_mismatches',equals:0}
   ],
   'CT-024': [
     {dependency:'CT-024',path:'allowed_tombstone_fields',

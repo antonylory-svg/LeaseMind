@@ -1,6 +1,6 @@
 {
-  "submission": "LeaseMind Matching Engine DEVELOPMENT sixth-review remediation",
-  "created_at": "2026-07-26T07:23:31.100Z",
+  "submission": "LeaseMind Matching Engine DEVELOPMENT eighth-review candidate controlled set (integrity corrective pass: two-phase fail-closed packaging tool, stale report/manifest hash fixed, README claims corrected)",
+  "created_at": "2026-08-21T05:52:00.000Z",
   "synthetic_data_only": true,
   "canonical_filename_policy": "Exact four filenames only; reject suffix copies and any SHA-256 mismatch.",
   "artifacts": [
@@ -14,27 +14,32 @@
       "filename": "LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md",
       "version": "1.0",
       "status": "Proposal for DEVELOPMENT review",
-      "sha256": "e4c05c9e1eae08575bd5ba7763ca7abbec9f94d4ccc8e101c062a7aeef304cec"
+      "sha256": "7ff50427c30167ff784fbd0acf7fd2a8053f17f5bb893cd514715b3cdbd46823",
+      "note": "Change-log subsection 1.6 added and OpenAPI/AsyncAPI/DDL fenced blocks resynchronized with the current machine-readable contracts (SEVENTH-B01-B06 plus DLP forbidden-key V2). Product/legal mechanics and Architecture v1.1 unchanged. Hash computed with LF line endings (git blob convention), matching the Architecture entry above; verify_contracts.py performs its own byte-identity check independent of this manifest."
     },
     {
       "filename": "LeaseMind_MATCHING_DATA_CONTRACTS_v1.0_EXECUTABLE.zip",
       "version": "1.0",
-      "status": "Synthetic verification package",
-      "sha256": "234f59be898f8e2e0e11ea05dd58bcaa3983b22c1d95785574e1476072c0faf1"
+      "status": "Synthetic verification package (candidate, pending DEVELOPMENT eighth-review sign-off)",
+      "sha256": "7b5a11dfe9b3fa881d7769d44bbb62b1e3d69fbd2d56ecaaa98bdb80784499da"
     }
   ],
   "embedded_evidence": {
-    "source_manifest_sha256": "2b71e4baf16ce3b34bd492c463112bcd8f0c5e287bc8829af382841ec578c1f5",
-    "synthetic_verification_report_sha256": "e89e55c4f751f4eafe5feb9e14040ad90dc061d02b82c28f58fcaa554a19e52f",
-    "postgres_execution_log_sha256": "f1b1cfa281bfec104b8a17c5cd7efa50791f0175c3d2f0996632a7e511c4ea27",
-    "evidence_runner_self_tests": "EV-001–EV-007 PASS",
-    "contract_tests": "CT-001–CT-033 PASS with semantic evidence",
-    "postgres_tests": "PG-001–PG-030 applicable set PASS",
-    "event_payload_probes": "33 positive + 1020 schema-derived per-constrained-field negative mutations PASS",
-    "dlp_probes": "15 payload/trace/metadata probes including normalized phone and passport PASS",
+    "source_manifest_sha256": "487facad1c8bd6465692365e8a89bbd91aabf42e13afa80e7742dba590a9657a",
+    "synthetic_verification_report_sha256": "25c1e25378f8864ce4499f4d3a36f83d376171697885f04614c114533a63aaab",
+    "postgres_execution_log_sha256": "63905fbe67a4e6c40270ac620796e6fba1581a0d359277250bf5e6f1365309d3",
+    "verification_flow": "python -m venv + pip install -r requirements.txt + verify_contracts.py (static byte-identity Markdown<->machine files, manifest integrity); npm ci + node tests/run_contract_suite.mjs (raw offline validator/service assertions); node tests/run_evidence_self_tests.mjs; DATABASE_URL=<disposable PostgreSQL 18.4> npm run verify (combined resolved-evidence report, full PG lifecycle); node tools/build_controlled_zip.mjs --prepare-manifest run strictly BEFORE npm run verify, then node tools/build_controlled_zip.mjs (final build) run strictly AFTER, so source_manifest_sha256/postgres_execution_log_sha256 above are cryptographically fresh relative to the manifest and log actually packaged (two-phase packaging lifecycle, this pass)",
+    "python_verifier": "PASS on the synchronized controlled set (14/14 static checks including byte-identity Markdown<->openapi.yaml/asyncapi.yaml/up.sql and manifest.sha256 integrity; prior passes undercounted this as 13/13); confirmed FAILS with AssertionError on a deliberately desynchronized Markdown copy (regression proof)",
+    "raw_offline_contract_assertions": "28/28 PASS (individual test('CT-xxx', ...) entries actually executed by tests/run_contract_suite.mjs; 5 of the 33 CT IDs -- CT-022, CT-030, CT-031, CT-032, CT-033 -- resolve purely from PostgreSQL evidence via tests/evidence_matrix.mjs and have no separate raw CT-numbered assertion of their own)",
+    "resolved_contract_tests": "CT-001-CT-033, 33/33 PASS (tests/evidence_matrix.mjs resolveCtEvidence, exact dependency+semantic-evidence gate)",
+    "evidence_runner_self_tests": "EV-001-EV-007, 7/7 PASS",
+    "postgres_tests": "PG-001-PG-030 applicable set, 30/30 PASS",
+    "event_payload_probes": "33 positive + 33 UUID v7 positive + 2021 schema-derived per-constrained-field negative mutations PASS",
+    "dlp_probes": "15 payload/trace/metadata format probes plus full golden corpus PASS, 0 service/DB parity mismatches: 51 malicious value vectors + 5 safe value controls (VALUE normalization); 112 forbidden-key case/evasion vectors across 8 tokens x 14 variants + 8 composite/prefixed/suffixed vectors (customer_email, contact_email, user_phone, passport_data, bank_account, payment_card, delivery_address, full_name_value) + 2 nested composite-container vectors, 4 normative-allowlist safe-key controls (previous_contact_decision_id/_version, previous_contact_policy_hash/_version) and 4 ordinary safe-key controls (DLP_FORBIDDEN_KEY_MATCH_V2 -- substring match with closed exact allowlist, replacing the exact-match-only V1 that missed composite keys)",
     "reveal_redemption": "atomic immutable Attempt + server-owned result/hash + two-connection race/failure injection PASS",
     "postgres_lifecycle": "up → catalog/behavior/security assertions → down → empty post-down catalog",
-    "clean_zip_reproduction": "PASS"
+    "clean_zip_reproduction": "PASS (two consecutive deterministic builds from tools/build_controlled_zip.mjs, byte-identical, sha256 08d858f8f3aebf9fae235f76824817aad9a10c4987ee6682948d30267baf739a); re-extracted into a fresh temp folder and re-verified: Python verifier PASS, npm offline CT 28/28 PASS, byte-for-byte equality of every packaged file against source/ confirmed with diff -rq",
+    "sprint7_corrective_passes": "pass #1 closes SEVENTH-B01-B06 and initial DLP forbidden-key parity (exact-match V1); pass #2 (final DLP/Markdown pass) closes three gaps -- (1) DLP_FORBIDDEN_KEY_MATCH_V2 replaces fail-open exact-only key matching with substring+closed-normative-allowlist matching, catching composite/prefixed/suffixed identifier keys; (2) top-level Data Contracts Markdown resynchronized byte-identical with the current openapi.yaml/asyncapi.yaml/up.sql; (3) README/manifest claims corrected to actual measured counts; pass #3 (this integrity pass) closes three further gaps found by independent re-review -- (a) tools/build_controlled_zip.mjs previously recomputed manifest.sha256 as part of the same build step that packaged synthetic_verification_report.json, so the report's source_manifest_sha256 could reference a manifest state that no longer matched what shipped; split into --prepare-manifest (writes only manifest.sha256, no report/log/zip) run strictly before the canonical npm run verify, and a final build that never writes manifest.sha256 and instead fails closed if it does not already match recomputed content, plus fails closed on any non-exact/non-PASS CT-001..033, EV-001..007, PG-001..030 or raw-assertion id set, non-fresh source_manifest_sha256/postgres.stderr_log_sha256, or synthetic_data_only/production_adapters_used not exactly true/false -- proven with 20 fail-closed regression probes in an isolated temp copy (19 targeted mutations + 1 post-probe sanity PASS, all correctly rejected/accepted); (b) package README.md's 'Запуск' section still quoted stale 1020-mutation/15-probe figures from before DLP V2 -- replaced with the actual measured canonical-flow numbers below; (c) top-level README.md's historical 2026-07-26 import hash table was not distinguished from the current candidate controlled set and merged Architecture/Data Contracts Proposal statuses under one incorrect label -- both fixed without altering any historical row's SHA-256 or the Architecture v1.1 document itself"
   },
   "production_launch_gate": "BLOCKED"
 }
