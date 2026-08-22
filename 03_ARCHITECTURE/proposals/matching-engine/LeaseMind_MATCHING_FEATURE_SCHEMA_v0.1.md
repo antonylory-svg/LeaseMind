@@ -3,7 +3,7 @@
 **Версия:** 0.1
 **Дата:** 2026-08-21
 **Статус:** `Proposal for cross-functional review (AI + PRODUCT + DEVELOPMENT + LEGAL) — does not authorize implementation`
-**Владелец:** Chief AI Architect (координация) + AI + PRODUCT (первичный owner содержания, §37 LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md)
+**Владельцы решения:** PRODUCT + LEGAL + AI (§37 и §52.1 `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`); **координатор документа:** Chief AI Architect
 **Область:** governance-контракт готовности признаков synthetic-only Matching Engine; не production data/adapters; не разрешение на реализацию
 **Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только как существующая граница исполнимых контрактов, не источник feature-арифметики), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`
 
@@ -198,6 +198,8 @@ FeatureValue:
 
 **Явно исключено:** `min_lease_term_compatibility` **не входит** в эти 20 и не является reject rule. `property_min_lease_months` и `request_min_lease_months` — оба нижние границы; без верхней границы срока пара минимумов не создаёт несовместимости (совместимый срок `≥ max(property_min, request_min)` всегда существует при отсутствии верхнего предела). Оба сырых поля остаются частью product-классификации `hard_constraints` bootstrap-блока (§10.2/§10.3 источника), но реклассифицированы как `combined_minimum_term_fact` — non-exclusion input-кандидат для `MATCHING_QUALIFICATION_POLICY`/Deal Feasibility, не для этого реестра (см. §6.1).
 
+**Явно исключены как свободный текст:** `hard_constraints.business_category_other` = `property_business_category_other` (§10.2 источника) и `hard_constraints.property_type_other` = `request_property_type_other` (§10.3 источника) не образуют отдельные feature candidates и намеренно не входят в 20 строк. Это DLP-проверяемые `*_other`-уточнения, запрещённые как scoring input без отдельной safe-classification policy (§7.5); их PRODUCT-размещение в bootstrap-блоке `hard_constraints` не отменяет запрета свободного текста и не создаёт comparison/reject rule.
+
 ### 5.2. Null/applicability, evidence и governance для всех 20 строк
 
 | Параметр | Значение (общее для всех 20, кроме отмеченного) |
@@ -352,9 +354,9 @@ Coarse geography (`property_country_code`/`region`/`city`/`districts` и их Te
 
 ## 9. Versioning и replay compatibility
 
-- **Version bundle:** `feature_schema_version + scoring_policy_version + qualification_policy_version` — согласованная тройка; раздельное обновление одной версии из трёх запрещено.
-- **Backward-compatible (additive) изменение** — добавление нового `feature_id` безопасно **только если одновременно**: (а) он не входит ни в одну активную формулу `MATCHING_SCORING_POLICY`/условие `MATCHING_QUALIFICATION_POLICY`, и (б) старый consumer имеет явно утверждённое ignore-поведение для неизвестных `feature_id` — не молчаливое допущение.
-- **Breaking изменение** — переименование/удаление `feature_id`, изменение типа/диапазона/direction/dimension, изменение обязательности, **или включение** нового/существующего признака в активную scoring/qualification арифметику (даже если сам признак optional по данным) — всегда breaking для replay, требует новой major-версии и координированного обновления всей тройки версий выше.
+- **Reproducibility version bundle:** `feature_schema_version + scoring_policy_version + risk_policy_version + qualification_policy_version` и соответствующие hashes — обязательный согласованный набор по §49 Architecture. Раздельное обновление одной версии без явного анализа совместимости всего набора запрещено.
+- **Backward-compatible (additive) изменение** — добавление нового `feature_id` безопасно **только если одновременно**: (а) он не входит ни в одну активную формулу/условие `MATCHING_SCORING_POLICY`, `MATCHING_RISK_POLICY` или `MATCHING_QUALIFICATION_POLICY`, и (б) старый consumer имеет явно утверждённое ignore-поведение для неизвестных `feature_id` — не молчаливое допущение.
+- **Breaking изменение** — переименование/удаление `feature_id`, изменение типа/диапазона/direction/dimension, изменение обязательности, **или включение** нового/существующего признака в активную scoring/risk/qualification арифметику (даже если сам признак optional по данным) — всегда breaking для replay, требует новой major-версии Feature Schema и координированного обновления всех затронутых policy versions/hashes из bundle выше.
 - Любое изменение активного состава признаков или их семантики требует нового прогона `MATCHING_EVALUATION_PLAN`.
 - **Canonical ordering/serialization:** порядок `feature_id` в любом сохраняемом снэпшоте — лексикографический по code point (без `localeCompare`, без зависимости от locale/ICU), тот же принцип детерминированности, что уже принят для `MATCHING_SCORING_POLICY` (fixed-point decimal, round-half-to-even на зафиксированных чекпоинтах) и для replay-контракта §49 Architecture.
 - Silent reinterpretation сохранённых `FeatureValue` под новой семантикой schema **запрещена** без исключений.
@@ -472,9 +474,9 @@ Coarse geography (`property_country_code`/`region`/`city`/`districts` и их Te
 
 #### `MFS-C-011` — координированный version bundle
 
-**Given:** изменение, добавляющее новый `feature_id` в активную scoring-арифметику.
+**Given:** изменение, добавляющее новый `feature_id` в активную scoring/risk/qualification арифметику.
 **When:** оценивается совместимость.
-**Then:** изменение классифицируется как breaking; требуется одновременное обновление `feature_schema_version`, `scoring_policy_version`, `qualification_policy_version` и новый прогон `MATCHING_EVALUATION_PLAN`; раздельное обновление одной версии запрещено (§9).
+**Then:** изменение классифицируется как breaking; требуется координированное обновление `feature_schema_version` и всех затронутых `scoring_policy_version`, `risk_policy_version`, `qualification_policy_version` вместе с их hashes, а также новый прогон `MATCHING_EVALUATION_PLAN`; раздельное обновление без анализа совместимости полного reproducibility bundle запрещено (§9, §49 Architecture).
 
 #### `MFS-C-012` — gates остаются заблокированными, реализация не разрешена
 
