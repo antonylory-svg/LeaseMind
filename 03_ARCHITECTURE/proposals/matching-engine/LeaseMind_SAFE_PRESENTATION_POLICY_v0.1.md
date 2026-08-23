@@ -173,7 +173,7 @@ Source-приоритет:
 - **Purpose:** показать тип/категорию объекта на уровне, не позволяющем идентификацию.
 - **Prerequisites:** существование закрытого `property_type` enum (`SOURCE_NORMATIVE` факт для `CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, §6.1) — но его достаточность и переиспользование именно как Safe Presentation registry остаются `OPEN` (§7, §14 пункт 2).
 - **Forbidden leakage:** редкая категория в сочетании с narrow attributes (площадь/ставка/дата/инженерный признак) — см. §7.
-- **Combination-risk dependency:** редкая категория в сочетании с narrow attributes (площадь/ставка/дата/инженерный признак) способна идентифицировать объект; combination-risk evidence обязательна перед допуском любой конкретной категории в presentation.
+- **Combination-risk dependency:** пересечение coarse category с другими одновременно показанными признаками может однозначно сузить candidate pool; combination-risk evidence обязательна до допуска конкретной категории.
 - **Owner decision:** `PRODUCT + LEGAL`.
 
 ### 6.8. Safe next verification/action

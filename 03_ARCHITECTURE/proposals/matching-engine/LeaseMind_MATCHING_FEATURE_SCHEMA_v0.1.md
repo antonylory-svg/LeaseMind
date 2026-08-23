@@ -378,8 +378,8 @@ Coarse geography (`property_country_code`/`region`/`city`/`districts` и их Te
 | 9 | Правомерность `business_stage_signal` как fit-фактора (не Risk-фактора и не запрещённого proxy) | LEGAL + PRODUCT |
 | 10 | Направление/форма зависимости `budget_headroom` (или отказ от него) | PRODUCT + AI |
 | 11 | Новые PRODUCT-поля для 8 из 10 значений `location_priority` на стороне Property, и Property capacity-поле для `expected_occupancy_signal` | PRODUCT |
-| 12 | Калибровка `Feature Fit`/интерфейса `Evidence Confidence` (сам интерфейс — §3 этого документа; калибровка — вне объёма) | `MATCHING_SCORING_POLICY` + `MATCHING_EVALUATION_PLAN` |
-| 13 | Публичный `reason_code` каталог и routing `MATCHING_QUALIFICATION_POLICY` для всех 20 hard-constraint candidates | `MATCHING_QUALIFICATION_POLICY`, Chief AI Architect |
+| 12 | Калибровка `Feature Fit`/интерфейса `Evidence Confidence` (сам интерфейс — §3 этого документа; калибровка — вне объёма) | `Chief AI Architect + AI` — candidate assignment; source не назначает owner напрямую; `MATCHING_SCORING_POLICY`/`MATCHING_EVALUATION_PLAN` — артефакты фиксации/проверки решения, не owner'ы |
+| 13 | Публичный `reason_code` каталог и routing `MATCHING_QUALIFICATION_POLICY` для всех 20 hard-constraint candidates | `Chief AI Architect + AI` — candidate assignment, с координацией с будущим Qualification routing/reason-catalog owner; source не назначает owner напрямую; `MATCHING_QUALIFICATION_POLICY` — артефакт фиксации/использования решения, не owner |
 | 14 | Метод строкового сопоставления geography-полей (`region_membership`, `city_membership`, `districts_membership`, №17–19) — точное совпадение, регистронезависимость или catalog-id | PRODUCT + DEVELOPMENT |
 | 15 | Mapping-таблица `property_floor` (integer, опционально `total_floors`) → enum `floor_option` для `floor_option_fit` (№20) | PRODUCT + DEVELOPMENT |
 | 16 | Правило интерпретации при рассогласовании `property_operating_expenses_included`/`request_budget_includes_operating_expenses` (§5.3) — принять более строгую трактовку, ввести новое числовое поле суммы эксплуатационных расходов, либо иное решение | PRODUCT |
