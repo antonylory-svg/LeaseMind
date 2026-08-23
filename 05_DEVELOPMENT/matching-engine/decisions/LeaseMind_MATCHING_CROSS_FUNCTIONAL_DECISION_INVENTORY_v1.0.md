@@ -2,8 +2,9 @@
 
 **Версия:** 1.0
 **Дата:** 2026-08-23
-**Статус:** `Cross-functional decision inventory — informational; does not authorize implementation or approve any Proposal`
+**Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
 **Reviewed repository commit:** `5ebcd898a60b825e54077524777141ed2db238f8`
+**Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Coordination:** Chief AI Architect — coordination candidate only, not owner of every indexed decision
 
 ## 1. Назначение и граница документа
@@ -216,6 +217,14 @@ Folded references:
 - `MSP-05 → XFR-D-034`: Scoring Policy explicitly treats the Qualification threshold as out of its scope.
 - `MRP-14 → XFR-D-005`: Risk Policy defers TTL to Architecture §37 №11 and Feature Schema.
 
+### 5.1. Wave 1 decision-status overlay
+
+| Canonical ID | Record | Current status |
+|---|---|---|
+| `XFR-D-030` | `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md` | Governance owner/approver assignment `APPROVED`; Qualification Policy remains Proposal |
+| `XFR-D-031` | `LeaseMind_MATCHING_DECISION_XFR-D-031_v1.0.md` | Responsibility boundary `APPROVED`; exact runtime representation remains `OPEN` |
+| `XFR-D-067` | `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md` | Authority model `APPROVED`; named appointment/RBAC remains pending |
+
 ## 6. External normative anchors — вне count 102/90
 
 | Architecture anchor | Source owner | Связь |
@@ -245,15 +254,15 @@ Evaluation Plan не содержит metric family для:
 
 Все решения остаются `OPEN`; anchor означает dependency order, не approval.
 
-### `XFR-F3` — Qualification runtime owner escalation (`LOW`)
+### `XFR-F3` — Qualification runtime owner escalation (`LOW`, `RESOLVED`)
 
-`XFR-D-031` — единственная source row без source-owner и без candidate owner. Inventory не угадывает роль: сначала требуется governance escalation/owner assignment.
+Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner наследуется от утверждённого `XFR-D-030`, technical schema steward — `DEVELOPMENT`. Finding закрыт только для responsibility boundary; exact runtime representation остаётся `OPEN` и переходит в Wave 7 design.
 
 ## 8. Review waves
 
 | Wave | Цель | Вход/ключевые IDs | Выход | Stop condition |
 |---:|---|---|---|---|
-| 1 | Owner/authority resolution | `XFR-D-030`, `XFR-D-031`, `XFR-D-067` | Назначенные role/authority records | Нельзя приписывать owner по аналогии |
+| 1 | Owner/authority resolution — `COMPLETED` | `XFR-D-030`, `XFR-D-031`, `XFR-D-067` | Три versioned role/authority records | Exact runtime design и named Data Governance appointment не входят в completion |
 | 2 | Qualitative policy semantics | compatibility, precedence, missing fields, aggregation candidate, presentation registry | Reviewable qualitative policy updates | Никаких numeric values до evidence |
 | 3 | Evidence-plan approval | `XFR-D-057`–`071`, `XFR-D-045`, `XFR-D-083`; закрытие `XFR-F1` | Approved procedure/manifest, не результаты | Нельзя запускать evaluation без процедуры |
 | 4 | Empirical evaluation | Mutual Aggregate, weights, calibration, risk, ranking, re-identification | FROZEN→EXECUTED→REVIEWED evidence record | Tuning и final evidence разделены |
@@ -265,12 +274,12 @@ Evaluation Plan не содержит metric family для:
 
 ## 9. Ready-now и blocked categories
 
-- `READY_FOR_OWNER_REVIEW_NOW`: owner/authority questions, qualitative compatibility/mapping/precedence, missing PRODUCT fields, registry reuse, audience/purpose/localization и artifact approval-process design. Это означает только готовность обсуждать.
+- `READY_FOR_OWNER_REVIEW_NOW`: qualitative compatibility/mapping/precedence, missing PRODUCT fields, registry reuse, audience/purpose/localization и artifact approval-process design. Это означает только готовность обсуждать.
 - `NEEDS_PRECEDING_POLICY_DECISION`: segment overrides, segment Qualification thresholds, combination-risk algorithm.
 - `NEEDS_EMPIRICAL_EVIDENCE`: Mutual Aggregate, weights, Qualification thresholds, Risk human-review threshold, re-identification threshold, Feature Fit calibration, ranking metrics.
 - `NEEDS_LEGAL_BASIS_OR_SOURCE_CONFIRMATION`: LEGAL verdict for candidates, protected/proxy classification, fairness standard, Lawful Basis integration.
 - `DOWNSTREAM_ONLY_AFTER_GATE`: runtime enums/interfaces, Data Contracts carrier, cache/revocation implementation, integration schemas.
-- `OWNER_MUST_BE_ASSIGNED_FIRST`: `XFR-D-030`; `XFR-D-031` additionally has no candidate owner.
+- `OPERATIONAL_APPOINTMENT_PENDING`: named Data Governance authority/RBAC for `XFR-D-067`; отсутствие назначения блокирует dataset use.
 
 ## 10. Architecture questions и gates
 
@@ -286,15 +295,15 @@ Evaluation Plan не содержит metric family для:
 
 ## 11. Следующий формат работы
 
-Этот index не содержит отдельных решений. Complex decision records создаются позже небольшими owner-oriented waves, а не 15–20 файлами одновременно.
+Index ссылается на отдельные decision records, но сам не заменяет их. Wave 1 завершён тремя records; они не утверждают Proposal и не снимают gates.
 
-Первый последующий пакет должен касаться только Wave 1:
+Следующий governance package — Wave 2 qualitative policy semantics. Перед ним синхронизируются:
 
-- `XFR-D-030` — Qualification Policy artifact owner/approvers;
-- `XFR-D-031` — governance escalation для owner runtime representation;
-- `XFR-D-067` — Data Governance role authority.
+- Qualification Policy: `XFR-D-030` resolved и `XFR-D-031` responsibility resolved / representation open;
+- Evaluation Plan: `XFR-D-067` authority model resolved / named appointment pending;
+- этот inventory: Wave 1 status overlay.
 
-Ни один record не должен закрываться без явного решения соответствующего owner/governance authority.
+Wave 2 не выбирает численные значения и не начинает runtime design.
 
 ## 12. Acceptance criteria
 
@@ -332,4 +341,4 @@ Inventory не утверждает Proposal, schema/runtime design, implementat
 
 На reviewed commit доказано: 102 локальные open-decision строки отображаются в 90 canonical decisions без пропусков, orphan IDs или коллизий. Inventory готов только как informational index для будущего cross-functional owner review.
 
-`DECISION PACKAGE INDEXED — NO DECISIONS APPROVED`
+`DECISION PACKAGE INDEXED — WAVE 1 GOVERNANCE ASSIGNMENTS RECORDED — NO PROPOSAL APPROVED`

@@ -3,15 +3,15 @@
 **Версия:** 0.1
 **Дата:** 2026-08-23
 **Статус:** `Proposal for cross-functional review — does not authorize implementation`
-**Artifact owner:** `OPEN_BLOCKED_PENDING_DECISION` — Architecture §36.2 условие 2 требует утверждённый артефакт `MATCHING_QUALIFICATION_POLICY` как условие `IMPLEMENTATION_READINESS_GATE`, но нигде не назначает ему owner: артефакт не появляется ни в §52 (Controlled Artifact Manifest table), ни как отдельный пункт §37 (Открытые вопросы) — в отличие от `MATCHING_RISK_POLICY` (owner `AI + LEGAL`, §37 №8), `MATCHING_FEATURE_SCHEMA` (owner `PRODUCT + LEGAL + AI`, §37 №11), `MATCHING_SCORING_POLICY` (owner `AI + PRODUCT`, §37 №2/3), `MATCHING_EVALUATION_PLAN` (owner `AI + DEVELOPMENT`, §37 №10), `SAFE_PRESENTATION_POLICY` (owner `PRODUCT + LEGAL`, §37 №6). Owner **не назначается нормативно по аналогии** с этими соседними артефактами — вопрос остаётся полностью открытым (открытое решение №1, §15).
+**Artifact owner:** `Chief AI Architect + PRODUCT`; mandatory approvers: `LEGAL + DEVELOPMENT` — утверждено governance record `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md`. Architecture §36.2 требует policy для gate, но сама не назначает owner; назначение сделано отдельным human governance decision, не по аналогии и не является approval этого Proposal.
 **Threshold decision owner (Architecture §37 вопрос №8, Risk→routing threshold):** `AI + LEGAL` — `SOURCE_NORMATIVE`; отдельная owner-грань, ограниченная именно этим порогом, не тождественна artifact owner выше и не распространяется на остальные пороги (§10, §15 открытое решение №9).
-**DEVELOPMENT review** для reproducibility/technical feasibility — `DECISION_CANDIDATE_FOR_REVIEW`; источник напрямую не назначает DEVELOPMENT единоличным owner'ом ни одного Qualification-решения.
+**DEVELOPMENT:** mandatory approver policy artifact и technical schema steward runtime carrier по `XFR-D-030`/`XFR-D-031`; не владеет единолично routing semantics.
 
 **This proposal does not authorize implementation, runtime/API/schema changes, model release, synthetic acceptance, production use, real personal data, automated policy promotion, or any gate.**
 
 Документ не закрывает Architecture §37 вопрос №8 и не переводит ни один gate в `READY`.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (прочитан полностью до EOF, 3976 строк — Qualification-специфичных carrier'ов не найдено, см. §5), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, source facts/evidence), `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (Proposal-зависимость, dataset/metric/threshold-search procedure evidence), `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` (Proposal-зависимость, Risk output boundary), `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence о Data Contracts hash/executable verification, не источник новых архитектурных решений).
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (прочитан полностью до EOF, 3976 строк — Qualification-специфичных carrier'ов не найдено, см. §5), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, source facts/evidence), `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (Proposal-зависимость, dataset/metric/threshold-search procedure evidence), `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` (Proposal-зависимость, Risk output boundary), `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-031_v1.0.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence о Data Contracts hash/executable verification, не источник новых архитектурных решений).
 
 ---
 
@@ -60,7 +60,7 @@ Precedent, предложение соседнего документа или �
 - выбранный precedence между routing causes;
 - public/runtime field, enum, event, reason namespace или DB schema;
 - использование orphaned `GateState` (Data Contracts §2.2) как Qualification carrier;
-- назначение artifact owner;
+- изменение утверждённого `XFR-D-030` owner/approver assignment или выбор exact runtime representation сверх responsibility boundary `XFR-D-031`;
 - reviewer queue/authority сверх уже утверждённого Architecture §31.1;
 - legal/payment/payer/participation/presentation/previous-contact/reveal решения;
 - scoring arithmetic, Risk factor definitions и Safe Presentation ownership;
@@ -83,7 +83,7 @@ Precedent, предложение соседнего документа или �
 | AI Manager | Orchestration задач Кампании; получает Match Package | Подмена источника фактов, LEGAL, user decision (§5 принципы 2–4) |
 | Legal/Decision Service | Единственный writer мотивированных reviewer decisions (§40) | Qualification calculation |
 | Matching Engine | Единственный writer расчёта Match, включая Qualification Gate результат (§40) | Кампания, стратегия, плательщик (§5 принципы 3–4) |
-| DEVELOPMENT | Reproducibility/technical feasibility — `DECISION_CANDIDATE_FOR_REVIEW`, источник не назначает прямо | Смысл routing rule |
+| DEVELOPMENT | Mandatory approver policy artifact; technical schema steward/carrier implementation owner по `XFR-D-030`/`XFR-D-031` | Единоличное изменение смысла routing rule |
 
 **Отсутствие циклической зависимости.** Qualification Policy может оцениваться против versioned candidate bundles Feature Schema/Scoring Policy/Risk Policy до их утверждения — `DECISION_CANDIDATE_FOR_REVIEW`. Evaluation Plan производит evidence для последующего cross-functional approval конкретных Qualification thresholds — не заменяет и не продвигает его автоматически (§34.4 Architecture: «Автоматическое изменение продуктивных правил по результатам обучения — 0 случаев»).
 
@@ -165,7 +165,7 @@ Gate проверяет девять условий — названия `SOURCE
 - `HUMAN_REVIEW_REQUIRED`;
 - `REJECTED_BY_MATCHING`.
 
-**Runtime representation не утверждена.** Полное чтение `MATCHING_DATA_CONTRACTS_v1.0.md` до EOF подтверждает: ни один из четырёх результатов не встречается ни разу ни как поле, ни как enum-значение, ни как event type, ни как error code — Data Contracts v1.0 не содержит Qualification carrier ни explicit, ни generic (см. §5 — единственный кандидат `GateState` orphaned и не подключён). Runtime/API/field/enum представление — `OPEN_BLOCKED_PENDING_DECISION` (открытое решение №2).
+**Runtime representation не утверждена.** Полное чтение `MATCHING_DATA_CONTRACTS_v1.0.md` до EOF подтверждает: ни один из четырёх результатов не встречается ни разу ни как поле, ни как enum-значение, ни как event type, ни как error code — Data Contracts v1.0 не содержит Qualification carrier ни explicit, ни generic (см. §5 — единственный кандидат `GateState` orphaned и не подключён). `XFR-D-031` утверждает только responsibility boundary: semantic owner — owner policy из `XFR-D-030`, technical schema steward — `DEVELOPMENT`, с обязательными architecture/replay и применимым LEGAL review. Exact runtime/API/field/enum representation остаётся `OPEN_BLOCKED_PENDING_DECISION`.
 
 **Пятый статус не создаётся.** `STALE` (§32 Architecture: «Профиль устарел → Match становится `STALE`; раскрытие по нему не разрешается») — отдельное source behavior Match/freshness, не входит в перечень §18.1. Источник не формулирует правило взаимодействия `STALE` с четырьмя результатами (например, может ли `STALE`-Match всё ещё получить один из четырёх результатов, при этом disclosure остаётся заблокирован независимо от результата) — точное взаимодействие остаётся `OPEN_BLOCKED_PENDING_DECISION` (открытое решение №11, см. §9 ниже).
 
@@ -294,14 +294,14 @@ Reviewer действует только в пределах приказа/RBAC
 
 ---
 
-## 15. Open decisions — 20 строк
+## 15. Decision register — 20 строк
 
-Ни одно решение не выбрано этим документом. Owner rules: source-assigned owner указывается только там, где источник прямо назначает именно это решение (например №9 — Architecture §37 №8); унаследованный owner от смежного Proposal/open decision помечен как candidate/inherited context, не как прямой Qualification owner; строки без source owner явно говорят «candidate assignment» или «owner OPEN».
+Сам Proposal не выбирает policy values. Внешние human governance records разрешили owner assignment №1 и responsibility boundary части №2; exact runtime representation и остальные substantive вопросы остаются open. Source-assigned owner указывается только там, где источник прямо назначает именно это решение (например №9 — Architecture §37 №8); candidate/inherited context не становится source-normative.
 
 | № | Вопрос | Owner | Блокирует |
 |---|---|---|---|
-| 1 | Artifact owner/approvers `MATCHING_QUALIFICATION_POLICY` | — **owner OPEN**; источник не назначает owner вообще нигде (§36.2, §37, §52 — проверено полностью) | Controlled Artifact Manifest entry, `IMPLEMENTATION_READINESS_GATE` условие 5 |
-| 2 | Exact runtime representation/field/enum для четырёх routing results | — **owner OPEN**; подтверждено отсутствие в Data Contracts v1.0 (полное чтение, 0 совпадений, включая orphaned `GateState`) | Data Contracts schema, `IMPLEMENTATION_READINESS_GATE` условие 1 |
+| 1 | Artifact owner/approvers `MATCHING_QUALIFICATION_POLICY` | **RESOLVED by `XFR-D-030 v1.0`:** owner `Chief AI Architect + PRODUCT`; mandatory approvers `LEGAL + DEVELOPMENT`. Policy approval и manifest entry всё ещё pending | Controlled Artifact Manifest entry, `IMPLEMENTATION_READINESS_GATE` условие 5 |
+| 2 | Exact runtime representation/field/enum для четырёх routing results | **PARTIALLY RESOLVED by `XFR-D-031 v1.0`:** semantic owner — `XFR-D-030` owner; technical schema steward — `DEVELOPMENT`; exact representation остаётся `OPEN_BLOCKED_PENDING_DECISION`, `GateState` не переиспользуется автоматически | Data Contracts schema, `IMPLEMENTATION_READINESS_GATE` условие 1 |
 | 3 | Mapping Eligibility Filter результатов (`ELIGIBLE`/`INELIGIBLE`/`NEEDS_VERIFICATION`, §14 этап 3) → Qualification routing (§18.1) | — candidate assignment; источник не формулирует эквивалентность несмотря на совпадение строки `NEEDS_VERIFICATION` | Eligibility→Gate pipeline semantics |
 | 4 | Precedence между hard constraint / unknown / conflict / stale / confidence / risk / completeness / mutual-fit причинами при одновременном срабатывании | — candidate assignment | Multi-cause routing determinism |
 | 5 | Numerical minimum mutual-fit threshold | — candidate assignment; §18.1 называет условие только качественно | Gate operationalization |
@@ -406,7 +406,7 @@ Architecture §37 вопрос №8 остаётся **`OPEN`**.
 - не переводит `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` или `PRODUCTION_LAUNCH_GATE` в иной статус — все три `BLOCKED`;
 - не синхронизирует Controlled Artifact Manifest (§52.1 Architecture) — запись `MATCHING_QUALIFICATION_POLICY` не добавляется до реального утверждения;
 - не содержит ни одного численного mutual-fit/Confidence/completeness/Risk weight/threshold/TTL, ни одного выбранного precedence/aggregation algorithm, ни одного mapping `Eligibility → Qualification` или `§25.1 → Qualification result`, ни одного public/runtime enum, field, event или reason-code каталога;
-- не назначает artifact owner Qualification Policy ни прямо, ни по аналогии с соседними артефактами;
+- отражает human governance assignment `XFR-D-030` и responsibility boundary `XFR-D-031`, но не утверждает сам Proposal или exact runtime representation;
 - не использует orphaned `GateState` как Qualification carrier ни в каком виде;
 - не ослабляет protected/proxy prohibition Architecture §17 ни в каком виде;
 - не разрешает и не инициирует implementation, runtime/API/schema changes, model release, реальные данные или production launch;
