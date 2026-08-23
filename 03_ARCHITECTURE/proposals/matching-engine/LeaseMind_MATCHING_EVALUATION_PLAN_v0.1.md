@@ -11,7 +11,7 @@
 
 Документ не закрывает вопрос №10 `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` §37 и не переводит ни один gate в `READY`.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md`, `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
 
 **Нормативная дисциплина.** Каждое существенное утверждение этого документа помечено одним из четырёх статусов:
 
@@ -73,9 +73,9 @@
 | 2. Synthetic scenario/evaluation dataset | Baseline измерение metric families §6 на синтетических сценариях | Экстраполяция на production quality или real calibration | Dataset manifest hash, generation method/version | AI + DEVELOPMENT |
 | 3. Adversarial/safety dataset | Проверка Hard Constraint safety, DLP, protected-data leakage, robustness | Замена ranking/calibration evaluation | Manifest hash, категории атак/сценариев | AI + DEVELOPMENT |
 | 4. Frozen replay/regression corpus | Detection несовместимых версий, determinism regression | Замена свежей evaluation | Frozen snapshot hash, дата заморозки | DEVELOPMENT |
-| 5. Real outcome-derived dataset | `OPEN_BLOCKED_PENDING_DECISION` | Любое production-quality заключение до прохождения gates | Требуется отдельный manifest + privacy review | `PRODUCT + LEGAL + Data Governance` (+ `DEVELOPMENT`/`SECURITY` при необходимости технической проверки) |
+| 5. Real outcome-derived dataset | `OPEN_BLOCKED_PENDING_DECISION` | Любое production-quality заключение до прохождения gates | Требуется отдельный manifest + privacy review | `PRODUCT + LEGAL + Data Governance authority` по `XFR-D-067`; `DEVELOPMENT + SECURITY` проверяют controls |
 
-Категория 5 отдельно заблокирована: approval требует ролей `PRODUCT + LEGAL + Data Governance` (см. таблицу), а также отдельно — прохождения применимых production/privacy gates как **gate prerequisite**, не как owner-роли. `OPEN_BLOCKED_PENDING_DECISION`, не открывается этим документом.
+Категория 5 отдельно заблокирована: authority model `XFR-D-067` требует Data Governance authority, accountable to `LEGAL` и независимую от автора model/dataset; `AI` предоставляет evidence, `DEVELOPMENT + SECURITY` подтверждают controls. Именное назначение/RBAC остаётся operational follow-up. Применимые production/privacy gates — отдельный prerequisite, не owner-роли. `OPEN_BLOCKED_PENDING_DECISION`, не открывается этим документом.
 
 **Запрет экстраполяции.** Нормативно утверждены (`SOURCE_NORMATIVE`) сами ограничения исходных PRODUCT-артефактов — `CAMPAIGN_OUTCOMES.md` `CO-C-019` (synthetic outcome полностью исключён из реальной статистики) и `ANALYSIS_SNAPSHOT.md` `AS-C-019`/`AS-C-025` (synthetic-записи исключены из обучения и продуктовых выводов) — а также границы synthetic-only/gates самого Matching Architecture (§36, §50 `NON_PRODUCTION_SAFETY_PROFILE`). Прямое Matching-специфичное правило «Matching synthetic evaluation нельзя представлять как production-quality/real-calibration evidence» этими источниками буквально не сформулировано для Matching Engine — оно классифицируется как `DECISION_CANDIDATE_FOR_REVIEW`, поддержанный house-style precedent перечисленных PRODUCT-артефактов и синтетическими границами Matching Architecture, а не как уже утверждённая Matching-норма. `MEP-C-001` остаётся acceptance criterion этого proposal-кандидата, не доказательство существующей Matching-нормы.
 
@@ -353,7 +353,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 ---
 
-## 11. Open decisions
+## 11. Decision register
 
 | № | Вопрос | Owner | Блокирует |
 | --- | --- | --- | --- |
@@ -369,13 +369,13 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 | 10 | Bounded replay tolerance для внешнего вероятностного компонента (§8) | DEVELOPMENT + AI | Replay/determinism acceptance |
 | 11 | Drift monitoring — процедура, метрики, триггеры | AI + DEVELOPMENT | Полностью не покрыто ни одним источником — 0 совпадений `drift` в Matching-источниках |
 | 12 | Точный cross-functional approval flow для самого `MATCHING_EVALUATION_PLAN` как артефакта | Chief AI Architect + AI + DEVELOPMENT | `IMPLEMENTATION_READINESS_GATE` условие 5 (Controlled Artifact Manifest) |
-| 13 | Конкретный owner/authority роли «Data Governance» (§7) | Chief AI Architect + LEGAL | Segment/training data readiness |
+| 13 | Конкретный owner/authority роли «Data Governance» (§7) | **RESOLVED authority model by `XFR-D-067 v1.0`:** Data Governance authority accountable to `LEGAL`, independent from model/dataset author; `AI` evidence provider; `DEVELOPMENT + SECURITY` control verification. Named appointment/RBAC remains required | Segment/training data readiness |
 | 14 | Fairness diagnostic framework и юридический fairness standard | LEGAL + PRODUCT | Segment/bias diagnostics, отдельно от Feature Schema открытого решения №9 |
 | 15 | Abstention/unknown policy и terminology (единый словарь для diagnostics) | AI + DEVELOPMENT | Uncertainty/abstention reporting (§6.4) |
 | 16 | Threshold-search statistical comparison procedure (§9) | AI + DEVELOPMENT | Threshold-search evidence record |
 | 17 | Точный процесс, которым correction (`CAMPAIGN_OUTCOMES.md` §7) синхронизируется с уже `FROZEN`/`EXECUTED` run (помимо запрета переписывания — сам механизм уведомления/учёта) | AI + DEVELOPMENT | Run lifecycle (§10) |
 
-Список не закрывается произвольно; новые gaps добавляются будущими ревью, не разрешаются этим документом.
+Решение №13 разрешено отдельным human governance record; оно не одобряет dataset или Evaluation Plan. Остальные решения не закрываются произвольно; новые gaps добавляются будущими ревью, не разрешаются этим документом.
 
 ---
 
