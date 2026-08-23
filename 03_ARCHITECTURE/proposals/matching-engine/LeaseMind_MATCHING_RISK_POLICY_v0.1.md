@@ -196,7 +196,7 @@ Handling missing/conflicting/stale evidence, monotonicity/non-compensation prope
 `SOURCE_NORMATIVE` разделение:
 
 - Evaluation Plan владеет процедурой поиска/сравнения candidate thresholds (`MATCHING_EVALUATION_PLAN` §9, не финальный owner);
-- Risk Policy после cross-functional approval фиксирует Risk-specific rule/version — не эта memo/proposal;
+- Risk Policy после cross-functional approval фиксирует Risk-specific rule/version — не этот документ;
 - Qualification Policy владеет итоговым routing/precedence (`QUALIFIED_HYPOTHESIS`/`NEEDS_VERIFICATION`/`HUMAN_REVIEW_REQUIRED`/`REJECTED_BY_MATCHING`, §18.1);
 - LEGAL определяет, какие факты требуют human/legal decision;
 - human reviewer подтверждает критический риск по §31 («Confidence и Risk: автоматически как оценка… критический риск подтверждает сотрудник»), но не меняет policy произвольно — применяет утверждённую policy в пределах приказа/RBAC (§31.1, 7 обязательных пунктов).
@@ -242,7 +242,7 @@ Concept-level состав (без проектирования storage), сог
 1. Risk Policy proposal reviewed — cross-functional review этого документа;
 2. Risk calculation reproducible — техническая воспроизводимость (DEVELOPMENT evidence);
 3. Candidate threshold evaluation complete — Evaluation Plan procedure evidence;
-4. Exact Risk Policy approved — отдельное cross-functional решение, не эта memo;
+4. Exact Risk Policy approved — отдельное cross-functional решение, не этот Proposal;
 5. Qualification Policy approved — отдельный артефакт;
 6. `IMPLEMENTATION_READINESS_GATE` / `SYNTHETIC_ACCEPTANCE_GATE` / `PRODUCTION_LAUNCH_GATE` — Architecture §36.
 

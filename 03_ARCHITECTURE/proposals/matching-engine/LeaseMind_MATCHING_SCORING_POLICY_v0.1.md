@@ -268,7 +268,7 @@ Concept-level версии (без проектирования таблиц/API
 | Mutual Aggregate function approved | `OPEN` — Architecture §37 №2 |
 | Weights approved | `OPEN` — Architecture §37 №3 |
 | Evaluation Plan procedure evidence collected | Отдельная стадия, не завершена этим документом |
-| Exact Scoring Policy approved | Отдельное cross-functional решение, не эта memo |
+| Exact Scoring Policy approved | Отдельное cross-functional решение, не этот Proposal |
 | Feature Schema / Risk Policy / Qualification Policy approved | Отдельные артефакты, все — Proposal |
 | `IMPLEMENTATION_READINESS_GATE` | **`BLOCKED`** |
 | `SYNTHETIC_ACCEPTANCE_GATE` | **`BLOCKED`** |
