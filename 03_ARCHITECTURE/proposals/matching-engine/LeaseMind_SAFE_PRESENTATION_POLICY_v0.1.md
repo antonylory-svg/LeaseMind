@@ -11,7 +11,9 @@
 
 Architecture §37 вопрос №6 остаётся `OPEN`. Документ его не закрывает — ни полностью, ни частично.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` (полностью, включая §§4–5, 8–14, 18.1–18.7, 21–24, 29–33, 36–38, 40, 42–50, 52–54), `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (независимо перепроверен repo-wide поиском на предмет safe-presentation carrier — см. §12), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` / `LeaseMind_MATCHING_SCORING_POLICY_v0.1.md` / `LeaseMind_MATCHING_QUALIFICATION_POLICY_v0.1.md` / `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` / `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (все — Proposal-зависимости, не source), `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence), `LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md` (Approved), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md` (только как источник `property_type` enum и `protected_commercial_data` классификации).
+Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md` (STALE orthogonality), `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md` (multi-cause/primary-reason rule) и `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md` (Safe Presentation read-only consumption boundary) — обязательные governance decisions для соответствующих граней ниже (§6.5, §9, §11.3, §15 №7/№8/№10); при необходимости также применимы `XFR-D-030`/`XFR-D-031` (Qualification artifact owner/responsibility boundary). Их approval не переводит этот Proposal или `MATCHING_QUALIFICATION_POLICY` в `APPROVED` и не утверждает exact wording/allowlist/audience payload.
+
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` (полностью, включая §§4–5, 8–14, 18.1–18.7, 21–24, 29–33, 36–38, 40, 42–50, 52–54), `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (независимо перепроверен repo-wide поиском на предмет safe-presentation carrier — см. §12), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` / `LeaseMind_MATCHING_SCORING_POLICY_v0.1.md` / `LeaseMind_MATCHING_QUALIFICATION_POLICY_v0.1.md` / `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` / `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (все — Proposal-зависимости, не source), `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-031_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence), `LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md` (Approved), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md` (только как источник `property_type` enum и `protected_commercial_data` классификации).
 
 ---
 
@@ -155,8 +157,8 @@ Source-приоритет:
 ### 6.5. Unknown/conflicting/stale marker
 
 - **Purpose:** показать, что данные неизвестны/противоречивы/устарели, без утаивания и без overclaim.
-- **Prerequisites:** канонические статусы уже `SOURCE_NORMATIVE` (§12.4, §13, §32) — эта family описывает только их user-facing представление, не изобретает новый статус.
-- **Forbidden leakage:** raw evidence, лежащий в основе статуса; конкретная причина конфликта, если она сама по себе идентифицирует источник/сторону.
+- **Prerequisites:** канонические статусы уже `SOURCE_NORMATIVE` (§12.4, §13, §32); conflicting-criticality качественно определена `RESOLVED_QUALITATIVE_BOUNDARY` `XFR-D-037 v1.0` (`MATCHING_QUALIFICATION_POLICY`); STALE-ортогональность и non-actionable historical result качественно заданы `RESOLVED_QUALITATIVE_BOUNDARY` `XFR-D-038 v1.0` — эта family описывает только их user-facing представление, не изобретает новый статус и не ослабляет ни одну из этих границ.
+- **Forbidden leakage:** raw evidence, лежащий в основе статуса; конкретная причина конфликта, если она сама по себе идентифицирует источник/сторону; представление stale/historical Qualification result как текущего actionable вывода (запрещено `XFR-D-038`, `XFR-D-044`).
 - **Combination-risk dependency:** статус сам по себе не является значением, но паттерн unknown/conflicting/stale статусов по многим полям потенциально коррелирует со специфическим профилем и не исключается автоматически.
 - **Owner decision:** `PRODUCT` (UX-формулировка), без нового legal-риска при соблюдении §12.4/§32 без ослабления.
 
@@ -243,7 +245,9 @@ Source-приоритет:
 - immutable audit/replay reference — по аналогии с §33 Architecture (audit bundle обязателен «для любого расчета Matching Engine»; presentation output производен от Match Result, поэтому по аналогии наследует то же требование, не по прямой цитате, так как §33 не называет presentation-уровень явно);
 - invalidation/revocation reference.
 
-**Это не утверждённая JSON schema, DTO, таблица, event или API.** Exact carrier — `OPEN_BLOCKED_PENDING_DECISION` (§12, §14 пункт 12).
+Presentation artifact не должен обслуживаться, если underlying Qualification result помечен historical/non-actionable по `RESOLVED_QUALITATIVE_BOUNDARY` `XFR-D-038 v1.0` — согласовано с read-only consumption boundary `XFR-D-044 v1.0` (§11.3).
+
+**Это не утверждённая JSON schema, DTO, таблица, event или API.** Exact carrier и exact cache/TTL/invalidation runtime mechanics — `OPEN_BLOCKED_PENDING_DECISION` (§12, §14 пункт 12).
 
 ---
 
@@ -275,6 +279,20 @@ Source-приоритет:
 - **Reason text не содержит raw evidence/свободного текста.** Precedent-dependent: согласовано с family §6.9 (§6.9 сама классифицирует полный запрет свободного текста как `DECISION_CANDIDATE_FOR_REVIEW`, не source-normative — см. §6.9) и с precedent'ом `§7.5 Feature Schema` — sibling Proposal, не Architecture.
 
 Практические ограничительные границы обеих групп сохраняются одинаково: документ по-прежнему не меняет score/rank/routing, не вводит thresholds и не разрешает raw evidence — различие только в normative-статусе обоснования, не в самом ограничении.
+
+### 11.3. `RESOLVED_QUALITATIVE_BOUNDARY` — human-approved consumption overlay, `XFR-D-044 v1.0`
+
+Отдельная, пятая категория normative-дисциплины (см. `MATCHING_QUALIFICATION_POLICY §1`) — human-approved governance decision, не буквальный текст Architecture и не approval этого Proposal:
+
+- Safe Presentation — **read-only policy consumer** утверждённого Qualification result, freshness/actionability context и только approved safe reason references;
+- может локализовать, обобщать, редактировать либо полностью скрывать представление;
+- **не может** пересчитать, повысить, понизить или заменить Qualification result; не может менять score, rank, Confidence или Risk; не получает права раскрывать raw evidence или candidate details вне approved presentation allowlist;
+- `QUALIFIED_HYPOTHESIS` лишь допускает переход к отдельной Presentation Readiness проверке (§18.2 Architecture, «координирует AI Manager») — это не автоматическое раскрытие;
+- `NEEDS_VERIFICATION`, `HUMAN_REVIEW_REQUIRED` и `REJECTED_BY_MATCHING` могут быть представлены только безопасным общим статусом или следующим действием, без candidate details и raw evidence;
+- `STALE` блокирует использование ранее созданного presentation до актуального пересчёта (согласовано с `XFR-D-038`, §6.5, §9);
+- если presentation safety запрещает показ, underlying Qualification result не изменяется.
+
+**Что остаётся `OPEN`.** Exact wording, per-object field/object allowlist, audience/purpose payload и reason catalog — отдельные решения `PRODUCT + LEGAL`, не resolved этим overlay (§15 decision row №8). `XFR-D-044` не заявляет и не подразумевает document-level `BLOCKED` статус для Presentation Readiness Gate (§18.2) — этот gate остаётся отдельной, «координирует AI Manager» проверкой, не приравненной к governance gates (§10, `SPP-C-012`).
 
 ---
 
@@ -331,7 +349,7 @@ Source-приоритет:
 | 5 | Combination-risk algorithm | `PRODUCT + LEGAL` (+ `AI`, candidate) | Candidate, источник не называет прямо |
 | 6 | Successive disclosure budget | `PRODUCT + LEGAL` | Candidate, не покрыт ни одним источником |
 | 7 | Safe reason/explanation catalog | `PRODUCT + LEGAL` — candidate assignment, с координацией/зависимостью от будущих owner'ов Qualification/Risk reason-namespace (Qualification Policy №12 / Risk Policy №7 — оба `OPEN`) | Candidate |
-| 8 | Score/confidence/risk/Qualification presentation mapping (exact wording) | `PRODUCT + LEGAL` | Candidate, эхо Risk Policy открытого решения №1 |
+| 8 | Score/confidence/risk/Qualification presentation mapping (exact wording) | `PRODUCT + LEGAL` | Consumption/immutability boundary — `RESOLVED_QUALITATIVE_BOUNDARY`, `XFR-D-044 v1.0` (Safe Presentation не пересчитывает/не заменяет routing result, score, rank, Confidence, Risk; §11.3). Exact wording/presentation mapping формулировка остаётся `OPEN_BLOCKED_PENDING_DECISION`, эхо Risk Policy открытого решения №1 |
 | 9 | Localization governance | `PRODUCT` | Candidate |
 | 10 | Audience/purpose model (конкретный получатель presentation payload) | `PRODUCT + LEGAL` | Candidate, по аналогии с purpose-binding принципом §11 Architecture |
 | 11 | Cache/expiry/revocation | `DEVELOPMENT + AI` (candidate) | Candidate |
@@ -414,13 +432,13 @@ Architecture §37 вопрос №6 **не закрывается** ни одн�
 **Given** AI Manager координирует Presentation Readiness. **When** рассматривается доступ к protected data source owners (Identity/Authority Registry, Lawful Basis/Consent Registry и т.д.). **Then** AI Manager не получает прав раскрывать protected data в обход этих source owners (§10, §40).
 
 #### `SPP-C-018` — высокий score не делает presentation безопасным; routing не меняется
-**Given** высокий Match/Confidence/Risk Score. **When** формируется Safe Presentation. **Then** это не влияет на допустимость поля в presentation; сам документ не меняет score/rank/Qualification routing (§11).
+**Given** высокий Match/Confidence/Risk Score. **When** формируется Safe Presentation. **Then** это не влияет на допустимость поля в presentation; сам документ не меняет score/rank/Qualification routing — подтверждено `RESOLVED_QUALITATIVE_BOUNDARY` `XFR-D-044` (read-only consumption, не пересчитывает/не заменяет routing result) (§11.3).
 
 #### `SPP-C-019` — unknown/conflicting/stale/low-confidence/risk без overclaim
-**Given** соответствующий статус или показатель. **When** формируется его user-facing представление. **Then** статус показан без усиления и без ослабления; exact wording/mapping — `OPEN`, зависит от Risk/Qualification Policy (§6.5, §6.6, §11).
+**Given** соответствующий статус или показатель. **When** формируется его user-facing представление. **Then** статус показан без усиления и без ослабления; conflicting-criticality (`XFR-D-037`) и STALE non-actionable orthogonality (`XFR-D-038`) качественно заданы и не ослабляются; exact wording/mapping — `OPEN`, зависит от Risk Policy открытого решения №1 и Safe Presentation decision row №8 (§6.5, §6.6, §11.3).
 
-#### `SPP-C-020` — invalidation/cache fail closed (candidate)
-**Given** source/policy/freshness изменились после генерации presentation. **When** запрашивается уже сгенерированное представление. **Then** по аналогии с §32 (`STALE` блокирует раскрытие) stale presentation не должен обслуживаться из кеша без ревалидации — `DECISION_CANDIDATE_FOR_REVIEW`, не установленная источником норма для presentation-уровня буквально (§9).
+#### `SPP-C-020` — invalidation/cache fail closed; qualitative block approved, mechanics open
+**Given** source/policy/freshness изменились после генерации presentation, либо underlying Qualification result помечен historical/non-actionable (`XFR-D-038`). **When** запрашивается уже сгенерированное представление. **Then** stale presentation не должен обслуживаться из кеша без ревалидации — качественный запрет подтверждён `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-038`, `XFR-D-044`); exact cache/TTL/invalidation runtime mechanics остаются `OPEN_BLOCKED_PENDING_DECISION` (§9).
 
 #### `SPP-C-021` — Architecture §37 №6 остаётся OPEN
 **Given** документ существует на уровне draft со статусом `Proposal for cross-functional review — does not authorize implementation` (не `APPROVED`). **When** запрашивается статус вопроса №6. **Then** он явно `OPEN`, decision owner `PRODUCT + LEGAL`.
