@@ -9,6 +9,7 @@
 **Wave 2B Feature compatibility decision records commit:** `324242c88cee07f1b48b0ff134ffaefc360d1bcf`
 **Wave 2C Feature input semantics decision records commit:** `9956f943329b38da109039d57b8ba4721caf2a0a`
 **Wave 2D Safe Presentation registry decision records commit:** `fbd885bec655bb5f82c91c53719f1f4f153243f0`
+**Wave 2E Risk aggregation decision record commit:** `0d3a843133f4959c82d0d41e226a10d0947d74ed`
 **Coordination:** Chief AI Architect — coordination candidate only, not owner of every indexed decision
 
 ## 1. Назначение и граница документа
@@ -278,6 +279,16 @@ Canonical IDs/роли в §4.6 (Safe Presentation Policy crosswalk) не изм
 
 Этот record не утверждает Safe Presentation Policy Proposal approval, runtime/API/DB/schema implementation или прохождение какого-либо governance gate. Architecture §37 вопрос №6 остаётся полностью `OPEN`.
 
+### 5.6. Wave 2E Risk aggregation decision-status overlay
+
+Canonical IDs/роли в §4.3 (Risk Policy crosswalk) не изменены. Ниже — честный overlay статуса одной MRP-строки (`MRP-02`), разрешённой Wave 2E qualitative governance decision.
+
+| Canonical ID | Record | Current status | Remaining open dependency |
+|---|---|---|---|
+| `XFR-D-048` | `LeaseMind_MATCHING_DECISION_XFR-D-048_v1.0.md` | `RESOLVED_QUALITATIVE_BOUNDARY` — multi-component conceptual Risk representation (не runtime vector schema) и conditional non-compensation invariant для отдельно классифицированных critical категорий утверждены; никакой numeric formula, threshold, runtime representation, Risk→Qualification routing interface, policy approval или gate transition этим record'ом не выполнено | `XFR-D-047` (Risk output representation/runtime identifiers); `XFR-D-049` (per-factor evidence sufficiency); `XFR-D-M2` (Risk→routing human-review threshold); `XFR-D-050` (calibration dataset/metrics/segments); `XFR-D-051` (missing/conflicting/stale operational details); `XFR-D-052` (reason-reference namespace); `XFR-D-053` (reviewer authority/Decision Record link); `XFR-D-054` (protected/proxy catalog/lawful basis); `XFR-D-055` (Risk→Qualification interface); `XFR-D-M4` (bounded replay tolerance) |
+
+Этот record не утверждает Risk Policy Proposal approval, runtime/API/DB/schema implementation или прохождение какого-либо governance gate. `XFR-D-033` и `XFR-D-040` (Qualification-level precedence и multi-cause rule) не переоткрыты и не supersedes этим record'ом. Architecture §37 вопрос №8 остаётся полностью `OPEN`.
+
 ## 6. External normative anchors — вне count 102/90
 
 | Architecture anchor | Source owner | Связь |
@@ -316,7 +327,7 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 | Wave | Цель | Вход/ключевые IDs | Выход | Stop condition |
 |---:|---|---|---|---|
 | 1 | Owner/authority resolution — `COMPLETED` | `XFR-D-030`, `XFR-D-031`, `XFR-D-067` | Три versioned role/authority records | Exact runtime design и named Data Governance appointment не входят в completion |
-| 2 | Qualitative policy semantics — `IN PROGRESS — QUALIFICATION SEMANTICS, FEATURE COMPATIBILITY, FEATURE INPUT SEMANTICS AND SAFE PRESENTATION REGISTRY WAVE 2D RECORDED` (Wave 2A: `XFR-D-032/033/037/038/040/044` complete для Qualification/Safe-Presentation consumption; Wave 2B: records `XFR-D-001/002/012/013` recorded/complete как набор governance decisions для Feature Schema entrance/access-mode/floor/OPEX — сама compatibility semantics НЕ fully complete: entrance (`XFR-D-001`) `PARTIALLY RESOLVED`, 6 cells open; access-mode (`XFR-D-002`) `PARTIALLY RESOLVED`, 13 cells/order open; floor (`XFR-D-012`) `PARTIALLY RESOLVED`, numeric convention и exact wildcard `value_state` open; только OPEX (`XFR-D-013`) `RESOLVED_QUALITATIVE_BOUNDARY` целиком, exact runtime representation/numeric field остаются open; Wave 2C: records `XFR-D-009/011` recorded/complete как набор governance decisions для Feature Schema missing-fields scope boundary и geography string-matching — `XFR-D-009` `RESOLVED_V0_1_SCOPE_BOUNDARY` целиком (future re-entry остаётся отдельным open downstream-вопросом), `XFR-D-011` `RESOLVED_QUALITATIVE_LITERAL_BASELINE` целиком (normalization/alias/catalog-id enhancements остаются open); Wave 2D: record `XFR-D-073` recorded/complete для Safe Presentation object-type registry-key identity — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` целиком, field allowlist/`property_type` display/combination-risk evidence/runtime carrier остаются independently open; остальные qualitative decisions — Scoring/Risk/Evaluation-specific compatibility, aggregation candidate, Safe Presentation field allowlist и combination-risk algorithm — pending) | compatibility, precedence, aggregation candidate, Safe Presentation field allowlist | Reviewable qualitative policy updates | Никаких numeric values до evidence |
+| 2 | Qualitative policy semantics — `IN PROGRESS — QUALIFICATION SEMANTICS, FEATURE COMPATIBILITY, FEATURE INPUT SEMANTICS, SAFE PRESENTATION REGISTRY AND RISK AGGREGATION WAVE 2E RECORDED` (Wave 2A: `XFR-D-032/033/037/038/040/044` complete для Qualification/Safe-Presentation consumption; Wave 2B: records `XFR-D-001/002/012/013` recorded/complete как набор governance decisions для Feature Schema entrance/access-mode/floor/OPEX — сама compatibility semantics НЕ fully complete: entrance (`XFR-D-001`) `PARTIALLY RESOLVED`, 6 cells open; access-mode (`XFR-D-002`) `PARTIALLY RESOLVED`, 13 cells/order open; floor (`XFR-D-012`) `PARTIALLY RESOLVED`, numeric convention и exact wildcard `value_state` open; только OPEX (`XFR-D-013`) `RESOLVED_QUALITATIVE_BOUNDARY` целиком, exact runtime representation/numeric field остаются open; Wave 2C: records `XFR-D-009/011` recorded/complete как набор governance decisions для Feature Schema missing-fields scope boundary и geography string-matching — `XFR-D-009` `RESOLVED_V0_1_SCOPE_BOUNDARY` целиком (future re-entry остаётся отдельным open downstream-вопросом), `XFR-D-011` `RESOLVED_QUALITATIVE_LITERAL_BASELINE` целиком (normalization/alias/catalog-id enhancements остаются open); Wave 2D: record `XFR-D-073` recorded/complete для Safe Presentation object-type registry-key identity — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` целиком, field allowlist/`property_type` display/combination-risk evidence/runtime carrier остаются independently open; Wave 2E: record `XFR-D-048` recorded/complete для Risk aggregation qualitative model — `RESOLVED_QUALITATIVE_BOUNDARY` целиком (multi-component representation + conditional non-compensation), weighted aggregation/numeric formula/runtime representation/Risk→Qualification interface остаются independently open (десять named dependencies, §5.6); остальные qualitative decisions — Scoring/Evaluation-specific compatibility, Safe Presentation field allowlist и combination-risk algorithm — pending) | compatibility, precedence, Safe Presentation field allowlist, combination-risk algorithm | Reviewable qualitative policy updates | Никаких numeric values до evidence |
 | 3 | Evidence-plan approval | `XFR-D-057`–`071`, `XFR-D-045`, `XFR-D-083`; закрытие `XFR-F1` | Approved procedure/manifest, не результаты | Нельзя запускать evaluation без процедуры |
 | 4 | Empirical evaluation | Mutual Aggregate, weights, calibration, risk, ranking, re-identification | FROZEN→EXECUTED→REVIEWED evidence record | Tuning и final evidence разделены |
 | 5 | Numeric thresholds/calibration | `XFR-D-017`, `M2`, `M3`, `M5`, `M6`, `034`–`036`, `003`, `020` | Versioned numeric candidate values | Числа ещё не делают artifact Approved |
@@ -348,17 +359,18 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 ## 11. Следующий формат работы
 
-Index ссылается на отдельные decision records, но сам не заменяет их. Wave 1 завершён тремя records; Wave 2A (Qualification semantics) завершён шестью records `XFR-D-032/033/037/038/040/044`; Wave 2B (Feature compatibility) завершён четырьмя records `XFR-D-001/002/012/013`; Wave 2C (Feature input semantics) завершён двумя records `XFR-D-009/011`; Wave 2D (Safe Presentation registry) завершён одним record `XFR-D-073`. Ни одна волна не утверждает Proposal и не снимает gates.
+Index ссылается на отдельные decision records, но сам не заменяет их. Wave 1 завершён тремя records; Wave 2A (Qualification semantics) завершён шестью records `XFR-D-032/033/037/038/040/044`; Wave 2B (Feature compatibility) завершён четырьмя records `XFR-D-001/002/012/013`; Wave 2C (Feature input semantics) завершён двумя records `XFR-D-009/011`; Wave 2D (Safe Presentation registry) завершён одним record `XFR-D-073`; Wave 2E (Risk aggregation) завершён одним record `XFR-D-048`. Ни одна волна не утверждает Proposal и не снимает gates.
 
-Синхронизированы по состоянию на Wave 2D commit `fbd885bec655bb5f82c91c53719f1f4f153243f0`:
+Синхронизированы по состоянию на Wave 2E commit `0d3a843133f4959c82d0d41e226a10d0947d74ed`:
 
 - Qualification Policy: `XFR-D-030` resolved, `XFR-D-031` responsibility resolved / representation open, decision rows №3/№4/№10/№11/№13/№18 — `RESOLVED_QUALITATIVE_BOUNDARY`;
 - Safe Presentation Policy: `XFR-D-044` read-only consumption boundary resolved (decision row №8 частично), `XFR-D-038` STALE-boundary отражён в §6.5/§9, decision row №2 — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` (`XFR-D-073`, только registry-key identity; field allowlist/display/combination-risk evidence/runtime carrier остаются open);
 - Evaluation Plan: `XFR-D-067` authority model resolved / named appointment pending;
 - Feature Schema: decision rows №2/№3/№15 — `PARTIALLY RESOLVED` (`XFR-D-001`/`XFR-D-002`/`XFR-D-012`), decision row №16 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-013`), decision row №11 — `RESOLVED_V0_1_SCOPE_BOUNDARY` (`XFR-D-009`), decision row №14 — `RESOLVED_QUALITATIVE_LITERAL_BASELINE` (`XFR-D-011`);
-- этот inventory: Wave 1, Wave 2A, Wave 2B, Wave 2C и Wave 2D status overlays (§5.1, §5.2, §5.3, §5.4, §5.5).
+- Risk Policy: decision row №2 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-048`, multi-component representation + conditional non-compensation; weighted aggregation/numeric formula/runtime representation/Risk→Qualification interface остаются independently open);
+- этот inventory: Wave 1, Wave 2A, Wave 2B, Wave 2C, Wave 2D и Wave 2E status overlays (§5.1, §5.2, §5.3, §5.4, §5.5, §5.6).
 
-Следующий узкий package — оставшаяся qualitative policy semantics (Scoring/Risk/Evaluation-specific compatibility, aggregation candidate; Safe Presentation field allowlist и combination-risk algorithm и т.п.), без numeric values и без runtime design.
+Следующий узкий package — оставшаяся qualitative policy semantics (Scoring/Evaluation-specific compatibility; Safe Presentation field allowlist и combination-risk algorithm и т.п.), без numeric values и без runtime design.
 
 ## 12. Acceptance criteria
 
@@ -396,4 +408,4 @@ Inventory не утверждает Proposal, schema/runtime design, implementat
 
 На reviewed commit доказано: 102 локальные open-decision строки отображаются в 90 canonical decisions без пропусков, orphan IDs или коллизий. Inventory готов только как informational index для будущего cross-functional owner review.
 
-`DECISION PACKAGE INDEXED — WAVE 1 GOVERNANCE ASSIGNMENTS RECORDED — WAVE 2A QUALIFICATION SEMANTICS RECORDED — WAVE 2B FEATURE COMPATIBILITY SEMANTICS RECORDED — WAVE 2C FEATURE INPUT SEMANTICS RECORDED — WAVE 2D SAFE PRESENTATION REGISTRY RECORDED — NO PROPOSAL APPROVED`
+`DECISION PACKAGE INDEXED — WAVE 1 GOVERNANCE ASSIGNMENTS RECORDED — WAVE 2A QUALIFICATION SEMANTICS RECORDED — WAVE 2B FEATURE COMPATIBILITY SEMANTICS RECORDED — WAVE 2C FEATURE INPUT SEMANTICS RECORDED — WAVE 2D SAFE PRESENTATION REGISTRY RECORDED — WAVE 2E RISK AGGREGATION RECORDED — NO PROPOSAL APPROVED`
