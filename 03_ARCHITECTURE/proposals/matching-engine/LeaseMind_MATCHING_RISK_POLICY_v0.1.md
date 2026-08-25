@@ -12,7 +12,9 @@
 
 Документ не закрывает Architecture §37 вопрос №8 и не переводит ни один gate в `READY`.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (контрактные/replay границы — проверено: Risk-специфичных names/enums там нет, ничего не расширяется), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, source facts/evidence), `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (Proposal-зависимость, dataset/metric/threshold-search procedure evidence, не owner финальных Risk thresholds), `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence, не источник новых архитектурных решений).
+Human-approved governance decision `LeaseMind_MATCHING_DECISION_XFR-D-048_v1.0.md` (Risk aggregation qualitative model and non-compensation boundary) — обязательное governance decision для §9/§13 строка 2/`MRP-C-015`/§15 ниже; его approval не переводит этот Proposal в `APPROVED` и не утверждает numeric formula, runtime representation или Risk→Qualification interface.
+
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (контрактные/replay границы — проверено: Risk-специфичных names/enums там нет, ничего не расширяется), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, source facts/evidence), `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (Proposal-зависимость, dataset/metric/threshold-search procedure evidence, не owner финальных Risk thresholds), `LeaseMind_MATCHING_DECISION_XFR-D-048_v1.0.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence, не источник новых архитектурных решений).
 
 ---
 
@@ -171,9 +173,9 @@ Candidate contract (`DECISION_CANDIDATE_FOR_REVIEW`, по аналогии с Fe
 
 ---
 
-## 9. Aggregation/calibration candidates — сравнение, без выбора
+## 9. Aggregation/calibration candidates — сравнение, без выбора численной формулы
 
-`DECISION_CANDIDATE_FOR_REVIEW`, ни один вариант не выбран:
+`DECISION_CANDIDATE_FOR_REVIEW` для точной численной формулы, ни один вариант численно не выбран:
 
 | Вариант | Плюс | Минус / риск компенсации |
 | --- | --- | --- |
@@ -183,11 +185,13 @@ Candidate contract (`DECISION_CANDIDATE_FOR_REVIEW`, по аналогии с Fe
 | (d) Weighted aggregation | Гибкость калибровки | Требует весов (не вводятся этим документом); риск скрытой компенсации между факторами |
 | (e) Multi-dimensional vector | Не сворачивает информацию | Требует, чтобы Qualification Policy умела читать вектор, не число |
 
-Handling missing/conflicting/stale evidence, monotonicity/non-compensation properties, explainability/reason codes, calibration evidence requirements и segment-specific policy prohibition (до отдельного evidence/LEGAL review) рассмотрены как candidate requirements для любого из вариантов выше, не как выбранная формула.
+**Qualitative boundary — `RESOLVED_QUALITATIVE_BOUNDARY`, human-approved governance decision `XFR-D-048 v1.0`.** Утверждена комбинация elements (a)/(e) (multi-component representation, concept-level, не runtime vector schema) и non-compensation-свойства (b), взятого как conditional overlay для категорий, отдельно классифицированных critical по будущим утверждённым правилам: (d) weighted aggregation целиком остаётся `OPEN` — numeric weights/thresholds/TTL/calibration targets deferred `XFR-D-050`/`XFR-D-M2`; (c) explicit rule-based precedence остаётся `DECISION_CANDIDATE_FOR_REVIEW`, не выбран и не отклонён. Ни одна численная формула/threshold/TTL не введена ни `XFR-D-048`, ни этим Proposal.
 
-**Разделение audit-требований:** общий audit bundle Architecture §33 (сохранение активных критериев, причин исключения, неизвестных/конфликтующих данных для **любого** расчёта Matching Engine) — `SOURCE_NORMATIVE`, применяется вне зависимости от Risk. То, что именно per-category Risk detail обязан оставаться отдельно видимым и non-compensating (не сворачиваться в единое непрозрачное число), — `DECISION_CANDIDATE_FOR_REVIEW` этого proposal (по аналогии с §5 принципом 6), не отдельная готовая source-норма специально для Risk aggregation.
+Handling missing/conflicting/stale evidence, monotonicity/non-compensation properties, explainability/reason codes, calibration evidence requirements и segment-specific policy prohibition (до отдельного evidence/LEGAL review) остаются candidate requirements, не выбранной численной формулой; distinct missing/conflicting/stale behavior качественно подтверждён `XFR-D-048 v1.0`, точные Risk-специфичные operational details — `OPEN` под `XFR-D-051`.
 
-Ни один weight/formula/threshold/TTL/calibration target не выбран.
+**Разделение audit-требований:** общий audit bundle Architecture §33 (сохранение активных критериев, причин исключения, неизвестных/конфликтующих данных для **любого** расчёта Matching Engine) — `SOURCE_NORMATIVE`, применяется вне зависимости от Risk. То, что именно per-category Risk detail обязан оставаться отдельно видимым и non-compensating (не сворачиваться в единое непрозрачное число), теперь `RESOLVED_QUALITATIVE_BOUNDARY` (human-approved governance decision `XFR-D-048 v1.0`, по аналогии с §5 принципом 6) — не буквальная Architecture-норма и не approval этого Proposal.
+
+Ни один weight/formula/threshold/TTL/calibration target не выбран. Runtime representation (field/enum/API/DB/schema/event) не вводится ни этим документом, ни `XFR-D-048` — остаётся `OPEN` под `XFR-D-047`.
 
 ---
 
@@ -267,7 +271,7 @@ Architecture §37 вопрос №8 остаётся **`OPEN`**.
 | № | Вопрос | Owner | Блокирует |
 | --- | --- | --- | --- |
 | 1 | Risk output representation / runtime-public identifiers или enum (включая `risk_category_id`, если он переходит из design-time table в runtime/public форму) | `Chief AI Architect + AI` — candidate assignment; источник не назначает owner этого решения напрямую | Explainability, `SAFE_PRESENTATION_POLICY` совместимость |
-| 2 | Aggregation formula/precedence (выбор из §9) | `Chief AI Architect + AI` — candidate assignment; источник не назначает owner этого решения напрямую | Risk Score arithmetic |
+| 2 | **`RESOLVED_QUALITATIVE_BOUNDARY` — `XFR-D-048 v1.0`.** Qualitative aggregation/non-compensation boundary утверждена: multi-component representation ((a)/(e)) + conditional non-compensation invariant ((b)-overlay) для отдельно классифицированных critical категорий; (d) weighted aggregation, численная формула, runtime representation и Risk→Qualification interface остаются `OPEN` | `Chief AI Architect + LEGAL` — approved decision-specific owner assignment `XFR-D-048 v1.0` (mandatory approvers `PRODUCT + DEVELOPMENT`, consulted `AI`); источник до этого record указывал только `Chief AI Architect + AI` как candidate assignment | Risk Score arithmetic — numeric часть остаётся blocking; qualitative aggregation/non-compensation semantics больше не blocking |
 | 3 | Per-factor evidence sufficiency для каждой из 10 категорий (§5) | `AI + LEGAL` — candidate assignment; источник не назначает owner этого решения напрямую | Automatic signal vs required human confirmation boundary |
 | 4 | Численные human-review thresholds | `AI + LEGAL` (Architecture §37 №8, `SOURCE_NORMATIVE` owner) | `IMPLEMENTATION_READINESS_GATE`, Qualification/Launch |
 | 5 | Calibration dataset/metrics/segments для Risk | `AI + DEVELOPMENT`, через `MATCHING_EVALUATION_PLAN` — candidate assignment; источник не назначает owner этого решения напрямую | Model release |
@@ -281,7 +285,7 @@ Architecture §37 вопрос №8 остаётся **`OPEN`**.
 | 13 | Owner/authority механизма duplication detection (категория 4) | `DEVELOPMENT + AI` — candidate assignment, источник не называет владельца напрямую | Risk category §17 реализуемость |
 | 14 | Численный TTL для «устаревание» (категория 6) — разведены Architecture §37 №11 (`PRODUCT + LEGAL + AI`, шире) и узкое открытое решение №6 Feature Schema (`PRODUCT + AI`, через Evaluation Plan) | `PRODUCT + LEGAL + AI` (§37 №11) / `PRODUCT + AI` (Feature Schema №6) — не выбирается здесь | Freshness-based risk signal |
 
-Список не закрывается произвольно. В каждой из 14 строк owner либо имеет прямую source-ссылку (№4 — Architecture §37 №8; №14 — Architecture §37 №11 и отдельно Feature Schema открытое решение №6, разведены, не объединены в один owner), либо явно помечен как candidate assignment (№1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13) — источник не назначает owner этого решения напрямую.
+Список не закрывается произвольно. В каждой из 14 строк owner либо имеет прямую source-ссылку (№4 — Architecture §37 №8; №14 — Architecture §37 №11 и отдельно Feature Schema открытое решение №6, разведены, не объединены в один owner), либо явно помечен как candidate assignment (№1, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13) — источник не назначает owner этого решения напрямую. №2 — approved decision-specific owner assignment `XFR-D-048 v1.0` (`Chief AI Architect + LEGAL`, mandatory approvers `PRODUCT + DEVELOPMENT`, consulted `AI`) — human-approved governance assignment, отличное от plain candidate assignment, но также не source-normative для этого конкретного decision.
 
 ---
 
@@ -332,8 +336,8 @@ Architecture §37 вопрос №8 остаётся **`OPEN`**.
 #### `MRP-C-014` — нет invented Risk weights/thresholds/TTL
 **Given:** любой раздел документа. **When:** выполняется поиск конкретного числа. **Then:** ни один invented численный weight/threshold/TTL для Risk calibration/aggregation не найден вне явно помеченного `OPEN_BLOCKED_PENDING_DECISION`; уже существующие source-normative числа из других разделов Architecture (например, §34.1 0%-инварианты про unknown-as-negative) допустимо цитировать только как внешние поведенческие инварианты, не как Risk calibration target.
 
-#### `MRP-C-015` — общий audit bundle отделён от candidate per-category visibility
-**Given:** выбран любой aggregation candidate (§9). **When:** формируется итоговый Risk output. **Then:** общий audit-bundle §33 (`SOURCE_NORMATIVE`) уже требует сохранения активных критериев/причин исключения/конфликтов для любого расчёта Matching Engine — не специфично для Risk; то, что именно per-category Risk detail обязан оставаться non-compensating и видимым, — `DECISION_CANDIDATE_FOR_REVIEW`, не отдельная готовая source-норма для Risk aggregation.
+#### `MRP-C-015` — per-category visibility и non-compensation qualitatively resolved by `XFR-D-048`; audit bundle остаётся отдельным SOURCE_NORMATIVE baseline
+**Given:** утверждённый qualitative aggregation boundary `XFR-D-048 v1.0` (multi-component representation + conditional non-compensation invariant для отдельно классифицированных critical категорий). **When:** формируется итоговый Risk output. **Then:** общий audit-bundle §33 (`SOURCE_NORMATIVE`) уже требует сохранения активных критериев/причин исключения/конфликтов для любого расчёта Matching Engine — не специфично для Risk; то, что именно per-category Risk detail обязан оставаться non-compensating и видимым, теперь `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-048 v1.0`), human-approved governance decision поверх Architecture §5 принципа 6 by analogy, не буквальная source-норма и не approval этого Proposal; численная формула, runtime representation, critical-category mapping и Risk→Qualification interface остаются `OPEN` под `XFR-D-047`/`XFR-D-049`/`XFR-D-050`/`XFR-D-052`/`XFR-D-053`/`XFR-D-055`/`XFR-D-M2`. Полный authoritative список десяти OPEN dependencies зафиксирован в XFR-D-048 §9 и Inventory §5.6; локальный список выше называет только dependencies, непосредственно связанные с перечисленными в этом AC open items, и не является исчерпывающим.
 
 #### `MRP-C-016` — non-deterministic external component не проходит gate самостоятельно
 **Given:** внешний вероятностный компонент участвует в Risk. **When:** оценивается допуск к Matching Qualification Gate. **Then:** компонент не проходит gate самостоятельно, используется как advisory signal до human-confirmed deterministic rule (§49, дословно).
@@ -354,7 +358,7 @@ Architecture §37 вопрос №8 остаётся **`OPEN`**.
 - не закрывает Architecture §37 вопрос №8 — остаётся `OPEN`;
 - не переводит `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` или `PRODUCTION_LAUNCH_GATE` в иной статус — все три `BLOCKED`;
 - не синхронизирует Controlled Artifact Manifest — запись `MATCHING_RISK_POLICY` не добавляется до реального утверждения;
-- не содержит ни одного численного Risk weight/threshold/TTL/calibration target, ни одного выбранного aggregation algorithm, ни одного public/runtime enum или reason-code каталога;
+- не содержит ни одного численного Risk weight/threshold/TTL/calibration target, ни одного выбранного numeric aggregation algorithm, ни одного public/runtime enum или reason-code каталога; qualitative aggregation/non-compensation boundary утверждена отдельно human-approved decision `XFR-D-048 v1.0` (§9, §13 строка 2) — не этим Proposal-документом, который сам остаётся `Proposal`, не `APPROVED`;
 - не ослабляет protected/proxy prohibition Architecture §17 ни в каком виде;
 - не разрешает и не инициирует implementation, model release, реальные данные или production launch;
 - не изменяет ни один существующий файл, включая Architecture, Feature Schema, Evaluation Plan, Data Contracts, controlled-set artifacts, любой PR.
