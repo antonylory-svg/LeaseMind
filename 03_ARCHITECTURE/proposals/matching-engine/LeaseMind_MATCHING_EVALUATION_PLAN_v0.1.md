@@ -11,7 +11,9 @@
 
 Документ не закрывает вопрос №10 `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` §37 и не переводит ни один gate в `READY`.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md`, `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
+Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.0.md` (fail-closed label-eligibility boundary), `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.0.md` (fail-closed split-isolation boundary) и `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md` (qualitative `unknown`/`abstention` terminology boundary) обязательны для соответствующих граней ниже (§4, §5.5, §6.4, §11, `MEP-C-002`, `MEP-C-010`). Их approval не переводит этот Proposal в `APPROVED`, не утверждает exact adjudication/grouping procedure и не вводит runtime enum, routing mapping или численные triggers.
+
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md`, `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
 
 **Нормативная дисциплина.** Каждое существенное утверждение этого документа помечено одним из четырёх статусов:
 
@@ -89,13 +91,13 @@
 
 ### 4.2. Обязательные safety-инварианты
 
-- одна логически связанная сущность/цепочка (Property/TenantRequest/Campaign/pair/encounter) не оказывается одновременно в tuning и final evaluation — `DECISION_CANDIDATE_FOR_REVIEW` как fail-closed правило; точная grouping/isolation policy, определяющая границу «связанности», — `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 3); **до утверждения этой policy ни один split не может считаться валидным, и run не переходит в `FROZEN`/final evaluation** (§10, `MEP-C-002`);
+- одна логически связанная сущность/цепочка не оказывается одновременно в tuning и final evaluation — `PARTIALLY_RESOLVED_BOUNDARY` по human-approved `XFR-D-059 v1.0`: до утверждения exact grouping/isolation policy ни один split не считается валидным и run не переходит в `FROZEN`; после утверждения policy обнаруженное policy-defined cross-split пересечение либо невозможность доказать isolation приводит к `EVALUATION_RUN_REJECTED`; точная граница связанности, grouping key/algorithm и unit of evaluation остаются `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 3; `MEP-C-002`);
 - temporal/version isolation — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с revision-моделью `CAMPAIGN_TECHNICAL_ASSIGNMENT.md` §13;
-- duplicate/replay leakage prevention — `DECISION_CANDIDATE_FOR_REVIEW`;
+- duplicate/replay leakage fail-closed rejection — часть `PARTIALLY_RESOLVED_BOUNDARY` `XFR-D-059 v1.0`; exact detection/linkage algorithm и runtime evidence остаются `OPEN_BLOCKED_PENDING_DECISION`;
 - frozen manifest до run — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с составом §8;
 - корректировки outcome не переписывают уже frozen run задним числом — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с `CAMPAIGN_OUTCOMES.md` §7 (append-only, correction создаёt новую запись, не изменяет существующую).
 
-Точную grouping/isolation policy этот документ оставляет `OPEN_BLOCKED_PENDING_DECISION`: предложение «самый широкий связанный aggregate» рассматривалось в предшествующем memo, но ни один источник этого не утверждает — здесь оно не принимается ни как норма, ни как единственный кандидат.
+`XFR-D-059 v1.0` не является exact grouping/isolation policy: он утверждает только fail-closed safety boundary и минимальные completeness requirements будущей policy. Предложение «самый широкий связанный aggregate» не принято ни как норма, ни как единственный кандидат; grouping key/formula, canonical connected-component algorithm, temporal/version cutoffs и handling неоднозначной linkage остаются `OPEN_BLOCKED_PENDING_DECISION`.
 
 Split ratios (доли train/validation/test, объём выборки) не фиксируются этим документом — `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 6).
 
@@ -145,9 +147,11 @@ Split ratios (доли train/validation/test, объём выборки) не ф
 
 `OPEN_BLOCKED_PENDING_DECISION`, owner `AI + PRODUCT` (§11, пункт 4). Ни один из вариантов не принят этим документом ни явно, ни по умолчанию.
 
-### 5.5. Открыто, не решается здесь
+### 5.5. Human-approved boundaries и остающиеся открытые решения
 
-Mapping разрешённых label-quality statuses (§5.2) к конкретным label-категориям (§5.1); adjudication disagreement процедура; blind/double review; abstention/unknown handling terminology — все `OPEN_BLOCKED_PENDING_DECISION` (§11, пункты 1, 2, 15).
+- Mapping разрешённых label-quality statuses (§5.2) к конкретным label-категориям (§5.1) остаётся полностью `OPEN_BLOCKED_PENDING_DECISION` (`XFR-D-057`, §11 пункт 1).
+- `XFR-D-058 v1.0` — `PARTIALLY_RESOLVED_BOUNDARY`: `DISPUTED` и `INCONCLUSIVE` сохраняются раздельно, не становятся автоматически positive/negative/unknown/rejected и не допускаются как resolved ground truth без approved adjudication outcome и `XFR-D-057` evidence-level mapping. Exact adjudication workflow, blind/double review, quorum, reviewer authority, status mapping и runtime carrier остаются `OPEN_BLOCKED_PENDING_DECISION` (§11 пункт 2).
+- `XFR-D-069 v1.0` — approved qualitative terminology boundary: `unknown` описывает состояние знания о факте/label, `abstention` — действие evaluator не выдавать output; термины ортогональны и ни один не является negative label или Qualification result. Exact triggers, runtime representation, metric definitions и routing mapping остаются `OPEN_BLOCKED_PENDING_DECISION` (§11 пункт 15); новый runtime enum не вводится.
 
 ---
 
@@ -187,9 +191,9 @@ Mapping разрешённых label-quality statuses (§5.2) к конкрет�
 - **Evaluation object:** Confidence Score (8 факторов Architecture §16: полнота критических полей, качество/независимость источников, свежесть, статус верификации, отсутствие конфликтов, устойчивость ранга, согласованность методов, историческая калибровка); Risk Score (§17).
 - **Label/evidence:** gate/safety labels (§5.1.3), подтверждённые исходы проверки.
 - **Allowed use:** измерение полного распределения/summary Confidence Score; отдельно — counts/rates только для явно определённых states, если и когда они определены утверждённым policy/enum (например, канонический `evidence_status` Architecture §13, либо будущие Qualification routing статусы `NEEDS_VERIFICATION`/`HUMAN_REVIEW_REQUIRED`) — не как единая недоопределённая категория «low-confidence».
-- **Prohibited inference:** без approved threshold нельзя вычислять «долю low-confidence» как однозначную категорию; нельзя сворачивать unknown/abstention case в единый средний показатель, скрывающий их долю (§34.1: unknown ≠ negative); нельзя смешивать канонический `evidence_status` Architecture §13, candidate `value_state` Feature Schema, будущий Qualification routing status и статистический bucket этого измерения в один термин.
+- **Prohibited inference:** без approved threshold нельзя вычислять «долю low-confidence» как однозначную категорию; `XFR-D-069 v1.0` запрещает сворачивать unknown facts/labels и abstained outputs в один показатель и смешивать их с negative label или Qualification result; нельзя смешивать канонический `evidence_status` Architecture §13, candidate `value_state` Feature Schema, будущий Qualification routing status и статистический bucket этого измерения в один термин.
 - **Owner финального threshold (роль, не артефакт):** для Risk Score human-review thresholds — `AI + LEGAL`, Architecture §37 вопрос №8, `SOURCE_NORMATIVE`; для Confidence Score calibration target прямой источник owner не назначает — см. открытое решение №7 (`Chief AI Architect + AI`, после создания размеченной выборки), `DECISION_CANDIDATE_FOR_REVIEW`/`OPEN_BLOCKED_PENDING_DECISION`, не `SOURCE_NORMATIVE`. Выбранные значения фиксируются в артефактах `MATCHING_RISK_POLICY`/`MATCHING_SCORING_POLICY` соответственно — сами артефакты не являются owner-ролью.
-- **Статус:** `SOURCE_NORMATIVE` — факторы Confidence Score названы явно (§16); численная калибровка/target `OPEN_BLOCKED_PENDING_DECISION`; терминология abstention/unknown для целей этого diagnostic — `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 15), новый runtime enum этим документом не вводится.
+- **Статус:** `SOURCE_NORMATIVE` — факторы Confidence Score названы явно (§16); численная калибровка/target `OPEN_BLOCKED_PENDING_DECISION`; qualitative terminology `unknown`/`abstention` резолвлена human-approved `XFR-D-069 v1.0`, но exact triggers, runtime mapping, metric definitions/denominators и routing остаются `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 15), новый runtime enum этим документом не вводится.
 
 ### 6.5. Safety/data-leakage/DLP
 
@@ -358,8 +362,8 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 | № | Вопрос | Owner | Блокирует |
 | --- | --- | --- | --- |
 | 1 | Allowed label-evidence level per label category (§5.2 → §5.1 mapping) | AI + DEVELOPMENT + LEGAL | Label contract, ground truth eligibility |
-| 2 | Adjudication/disagreement procedure для `DISPUTED`/`INCONCLUSIVE` | AI + LEGAL | Label contract |
-| 3 | Точная evaluation grouping/split isolation policy (§4.1) | AI + DEVELOPMENT | Leakage prevention, dataset manifest |
+| 2 | **`PARTIALLY_RESOLVED_BOUNDARY` — `XFR-D-058 v1.0`.** Fail-closed ground-truth eligibility для `DISPUTED`/`INCONCLUSIVE` утверждена; exact adjudication workflow, blind/double review, quorum и `XFR-D-057` mapping остаются `OPEN` | `AI + LEGAL` (governance owner `XFR-D-058`; mandatory approvers `Chief AI Architect + PRODUCT + DEVELOPMENT`) | Exact label adjudication contract остаётся blocking; silent coercion boundary больше не blocking |
+| 3 | **`PARTIALLY_RESOLVED_BOUNDARY` — `XFR-D-059 v1.0`.** No valid split before approved policy; policy-defined overlap/duplicate/replay leakage или недоказанная isolation fail closed; exact grouping/isolation policy, ratios и implementation остаются `OPEN` | `AI + DEVELOPMENT` (governance owner `XFR-D-059`; mandatory approvers `Chief AI Architect + PRODUCT + LEGAL`) | Exact grouping policy и dataset manifest остаются blocking; fail-closed leakage boundary больше не blocking |
 | 4 | Handling Campaigns с correction history при новом freeze — вариант A vs B (§5.4) | AI + PRODUCT | Outcome leakage prevention |
 | 5 | Approved false-exclusion maximum **и owner этого назначения** (§6.1) — источник не называет owner напрямую | `Chief AI Architect + AI` (candidate, не подтверждён источником) | Hard Constraint safety metric family |
 | 6 | Dataset size/split ratios | AI + DEVELOPMENT | Split/leakage controls — намеренно не закрывается этим документом |
@@ -371,11 +375,11 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 | 12 | Точный cross-functional approval flow для самого `MATCHING_EVALUATION_PLAN` как артефакта | Chief AI Architect + AI + DEVELOPMENT | `IMPLEMENTATION_READINESS_GATE` условие 5 (Controlled Artifact Manifest) |
 | 13 | Конкретный owner/authority роли «Data Governance» (§7) | **RESOLVED authority model by `XFR-D-067 v1.0`:** Data Governance authority accountable to `LEGAL`, independent from model/dataset author; `AI` evidence provider; `DEVELOPMENT + SECURITY` control verification. Named appointment/RBAC remains required | Segment/training data readiness |
 | 14 | Fairness diagnostic framework и юридический fairness standard | LEGAL + PRODUCT | Segment/bias diagnostics, отдельно от Feature Schema открытого решения №9 |
-| 15 | Abstention/unknown policy и terminology (единый словарь для diagnostics) | AI + DEVELOPMENT | Uncertainty/abstention reporting (§6.4) |
+| 15 | **`RESOLVED_QUALITATIVE_TERMINOLOGY_BOUNDARY` — `XFR-D-069 v1.0`.** `unknown` = knowledge/fact state; `abstention` = evaluator behavior; они ортогональны, не negative и не Qualification result. Runtime representation, triggers, metrics и routing mapping остаются `OPEN` | `AI + DEVELOPMENT` (governance owner `XFR-D-069`; mandatory approvers `Chief AI Architect + PRODUCT + LEGAL`) | Runtime/reporting contract остаётся blocking; qualitative terminology больше не blocking |
 | 16 | Threshold-search statistical comparison procedure (§9) | AI + DEVELOPMENT | Threshold-search evidence record |
 | 17 | Точный процесс, которым correction (`CAMPAIGN_OUTCOMES.md` §7) синхронизируется с уже `FROZEN`/`EXECUTED` run (помимо запрета переписывания — сам механизм уведомления/учёта) | AI + DEVELOPMENT | Run lifecycle (§10) |
 
-Решение №13 разрешено отдельным human governance record; оно не одобряет dataset или Evaluation Plan. Остальные решения не закрываются произвольно; новые gaps добавляются будущими ревью, не разрешаются этим документом.
+Решение №13 разрешено отдельным human governance record; строки №2/№3 частично резолвлены `XFR-D-058`/`XFR-D-059`, строка №15 получила qualitative terminology boundary `XFR-D-069`. Эти records не одобряют dataset или Evaluation Plan; перечисленные remaining dependencies остаются `OPEN`, а новые gaps добавляются будущими ревью, не разрешаются этим документом.
 
 ---
 
@@ -391,13 +395,13 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 #### `MEP-C-002` — grouping/split leakage: fail closed до утверждения границы связанности
 
-**Given (часть А):** approved grouping/isolation policy (§4.1, §11 пункт 3) отсутствует.
+**Given (часть А):** approved grouping/isolation policy (§4.1, §11 пункт 3) отсутствует; fail-closed boundary `XFR-D-059 v1.0` действует.
 **When:** рассматривается формирование tuning/final split для evaluation run.
-**Then:** ни один split не может считаться валидным; run не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10).
+**Then:** ни один split не может считаться валидным; run не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.0`).
 
 **Given (часть Б):** approved grouping/isolation policy утверждена и определяет границу связанности сущностей/цепочек (Property/TenantRequest/Campaign/pair/encounter).
 **When:** обнаружено пересечение этой границы между tuning и final evaluation split.
-**Then:** run получает evidence verdict `EVALUATION_RUN_REJECTED` (§10). Ни «самый широкий связанный aggregate», ни конкретные split ratios этим документом не выбираются — оба остаются open (§4.1, §11 пункты 3, 6).
+**Then:** run получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.0`). Ни «самый широкий связанный aggregate», ни конкретные grouping algorithm/split ratios этим документом не выбираются — они остаются open (§4.1, §11 пункты 3, 6).
 
 #### `MEP-C-003` — outcome correction/superseded leakage без выбора inclusion rule
 
@@ -445,7 +449,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 **Given:** отчёт evaluation run по ranking/calibration.
 **When:** формируется итог.
-**Then:** отчёт показывает полное распределение/summary Confidence Score и отдельно counts/rates только для states, явно определённых утверждённым policy/enum (например, канонический `evidence_status` Architecture §13); «доля low-confidence» как единая недоопределённая категория не вычисляется без approved threshold; терминология abstention/unknown остаётся open decision (§11, пункт 15); численный acceptable-threshold этой доли не вводится этим документом, и новый runtime enum не создаётся.
+**Then:** отчёт показывает полное распределение/summary Confidence Score и отдельно counts/rates только для states, явно определённых утверждённым policy/enum (например, канонический `evidence_status` Architecture §13); `XFR-D-069 v1.0` требует сохранять qualitative distinction: `unknown` — knowledge/fact state, `abstention` — evaluator behavior, ни один термин не является negative label или Qualification result. Они не объединяются в недифференцированный показатель; exact metric definitions/denominators, triggers, runtime representation и routing mapping остаются `OPEN`; «доля low-confidence» не вычисляется без approved threshold, численный acceptable-threshold не вводится и новый runtime enum не создаётся.
 
 #### `MEP-C-011` — tuning/final separation
 
@@ -503,7 +507,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 - готов только к cross-functional review — не более;
 - не закрывает вопрос №10 Architecture §37 — вопрос остаётся `OPEN`;
-- численные targets, label policy, adjudication procedure, split policy, drift monitoring, fairness standard, re-identification threshold — все остаются открытыми (§11, полный список из 17 пунктов);
+- decision register сохраняет 17 строк: №2/№3 получили только partial fail-closed boundaries `XFR-D-058`/`XFR-D-059`, №15 — qualitative terminology boundary `XFR-D-069`; exact label-evidence mapping, adjudication procedure, grouping/split policy, численные targets, drift monitoring, fairness standard, re-identification threshold, runtime/reporting mappings и остальные dependencies остаются открытыми (§11);
 - не обновляет и не требует обновления Controlled Artifact Manifest (Architecture §52.1) — запись `MATCHING_EVALUATION_PLAN` не добавляется до реального утверждения;
 - не разрешает и не инициирует implementation, model release, реальные данные или production launch;
 - не изменяет ни один существующий файл, включая `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md`, Architecture, Data Contracts, controlled-set artifacts, PR #20.
