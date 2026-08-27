@@ -1,9 +1,9 @@
 # LeaseMind MATCHING CROSS-FUNCTIONAL DECISION INVENTORY
 
 **Версия:** 1.0
-**Дата:** 2026-08-26
+**Дата:** 2026-08-27
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `b8d72db2439dee374217f1c9846a068b4e11b993`
+**Reviewed repository commit:** `54e9795caee415bafd27f6a675f1587c3926eca3`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Wave 2B Feature compatibility decision records commit:** `324242c88cee07f1b48b0ff134ffaefc360d1bcf`
@@ -13,6 +13,7 @@
 **Wave 2F Scoring semantics decision records commit:** `900731c692a5d003804074b71d97b91630bf88de`
 **Wave 2G Evaluation semantics decision records commit:** `6f086787ea799941c5bea649c9b90a6bd76eaac6`
 **Scoring governance owner-review decision records commit:** `bcee8eb751bb3a61a7bdc91a919c107fe0ce6491`
+**Evaluation label-evidence owner-review decision record commit:** `9dbc8049cbd8b2d14e997111d43649e76e969e01`
 **Coordination:** Chief AI Architect — coordination candidate only, not owner of every indexed decision
 
 ## 1. Назначение и граница документа
@@ -327,7 +328,17 @@ Canonical IDs/роли в §4.2 (Evaluation Plan crosswalk) не изменен�
 | `XFR-D-059` | `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.0.md` | `PARTIALLY_RESOLVED_BOUNDARY` — до approved exact policy split невалиден; после неё policy-defined overlap, duplicate/replay leakage либо недоказанная isolation приводят к `EVALUATION_RUN_REJECTED` | Exact grouping key/formula/connected-component algorithm, unit of evaluation, version/temporal linkage, split ratios/dataset size `XFR-D-062`, manifest/runtime implementation |
 | `XFR-D-069` | `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md` | `RESOLVED_QUALITATIVE_TERMINOLOGY_BOUNDARY` — `unknown` описывает knowledge/fact state, `abstention` — evaluator behavior; они ортогональны, не negative и не Qualification result | Exact triggers, runtime representation, metric definitions/denominators, reason catalog, Qualification routing и Safe Presentation wording |
 
-Эти records не утверждают Evaluation Plan Proposal, dataset/evidence procedure, numeric thresholds, runtime/API/DB/schema implementation или прохождение governance gate. `XFR-D-057`, exact части `XFR-D-058`/`XFR-D-059`, `XFR-D-060`–`XFR-D-066`, `XFR-D-068`, runtime/reporting части `XFR-D-069` и `XFR-D-070`–`XFR-D-071` остаются независимо `OPEN`; authority model `XFR-D-067` остаётся разрешённым ранее Wave 1, named appointment/RBAC pending.
+Эти records не утверждают Evaluation Plan Proposal, dataset/evidence procedure, numeric thresholds, runtime/API/DB/schema implementation или прохождение governance gate. На момент Wave 2G `XFR-D-057` оставался `OPEN`; более поздний owner-review record синхронизирован отдельно в §5.8.1. Exact части `XFR-D-058`/`XFR-D-059`, `XFR-D-060`–`XFR-D-066`, `XFR-D-068`, runtime/reporting части `XFR-D-069` и `XFR-D-070`–`XFR-D-071` остаются независимо `OPEN`; authority model `XFR-D-067` остаётся разрешённым ранее Wave 1, named appointment/RBAC pending.
+
+### 5.8.1. Evaluation label-evidence owner-review decision-status overlay
+
+Canonical ID и source key `EP-01 → XFR-D-057` в §4.2 не изменены. Этот отдельный post-Wave-2G overlay синхронизирует более позднюю qualitative eligibility boundary и не переписывает исторический Wave 2G checkpoint.
+
+| Canonical ID | Record | Current status | Remaining open dependency |
+|---|---|---|---|
+| `XFR-D-057` | `LeaseMind_MATCHING_DECISION_XFR-D-057_v1.0.md` | `RESOLVED_QUALITATIVE_ELIGIBILITY_BOUNDARY` — five-category eligibility matrix утверждена; deterministic fixtures находятся вне feedback enum; expert/gate/safety/business допуски условны; `SELF_REPORTED` preference ограничена diagnostic/user-specific analysis; unknown combinations fail closed | Exact reviewer/adjudication workflow, quorum, qualifications/authority/independence evidence, source-policy mapping для конкретных gate/safety фактов, Campaign correction handling `XFR-D-060`, runtime representation, production-data/privacy prerequisites |
+
+Record не утверждает Evaluation Plan Proposal, dataset, evaluation run, production-data use, numeric thresholds, runtime/API/DB/schema implementation или прохождение governance gate. `XFR-D-058` остаётся частично разрешённым: его qualitative eligibility dependency закрыта `XFR-D-057`, но exact adjudication workflow остаётся `OPEN`. Все три gates остаются `BLOCKED`.
 
 ## 6. External normative anchors — вне count 102/90
 
@@ -401,19 +412,19 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 ## 11. Следующий формат работы
 
-Index ссылается на отдельные decision records, но сам не заменяет их. Wave 1 завершён тремя records; Wave 2A (Qualification semantics) завершён шестью records `XFR-D-032/033/037/038/040/044`; Wave 2B (Feature compatibility) завершён четырьмя records `XFR-D-001/002/012/013`; Wave 2C (Feature input semantics) завершён двумя records `XFR-D-009/011`; Wave 2D (Safe Presentation registry) завершён одним record `XFR-D-073`; Wave 2E (Risk aggregation) завершён одним record `XFR-D-048`; Wave 2F (Scoring semantics) завершён тремя records `XFR-D-023/026/028`; отдельный Scoring governance owner-review завершён двумя records `XFR-D-024/027`; Wave 2G (Evaluation semantics) завершён тремя records `XFR-D-058/059/069`. Ни одна волна не утверждает Proposal и не снимает gates.
+Index ссылается на отдельные decision records, но сам не заменяет их. Wave 1 завершён тремя records; Wave 2A (Qualification semantics) завершён шестью records `XFR-D-032/033/037/038/040/044`; Wave 2B (Feature compatibility) завершён четырьмя records `XFR-D-001/002/012/013`; Wave 2C (Feature input semantics) завершён двумя records `XFR-D-009/011`; Wave 2D (Safe Presentation registry) завершён одним record `XFR-D-073`; Wave 2E (Risk aggregation) завершён одним record `XFR-D-048`; Wave 2F (Scoring semantics) завершён тремя records `XFR-D-023/026/028`; отдельный Scoring governance owner-review завершён двумя records `XFR-D-024/027`; Wave 2G (Evaluation semantics) завершён тремя records `XFR-D-058/059/069`; отдельный Evaluation label-evidence owner-review завершён record `XFR-D-057`. Ни одна волна не утверждает Proposal и не снимает gates.
 
-Синхронизированы по состоянию на Scoring governance owner-review commit `bcee8eb751bb3a61a7bdc91a919c107fe0ce6491` поверх ранее зафиксированного Wave 2G commit `6f086787ea799941c5bea649c9b90a6bd76eaac6` (base/reviewed commit для этого sync pass — merge commit `b8d72db2439dee374217f1c9846a068b4e11b993`, 2026-08-26):
+Синхронизированы по состоянию на Evaluation label-evidence owner-review commit `9dbc8049cbd8b2d14e997111d43649e76e969e01` поверх ранее зафиксированных Scoring governance owner-review commit `bcee8eb751bb3a61a7bdc91a919c107fe0ce6491` и Wave 2G commit `6f086787ea799941c5bea649c9b90a6bd76eaac6` (base/reviewed commit для этого sync pass — merge commit `54e9795caee415bafd27f6a675f1587c3926eca3`, 2026-08-27):
 
 - Qualification Policy: `XFR-D-030` resolved, `XFR-D-031` responsibility resolved / representation open, decision rows №3/№4/№10/№11/№13/№18 — `RESOLVED_QUALITATIVE_BOUNDARY`;
 - Safe Presentation Policy: `XFR-D-044` read-only consumption boundary resolved (decision row №8 частично), `XFR-D-038` STALE-boundary отражён в §6.5/§9, decision row №2 — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` (`XFR-D-073`, только registry-key identity; field allowlist/display/combination-risk evidence/runtime carrier остаются open);
-- Evaluation Plan: `XFR-D-067` authority model resolved / named appointment pending; decision rows №2/№3 — `PARTIALLY_RESOLVED_BOUNDARY` (`XFR-D-058`/`XFR-D-059`, exact adjudication/grouping procedures remain open); decision row №15 — `RESOLVED_QUALITATIVE_TERMINOLOGY_BOUNDARY` (`XFR-D-069`, runtime/triggers/metrics/routing remain open);
+- Evaluation Plan: decision row №1 — `RESOLVED_QUALITATIVE_ELIGIBILITY_BOUNDARY` (`XFR-D-057`, exact reviewer/adjudication workflow/runtime/production-data use remain open); `XFR-D-067` authority model resolved / named appointment pending; decision rows №2/№3 — `PARTIALLY_RESOLVED_BOUNDARY` (`XFR-D-058`/`XFR-D-059`, exact adjudication/grouping procedures remain open); decision row №15 — `RESOLVED_QUALITATIVE_TERMINOLOGY_BOUNDARY` (`XFR-D-069`, runtime/triggers/metrics/routing remain open);
 - Feature Schema: decision rows №2/№3/№15 — `PARTIALLY RESOLVED` (`XFR-D-001`/`XFR-D-002`/`XFR-D-012`), decision row №16 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-013`), decision row №11 — `RESOLVED_V0_1_SCOPE_BOUNDARY` (`XFR-D-009`), decision row №14 — `RESOLVED_QUALITATIVE_LITERAL_BASELINE` (`XFR-D-011`);
 - Risk Policy: decision row №2 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-048`, multi-component representation + conditional non-compensation; weighted aggregation/numeric formula/runtime representation/Risk→Qualification interface остаются independently open);
 - Scoring Policy: decision row №10 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-023`), row №11 — `PARTIALLY_RESOLVED_BOUNDARY` (`XFR-D-024`, только governance owner; содержательная Priority Score policy остаётся open), row №15 — `RESOLVED_EVIDENCE_BOUNDARY` (`XFR-D-026`), row №16 — `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-027`, только role boundary шагов §30.3 №1–3; exact procedure/quorum/content остаются open), row №17 — `PARTIALLY_RESOLVED_BOUNDARY` (`XFR-D-028`, только internal ownership; external granularity остаётся open); row №18 (`XFR-D-029`) — established guard, отдельный record не требуется;
-- этот inventory: Wave 1, Wave 2A, Wave 2B, Wave 2C, Wave 2D, Wave 2E, Wave 2F, Scoring governance owner-review и Wave 2G status overlays (§5.1–§5.8).
+- этот inventory: Wave 1, Wave 2A, Wave 2B, Wave 2C, Wave 2D, Wave 2E, Wave 2F, Scoring governance owner-review, Wave 2G и Evaluation label-evidence owner-review status overlays (§5.1–§5.8.1).
 
-Следующий узкий package определяется оставшимися evidence-ready qualitative decisions: Scoring governance и Scoring Policy §12 НЕ завершены (segment-override evidence, ranking/diversification boundaries и содержательная Priority Score policy остаются `OPEN`; `XFR-D-027` разрешает role boundary шагов §30.3 №1–3, но exact procedure/quorum/content остаются `OPEN`); Evaluation Plan exact evidence/adjudication/grouping procedures и прочие строки cluster `XFR-D-057`–`071` не считаются закрытыми Wave 2G; Safe Presentation field allowlist и combination-risk algorithm также pending. Никаких numeric values и runtime design до соответствующего evidence/decision.
+Следующий узкий package определяется оставшимися evidence-ready qualitative decisions: Scoring governance и Scoring Policy §12 НЕ завершены (segment-override evidence, ranking/diversification boundaries и содержательная Priority Score policy остаются `OPEN`; `XFR-D-027` разрешает role boundary шагов §30.3 №1–3, но exact procedure/quorum/content остаются `OPEN`); Evaluation Plan qualitative label-evidence eligibility разрешена `XFR-D-057`, но exact adjudication/grouping procedures и прочие строки cluster `XFR-D-058`–`071` не считаются закрытыми; Safe Presentation field allowlist и combination-risk algorithm также pending. Никаких numeric values и runtime design до соответствующего evidence/decision.
 
 ## 12. Acceptance criteria
 
