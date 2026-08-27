@@ -11,9 +11,9 @@
 
 Документ не закрывает вопрос №10 `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` §37 и не переводит ни один gate в `READY`.
 
-Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.md` (fail-closed boundary + exact human adjudication governance procedure, supersedes v1.0), `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.0.md` (fail-closed split-isolation boundary) и `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md` (qualitative `unknown`/`abstention` terminology boundary) обязательны для соответствующих граней ниже (§4, §5.5, §6.4, §11, `MEP-C-002`, `MEP-C-005`, `MEP-C-010`). Их approval не переводит этот Proposal в `APPROVED`, не утверждает exact grouping/runtime procedure, dataset или production use и не вводит runtime enum, routing mapping или численные triggers.
+Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.md` (fail-closed boundary + exact human adjudication governance procedure, supersedes v1.0), `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.1.md` (conservative connected-component grouping/split-isolation policy, supersedes v1.0) и `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md` (qualitative `unknown`/`abstention` terminology boundary) обязательны для соответствующих граней ниже (§4, §5.5, §6.4, §11, `MEP-C-002`, `MEP-C-005`, `MEP-C-010`, `MEP-C-011`). Их approval не переводит этот Proposal в `APPROVED`, не утверждает dataset, split ratios/seed, runtime graph/manifest carrier или production use и не вводит runtime enum, routing mapping или численные triggers.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `LeaseMind_MATCHING_DECISION_XFR-D-057_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.md` (supersedes `XFR-D-058 v1.0`), `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md`, `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md`, `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (только контрактные/версионные/replay-границы), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` (Proposal-зависимость, не утверждённый runtime contract), `LeaseMind_MATCHING_DECISION_XFR-D-057_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.md` (supersedes `XFR-D-058 v1.0`), `LeaseMind_MATCHING_DECISION_XFR-D-059_v1.1.md` (supersedes `XFR-D-059 v1.0`), `LeaseMind_MATCHING_DECISION_XFR-D-067_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-069_v1.0.md`, `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, `02_PRODUCT/ANALYSIS_SNAPSHOT.md`, `02_PRODUCT/CAMPAIGN_OUTCOMES.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md`.
 
 **Нормативная дисциплина.** Каждое существенное утверждение этого документа помечено одним из четырёх статусов:
 
@@ -32,7 +32,7 @@ Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.
 
 `MATCHING_EVALUATION_PLAN` — будущая воспроизводимая процедура: подготовки dataset, label governance, split/leakage controls, evaluation runs, сбора metric evidence и threshold-search evidence для Matching Engine. `DECISION_CANDIDATE_FOR_REVIEW`.
 
-Документ предлагает процедурный каркас для review вопроса №10 Architecture §37 («Какая размеченная выборка и процедура adjudication используются для pilot baseline?», owner `AI + DEVELOPMENT`, `SOURCE_NORMATIVE` для формулировки вопроса и его owner). `XFR-D-057 v1.0` разрешает qualitative label-evidence eligibility, а `XFR-D-058 v1.1` — human adjudication governance procedure; сам вопрос №10 целиком остаётся `OPEN`, потому что конкретная размеченная выборка, operational appointments/runtime contract и прочие evidence-plan dependencies не утверждены. Этот документ не назначает dataset и не проводит adjudication.
+Документ предлагает процедурный каркас для review вопроса №10 Architecture §37 («Какая размеченная выборка и процедура adjudication используются для pilot baseline?», owner `AI + DEVELOPMENT`, `SOURCE_NORMATIVE` для формулировки вопроса и его owner). `XFR-D-057 v1.0` разрешает qualitative label-evidence eligibility, `XFR-D-058 v1.1` — human adjudication governance procedure, а `XFR-D-059 v1.1` — connected-component grouping/split-isolation policy; сам вопрос №10 целиком остаётся `OPEN`, потому что конкретная размеченная выборка, `XFR-D-060` correction-history inclusion, `XFR-D-062` size/ratios/seed, operational appointments/runtime contract и прочие evidence-plan dependencies не утверждены. Этот документ не назначает dataset и не проводит adjudication.
 
 ### 1.2. Явно исключено (non-goals)
 
@@ -85,19 +85,21 @@ Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-058_v1.1.
 
 ## 4. Evaluation unit и split/leakage controls
 
-### 4.1. Кандидаты unit of evaluation
+### 4.1. Canonical split-isolation unit
 
-`Property`, `TenantRequest`, Campaign, `match_pair_id`, `encounter_id`, `(aggregate_id, source_revision)` — все перечислены только как кандидаты granularity. `DECISION_CANDIDATE_FOR_REVIEW` для самого перечня кандидатов (основание — существование этих ID в `CAMPAIGN_TECHNICAL_ASSIGNMENT.md` §13 и Architecture §21.3/§48.8). Выбор конкретного обязательного уровня группировки — `OPEN_BLOCKED_PENDING_DECISION` (см. §11, пункт 3).
+`XFR-D-059 v1.1` утверждает `RESOLVED_GROUPING_ISOLATION_BOUNDARY`: `Property`, `TenantRequest`, Campaign, `match_pair_id`, `encounter_id`, source aggregate identity (`source_system` + `aggregate_id`) через его versions/revisions и явные correction/supersedes/causal/confirmed duplicate-replay lineages образуют закрытый набор source-authoritative edge types; revision/version без aggregate identity не создаёт edge. Deterministic transitive closure этих edges образует connected component — атомарную split-isolation unit, которая целиком назначается ровно в один split и не разрезается из-за размера или желаемого ratio.
+
+Connected component не назначается этим решением как metric denominator и не меняет смысл business entities. Raw address, free text, display-name similarity, embeddings или AI/model output не создают canonical edge. Missing, ambiguous или conflicting linkage исключается fail closed без random/heuristic assignment и без negative-label coercion.
 
 ### 4.2. Обязательные safety-инварианты
 
-- одна логически связанная сущность/цепочка не оказывается одновременно в tuning и final evaluation — `PARTIALLY_RESOLVED_BOUNDARY` по human-approved `XFR-D-059 v1.0`: до утверждения exact grouping/isolation policy ни один split не считается валидным и run не переходит в `FROZEN`; после утверждения policy обнаруженное policy-defined cross-split пересечение либо невозможность доказать isolation приводит к `EVALUATION_RUN_REJECTED`; точная граница связанности, grouping key/algorithm и unit of evaluation остаются `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 3; `MEP-C-002`);
-- temporal/version isolation — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с revision-моделью `CAMPAIGN_TECHNICAL_ASSIGNMENT.md` §13;
-- duplicate/replay leakage fail-closed rejection — часть `PARTIALLY_RESOLVED_BOUNDARY` `XFR-D-059 v1.0`; exact detection/linkage algorithm и runtime evidence остаются `OPEN_BLOCKED_PENDING_DECISION`;
+- одна логически связанная сущность/цепочка не оказывается одновременно в tuning и final evaluation — `RESOLVED_GROUPING_ISOLATION_BOUNDARY` по human-approved `XFR-D-059 v1.1`: component membership определяется deterministic transitive closure закрытого source-authoritative edge set; missing/ambiguous candidate исключается до assignment, а cross-split component или недоказанная isolation среди included records приводят к `EVALUATION_RUN_REJECTED` (§11, пункт 3; `MEP-C-002`);
+- temporal/version isolation — versions/revisions одного source aggregate и доказанная correction/supersedes lineage входят в один component независимо от времени; inclusion Campaign с correction history в конкретный freeze остаётся `OPEN_BLOCKED_PENDING_DECISION` под `XFR-D-060`;
+- duplicate/replay leakage fail-closed rejection — confirmed duplicate/replay lineage входит в исходный component; suspected-but-unconfirmed linkage исключается fail closed. Concrete detection implementation и runtime evidence carrier остаются `OPEN_BLOCKED_PENDING_DECISION`;
 - frozen manifest до run — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с составом §8;
 - корректировки outcome не переписывают уже frozen run задним числом — `DECISION_CANDIDATE_FOR_REVIEW`, согласовано с `CAMPAIGN_OUTCOMES.md` §7 (append-only, correction создаёt новую запись, не изменяет существующую).
 
-`XFR-D-059 v1.0` не является exact grouping/isolation policy: он утверждает только fail-closed safety boundary и минимальные completeness requirements будущей policy. Предложение «самый широкий связанный aggregate» не принято ни как норма, ни как единственный кандидат; grouping key/formula, canonical connected-component algorithm, temporal/version cutoffs и handling неоднозначной linkage остаются `OPEN_BLOCKED_PENDING_DECISION`.
+`XFR-D-059 v1.1` supersedes v1.0 и является exact governance grouping/isolation policy: closed edge set + deterministic transitive closure + atomic one-split component + fail-closed missing/ambiguous handling. Он не утверждает physical graph/component-ID representation, duplicate detector, manifest schema/carrier, dataset или allocation algorithm.
 
 Split ratios (доли train/validation/test, объём выборки) не фиксируются этим документом — `OPEN_BLOCKED_PENDING_DECISION` (§11, пункт 6).
 
@@ -274,7 +276,7 @@ Concept-level состав, без проектирования БД/API. `DECIS
 
 - dataset категория (§3), immutable dataset manifest/hash и freeze time;
 - included/excluded-record policy (§4/§5 controls);
-- approved grouping/isolation policy version и конкретные split assignments/hashes (§4.2, §11 пункт 3);
+- approved grouping/isolation policy version, connected-component membership evidence и конкретные one-component-to-one-split assignments/hashes (§4.2, §11 пункт 3);
 - feature schema candidate version/hash;
 - scoring/risk/qualification candidate versions/hashes (все три policy, не только scoring — согласовано с Architecture §49: «scoring/risk/qualification policy versions and hashes»);
 - code/build/dependency digests;
@@ -337,7 +339,7 @@ PLANNED → FROZEN → EXECUTED → REVIEWED
 
 Run получает verdict `EVALUATION_RUN_REJECTED` и не продвигается дальше при:
 
-- отсутствии approved grouping/isolation policy, либо incomplete freeze-time manifest (§8.1) — блокирует переход в `FROZEN`;
+- отсутствии доказуемого применения `XFR-D-059 v1.1`, approved `XFR-D-062` allocation policy либо complete freeze-time manifest (§8.1) — блокирует переход в `FROZEN`;
 - incomplete post-execution evidence record для metric results/replay result (§8.2) — блокирует переход в `EXECUTED`;
 - отсутствии обязательных фактических runtime/hardware metadata (§8.2), когда они заранее заявлены в freeze-time manifest (§8.1) как влияющие на результат, — блокирует переход в `EXECUTED`;
 - отсутствии reviewer evidence/decision references (§8.2) — блокирует переход в `REVIEWED`;
@@ -363,7 +365,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 | --- | --- | --- | --- |
 | 1 | **`RESOLVED_QUALITATIVE_ELIGIBILITY_BOUNDARY` — `XFR-D-057 v1.0`.** Five-category eligibility matrix утверждена: deterministic fixtures вне feedback enum; expert/gate/safety/business eligibility условна и требует applicable approved source/reviewer procedure; `SELF_REPORTED` preference — только diagnostic/user-specific; unknown combinations fail closed. Сам `XFR-D-057` не утверждает reviewer/adjudication workflow или quorum; current human procedure см. в строке №2, а runtime representation и production-data use остаются `OPEN` | `AI + DEVELOPMENT + LEGAL` (governance owner `XFR-D-057`; mandatory approvers `Chief AI Architect + PRODUCT`) | Qualitative ground-truth eligibility больше не blocking; operational label/adjudication contract и production-data prerequisites остаются blocking |
 | 2 | **`RESOLVED_PROCEDURAL_GOVERNANCE_BOUNDARY` — `XFR-D-058 v1.1`, supersedes v1.0.** Fail-closed eligibility сохранена; два independent first-level human reviewers фиксируют determinations до просмотра вывода друг друга и образуют quorum при совпадении, а disagreement требует distinct third second-level confirmation либо остаётся unresolved; authority/qualification/independence/conflict checks обязательны; original evidence/determinations immutable; AI не входит в quorum; `XFR-D-057` остаётся дополнительным per-case eligibility prerequisite. Named appointments, RBAC IDs, SLA, sampling и runtime representation остаются `OPEN` | `AI + LEGAL` (governance owner `XFR-D-058`; mandatory approvers `Chief AI Architect + PRODUCT + DEVELOPMENT`) | Human governance procedure больше не blocking; operational appointment и exact runtime label/adjudication contract остаются blocking |
-| 3 | **`PARTIALLY_RESOLVED_BOUNDARY` — `XFR-D-059 v1.0`.** No valid split before approved policy; policy-defined overlap/duplicate/replay leakage или недоказанная isolation fail closed; exact grouping/isolation policy, ratios и implementation остаются `OPEN` | `AI + DEVELOPMENT` (governance owner `XFR-D-059`; mandatory approvers `Chief AI Architect + PRODUCT + LEGAL`) | Exact grouping policy и dataset manifest остаются blocking; fail-closed leakage boundary больше не blocking |
+| 3 | **`RESOLVED_GROUPING_ISOLATION_BOUNDARY` — `XFR-D-059 v1.1`, supersedes v1.0.** Closed source-authoritative edge set, deterministic transitive closure и atomic one-split connected component утверждены; revisions/corrections/confirmed duplicate-replay lineage не создают independent samples; missing/ambiguous linkage и cross-split component fail closed. `XFR-D-060` inclusion, `XFR-D-062` size/ratios/seed, identity/detection controls, manifest/runtime carrier и implementation остаются `OPEN` | `AI + DEVELOPMENT` (governance owner `XFR-D-059`; mandatory approvers `Chief AI Architect + PRODUCT + LEGAL`) | Grouping/isolation governance boundary больше не blocking; allocation policy, complete manifest и runtime evidence остаются blocking |
 | 4 | Handling Campaigns с correction history при новом freeze — вариант A vs B (§5.4) | AI + PRODUCT | Outcome leakage prevention |
 | 5 | Approved false-exclusion maximum **и owner этого назначения** (§6.1) — источник не называет owner напрямую | `Chief AI Architect + AI` (candidate, не подтверждён источником) | Hard Constraint safety metric family |
 | 6 | Dataset size/split ratios | AI + DEVELOPMENT | Split/leakage controls — намеренно не закрывается этим документом |
@@ -379,7 +381,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 | 16 | Threshold-search statistical comparison procedure (§9) | AI + DEVELOPMENT | Threshold-search evidence record |
 | 17 | Точный процесс, которым correction (`CAMPAIGN_OUTCOMES.md` §7) синхронизируется с уже `FROZEN`/`EXECUTED` run (помимо запрета переписывания — сам механизм уведомления/учёта) | AI + DEVELOPMENT | Run lifecycle (§10) |
 
-Решение №1 получило qualitative eligibility boundary `XFR-D-057`; решение №2 — human adjudication governance procedure `XFR-D-058 v1.1`; решение №13 разрешено отдельным human governance record; строка №3 частично резолвлена `XFR-D-059`, строка №15 получила qualitative terminology boundary `XFR-D-069`. Эти records не одобряют dataset или Evaluation Plan; named appointments/RBAC, grouping policy, runtime representation, production-data prerequisites и прочие remaining dependencies остаются `OPEN`, а новые gaps добавляются будущими ревью, не разрешаются этим документом.
+Решение №1 получило qualitative eligibility boundary `XFR-D-057`; решение №2 — human adjudication governance procedure `XFR-D-058 v1.1`; решение №3 — grouping/isolation boundary `XFR-D-059 v1.1`; решение №13 разрешено отдельным human governance record; строка №15 получила qualitative terminology boundary `XFR-D-069`. Эти records не одобряют dataset или Evaluation Plan; named appointments/RBAC, `XFR-D-060`, `XFR-D-062`, runtime representation, production-data prerequisites и прочие remaining dependencies остаются `OPEN`, а новые gaps добавляются будущими ревью, не разрешаются этим документом.
 
 ---
 
@@ -393,15 +395,19 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 **When:** формулируется заключение о production quality, real calibration или реальных outcomes.
 **Then:** такое заключение не делается; отчёт run явно ограничивает вывод synthetic-only контуром.
 
-#### `MEP-C-002` — grouping/split leakage: fail closed до утверждения границы связанности
+#### `MEP-C-002` — connected-component grouping/split leakage: fail closed
 
-**Given (часть А):** approved grouping/isolation policy (§4.1, §11 пункт 3) отсутствует; fail-closed boundary `XFR-D-059 v1.0` действует.
+**Given (часть А):** candidate record имеет missing/ambiguous/conflicting canonical linkage.
+**When:** рассматривается его включение в tuning/final split.
+**Then:** record исключается до assignment с явной unresolved reason/evidence reference, не получает random/heuristic assignment и не считается negative label или failed match (`XFR-D-059 v1.1`).
+
+**Given (часть Б):** included record не имеет полной component membership evidence либо approved `XFR-D-062` allocation policy отсутствует.
 **When:** рассматривается формирование tuning/final split для evaluation run.
-**Then:** ни один split не может считаться валидным; run не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.0`).
+**Then:** split не считается валидным, run не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.1`).
 
-**Given (часть Б):** approved grouping/isolation policy утверждена и определяет границу связанности сущностей/цепочек (Property/TenantRequest/Campaign/pair/encounter).
-**When:** обнаружено пересечение этой границы между tuning и final evaluation split.
-**Then:** run получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.0`). Ни «самый широкий связанный aggregate», ни конкретные grouping algorithm/split ratios этим документом не выбираются — они остаются open (§4.1, §11 пункты 3, 6).
+**Given (часть В):** component построен deterministic transitive closure закрытого source-authoritative edge set `XFR-D-059 v1.1`.
+**When:** тот же component обнаружен одновременно в tuning и final evaluation split.
+**Then:** run получает evidence verdict `EVALUATION_RUN_REJECTED` (§10, `XFR-D-059 v1.1`). Component не разрезается из-за размера/ratio; split ratios, seed и allocation boundaries остаются отдельно `OPEN` под `XFR-D-062`.
 
 #### `MEP-C-003` — outcome correction/superseded leakage без выбора inclusion rule
 
@@ -457,13 +463,13 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 **Given:** threshold-search процедура (§9).
 **When:** candidate threshold проверяется.
-**Then:** финальная проверка выполняется на данных, не использованных для поиска этого же threshold.
+**Then:** финальная проверка выполняется на данных и connected components, не использованных для поиска этого же threshold; component-level overlap отклоняется по `MEP-C-002`.
 
 #### `MEP-C-012` — freeze-time manifest обязателен до `FROZEN`
 
 **Given:** любой evaluation run.
 **When:** run переходит в `FROZEN`.
-**Then:** freeze-time manifest (§8.1) содержит полный состав, включая approved grouping/isolation policy version и split assignments/hashes; run без полного freeze-time manifest не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10).
+**Then:** freeze-time manifest (§8.1) содержит полный состав, включая approved grouping/isolation policy version, component membership evidence и one-component-to-one-split assignments/hashes; run без полного freeze-time manifest не переходит в `FROZEN` и получает evidence verdict `EVALUATION_RUN_REJECTED` (§10).
 
 #### `MEP-C-013` — запрет сравнения runs с несовместимыми версиями
 
@@ -509,7 +515,7 @@ Run с verdict `EVALUATION_RUN_REJECTED` фиксируется как несо�
 
 - готов только к cross-functional review — не более;
 - не закрывает вопрос №10 Architecture §37 — вопрос остаётся `OPEN`;
-- decision register сохраняет 17 строк: №1 получил qualitative eligibility boundary `XFR-D-057`, №2 — human adjudication governance procedure `XFR-D-058 v1.1`, №3 — partial fail-closed boundary `XFR-D-059`, №15 — qualitative terminology boundary `XFR-D-069`; named appointments/RBAC, grouping/split policy, численные targets, drift monitoring, fairness standard, re-identification threshold, runtime/reporting mappings и остальные dependencies остаются открытыми (§11);
+- decision register сохраняет 17 строк: №1 получил qualitative eligibility boundary `XFR-D-057`, №2 — human adjudication governance procedure `XFR-D-058 v1.1`, №3 — grouping/isolation boundary `XFR-D-059 v1.1`, №15 — qualitative terminology boundary `XFR-D-069`; named appointments/RBAC, `XFR-D-060`, `XFR-D-062` size/ratios/seed, численные targets, drift monitoring, fairness standard, re-identification threshold, runtime/reporting mappings и остальные dependencies остаются открытыми (§11);
 - не обновляет и не требует обновления Controlled Artifact Manifest (Architecture §52.1) — запись `MATCHING_EVALUATION_PLAN` не добавляется до реального утверждения;
 - не разрешает и не инициирует implementation, model release, реальные данные или production launch;
 - не изменяет ни один существующий файл, включая `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md`, Architecture, Data Contracts, controlled-set artifacts, PR #20.
