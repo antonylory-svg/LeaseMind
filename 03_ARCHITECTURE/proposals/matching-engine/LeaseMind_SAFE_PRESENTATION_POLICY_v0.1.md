@@ -9,11 +9,11 @@
 
 **This proposal does not authorize implementation, runtime/API/schema/event/table/error-catalog changes, model release, synthetic acceptance, production use, an approved field allowlist, an approved object-type registry, a qualitative or numeric presentation-risk scale, localized UI copy, a legal-basis determination, a reason/explanation namespace, or any gate.**
 
-Architecture §37 вопрос №6 остаётся `OPEN`. Документ его не закрывает — ни полностью, ни частично.
+Architecture §37 вопрос №6 получает только `PARTIALLY_RESOLVED_BOUNDARY` по human-approved `XFR-D-072 v1.0`: owner/approver/evidence-procedure roles, default-deny, independent-row completeness, registry isolation, minimum qualitative evidence prerequisites, joint combination-risk/non-compensation и no-automatic-authorization boundary разрешены. Exact allowlist, все поля/transformations/values, методы/числа/evidence, policy approval, runtime и implementation остаются `OPEN`.
 
-Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md` (STALE orthogonality), `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md` (multi-cause/primary-reason rule), `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md` (Safe Presentation read-only consumption boundary) и `LeaseMind_MATCHING_DECISION_XFR-D-073_v1.0.md` (object-type registry-key reuse boundary) — обязательные governance decisions для соответствующих граней ниже (§6.5, §6.7, §7, §9, §11.3, §15 №2/№7/№8/№10); при необходимости также применимы `XFR-D-030`/`XFR-D-031` (Qualification artifact owner/responsibility boundary). Их approval не переводит этот Proposal или `MATCHING_QUALIFICATION_POLICY` в `APPROVED` и не утверждает exact wording/allowlist/audience payload/field allowlist/runtime enum.
+Human-approved governance decisions `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md` (STALE orthogonality), `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md` (multi-cause/primary-reason rule), `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md` (Safe Presentation read-only consumption boundary), `LeaseMind_MATCHING_DECISION_XFR-D-072_v1.0.md` (field-allowlist governance/evidence-prerequisite boundary) и `LeaseMind_MATCHING_DECISION_XFR-D-073_v1.0.md` (object-type registry-key reuse boundary) — обязательные governance decisions для соответствующих граней ниже (§6.5, §6.7, §7, §9, §11.3, §15 №1/№2/№7/№8/№10); при необходимости также применимы `XFR-D-030`/`XFR-D-031` (Qualification artifact owner/responsibility boundary). Их approval не переводит этот Proposal или `MATCHING_QUALIFICATION_POLICY` в `APPROVED` и не утверждает exact wording, фактический allowlist, audience payload, конкретное поле/transformation/value или runtime enum.
 
-**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` (полностью, включая §§4–5, 8–14, 18.1–18.7, 21–24, 29–33, 36–38, 40, 42–50, 52–54), `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (независимо перепроверен repo-wide поиском на предмет safe-presentation carrier — см. §12), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` / `LeaseMind_MATCHING_SCORING_POLICY_v0.1.md` / `LeaseMind_MATCHING_QUALIFICATION_POLICY_v0.1.md` / `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` / `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (все — Proposal-зависимости, не source), `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-031_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-073_v1.0.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence), `LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md` (Approved), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md` (только как источник `property_type` enum и `protected_commercial_data` классификации).
+**Связанные документы:** `LeaseMind_MATCHING_ENGINE_ARCHITECTURE_v1.1.md` (полностью, включая §§4–5, 8–14, 18.1–18.7, 21–24, 29–33, 36–38, 40, 42–50, 52–54), `LeaseMind_MATCHING_DATA_CONTRACTS_v1.0.md` (независимо перепроверен repo-wide поиском на предмет safe-presentation carrier — см. §12), `LeaseMind_MATCHING_FEATURE_SCHEMA_v0.1.md` / `LeaseMind_MATCHING_SCORING_POLICY_v0.1.md` / `LeaseMind_MATCHING_QUALIFICATION_POLICY_v0.1.md` / `LeaseMind_MATCHING_RISK_POLICY_v0.1.md` / `LeaseMind_MATCHING_EVALUATION_PLAN_v0.1.md` (все — Proposal-зависимости, не source), `LeaseMind_MATCHING_DECISION_XFR-D-030_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-031_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-038_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-040_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-044_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-072_v1.0.md`, `LeaseMind_MATCHING_DECISION_XFR-D-073_v1.0.md`, `05_DEVELOPMENT/matching-engine/reviews/LeaseMind_DEVELOPMENT_REVIEW_MATCHING_ENGINE_v1.1_EIGHTH.md` (только DEVELOPMENT evidence), `LeaseMind_AI_MANAGER_ARCHITECTURE_v1.0.md` (Approved), `02_PRODUCT/CAMPAIGN_TECHNICAL_ASSIGNMENT.md` (только как источник `property_type` enum и `protected_commercial_data` классификации).
 
 ---
 
@@ -55,7 +55,7 @@ Source-приоритет:
 
 `SAFE_PRESENTATION_POLICY` — будущий governance-артефакт, определяющий: границы минимизированного user-facing представления Квалифицированного варианта **до Reveal** (Safe Presentation); терминологию и boundary matrix относительно двух соседних объектов (внутренний Match Package и protected Reveal package); source-normative deny-boundary; candidate content families без утверждённого allowlist; forma будущей object-type matrix; re-identification/combination-risk модель на уровне концепции; concept-level presentation evidence bundle; gate-границы; boundary со Scoring/Qualification/Risk/Confidence; DLP/channel coverage; Data Contracts gap; evaluation evidence plan; open decisions.
 
-Документ частично формализует Architecture §37 вопрос №6 (владелец решения `PRODUCT + LEGAL`, `SOURCE_NORMATIVE`) **только процедурно** — не назначает ни одного конкретного допустимого поля и не закрывает вопрос как решённый.
+Документ отражает human-approved `XFR-D-072 v1.0` как `PARTIALLY_RESOLVED_BOUNDARY` Architecture §37 вопроса №6 (владелец решения `PRODUCT + LEGAL`, `SOURCE_NORMATIVE`) только для governance/evidence-prerequisite semantics — не назначает ни одного конкретного допустимого поля и не закрывает exact allowlist как решённый.
 
 ### 3.2. Non-goals — явно исключено
 
@@ -173,7 +173,7 @@ Source-приоритет:
 ### 6.7. Coarse object category только после combination-risk evidence
 
 - **Purpose:** показать тип/категорию объекта на уровне, не позволяющем идентификацию.
-- **Prerequisites:** существование закрытого `property_type` enum (`SOURCE_NORMATIVE` факт для `CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, §6.1) — human-approved governance decision `XFR-D-073 v1.0` утверждает эти восемь значений как canonical design-time registry key будущей matrix (`RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY`, §7, §15 пункт 2); это **не** авторизует показ `property_type` пользователю и не заменяет combination-risk evidence — field allowlist и combination-risk evidence остаются `OPEN`.
+- **Prerequisites:** существование закрытого `property_type` enum (`SOURCE_NORMATIVE` факт для `CAMPAIGN_TECHNICAL_ASSIGNMENT.md`, §6.1) — human-approved governance decision `XFR-D-073 v1.0` утверждает эти восемь значений как canonical design-time registry key будущей matrix (`RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY`, §7, §15 пункт 2); `XFR-D-072 v1.0` утверждает только `PARTIALLY_RESOLVED_BOUNDARY` governance/evidence prerequisites. Ни одно из решений не авторизует показ `property_type`, actual field row или combination-risk evidence — эти contents остаются `OPEN`.
 - **Forbidden leakage:** редкая категория в сочетании с narrow attributes (площадь/ставка/дата/инженерный признак) — см. §7.
 - **Combination-risk dependency:** пересечение coarse category с другими одновременно показанными признаками может однозначно сузить candidate pool; combination-risk evidence обязательна до допуска конкретной категории.
 - **Owner decision:** `PRODUCT + LEGAL`.
@@ -198,9 +198,9 @@ Source-приоритет:
 
 ---
 
-## 7. Object-type matrix design — только форма
+## 7. Object-type matrix design — governance/evidence boundary approved, contents open
 
-Форма будущей per-object-type/category allowlist/denylist matrix, `DECISION_CANDIDATE_FOR_REVIEW`, без заполненных значений:
+Форма будущей per-object-type/category allowlist/denylist matrix без заполненных значений. `XFR-D-072 v1.0` утверждает только qualitative governance/evidence-prerequisite boundary этой формы; сами строки и значения не утверждены:
 
 | source object-type/category | candidate field/derived fact | transformation/generalization | combination set | uniqueness/cohort evidence | intended user purpose | data classification/lawful-basis reference | source/freshness version | PRODUCT decision | LEGAL decision | policy version/hash |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -211,7 +211,9 @@ Source-приоритет:
 
 **Fail-closed evolution rule (`XFR-D-073 v1.0`).** Любое будущее/неизвестное значение CTA `property_type` enum не включается автоматически в approved presentation matrix: без отдельной, отдельно рассмотренной matrix row для этого значения — presentation по этому типу запрещён; fallback к `other` или к любой другой существующей строке не допускается; inheritance allowlist одной строки другой строкой не допускается; отсутствие matrix row не считается отрицательным фактом о самом объекте — это fail-closed governance-состояние отсутствия review, не вывод о безопасности/небезопасности объекта.
 
-**Что остаётся `OPEN_BLOCKED_PENDING_DECISION`, не резолвится `XFR-D-073`.** Остальные десять колонок этой matrix (candidate field/derived fact, transformation/generalization, combination set, uniqueness/cohort evidence, intended user purpose, data classification/lawful-basis reference, source/freshness version, PRODUCT decision, LEGAL decision, policy version/hash), сам field allowlist (§15 пункт 1, `XFR-D-072`), показ `property_type`/`property_type_other` пользователю, combination-risk evidence (§8) и runtime carrier (§9, §12) — все `OPEN_BLOCKED_PENDING_DECISION`. `XFR-D-073` резолвит только identity ключа таксономии, не содержимое matrix.
+**Field-allowlist governance/evidence boundary — `PARTIALLY_RESOLVED_BOUNDARY`, human-approved `XFR-D-072 v1.0`.** Governance owner — `PRODUCT + LEGAL`; mandatory approvers — `Chief AI Architect + AI + DEVELOPMENT`; evidence-procedure owner — `AI + DEVELOPMENT`, без unilateral approval и без подмены PRODUCT/LEGAL determination. Пока полная applicable row `registry key × candidate field/derived fact × transformation × intended purpose/audience` не approved полным owner/approver set на одной policy version/hash, presentation запрещён fail closed. Wildcard, implicit default, blanket family approval, inheritance/fallback и перенос authorization между rows запрещены. Минимальные qualitative evidence categories, joint full-payload/combination review, successive-disclosure dependency, non-compensation, DLP-vs-quasi-identifier separation и no-automatic-authorization boundary обязательны; они не утверждают exact evidence schema, method/value или row.
+
+**Что остаётся `OPEN_BLOCKED_PENDING_DECISION`.** Все десять content/review колонок matrix (candidate field/derived fact, transformation/generalization, combination set, uniqueness/cohort evidence, intended user purpose, data classification/lawful-basis reference, source/freshness version, PRODUCT decision, LEGAL decision, policy version/hash), каждая actual row, весь фактический field allowlist, показ `property_type`/`property_type_other`, actual combination-risk evidence (§8) и runtime carrier (§9, §12) остаются `OPEN_BLOCKED_PENDING_DECISION`. `XFR-D-072` резолвит только governance/evidence-prerequisite boundary; `XFR-D-073` — только registry-key identity. Ни одно решение не утверждает matrix contents.
 
 `business_category` enum (демографически симметричная защита идентичности арендатора по тому же §22.1 «ФИО или наименование второй стороны») существует как отдельный enum в том же источнике, но ни один источник не подтверждает, что для него нужна отдельная per-category presentation-matrix, и `XFR-D-073` его не затрагивает — это тоже полностью `OPEN`, не решается здесь.
 
@@ -344,12 +346,12 @@ Presentation artifact не должен обслуживаться, если und
 
 ## 15. Open decisions
 
-Ни одно решение не выбрано этим документом. Owner самого артефакта и решения №6 — `PRODUCT + LEGAL` (Architecture §37/§52, `SOURCE_NORMATIVE`); `Chief AI Architect` к source-owner артефакта или вопроса №6 не добавляется. Технические/candidate решения помечены явным `candidate`; filenames не используются как owner нигде в перечне.
+Сам Proposal не выбирает решений. Human-approved records отражаются как отдельные governance overlays. Owner самого артефакта и решения №6 — `PRODUCT + LEGAL` (Architecture §37/§52, `SOURCE_NORMATIVE`); `Chief AI Architect` к source-owner артефакта или вопроса №6 не добавляется, а в `XFR-D-072 v1.0` является mandatory approver вместе с `AI + DEVELOPMENT`, не owner. Технические/candidate решения помечены явным `candidate`; filenames не используются как owner нигде в перечне.
 
 | № | Вопрос | Owner | Источник-основание |
 |---|---|---|---|
-| 1 | Exact per-object-type allowlist (какие конкретно поля/трансформации допустимы для каждого object-type) | `PRODUCT + LEGAL` | `SOURCE_NORMATIVE` — Architecture §37 №6 дословно |
-| 2 | **`RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` — `XFR-D-073 v1.0`.** Registry-key identity резолвлена: reuse `property_type` §6.1 CTA (8 значений), parallel vocabulary не создаётся, fail-closed evolution rule для будущих/неизвестных значений утверждена; exact per-type field allowlist (`XFR-D-072`), показ `property_type`/`property_type_other`, transformation/generalization и runtime carrier остаются `OPEN` | `PRODUCT + LEGAL` | Candidate — `property_type` уже существует; `XFR-D-073` резолвит только registry-key reuse, не field-level presentation (§7) |
+| 1 | **`PARTIALLY_RESOLVED_BOUNDARY` — `XFR-D-072 v1.0`.** Governance owner `PRODUCT + LEGAL`; mandatory approvers `Chief AI Architect + AI + DEVELOPMENT`; evidence-procedure owner `AI + DEVELOPMENT`, без unilateral approval. Default-deny, independent-row completeness, registry isolation, minimum qualitative evidence prerequisites, joint combination-risk/non-compensation и no-automatic-authorization boundary утверждены; exact per-object-type allowlist, все поля/transformations/values, methods/numbers/evidence, policy/runtime/implementation остаются `OPEN_BLOCKED_PENDING_DECISION` | `PRODUCT + LEGAL` | `SOURCE_NORMATIVE` owner — Architecture §37 №6/§52; qualitative governance/evidence boundary — human-approved `XFR-D-072 v1.0` (§7) |
+| 2 | **`RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` — `XFR-D-073 v1.0`.** Registry-key identity резолвлена: reuse `property_type` §6.1 CTA (8 значений), parallel vocabulary не создаётся, fail-closed evolution rule для будущих/неизвестных значений утверждена; `XFR-D-072` резолвит только `PARTIALLY_RESOLVED_BOUNDARY` governance/evidence prerequisites, а exact per-type field allowlist, показ `property_type`/`property_type_other`, transformation/generalization и runtime carrier остаются `OPEN` | `PRODUCT + LEGAL` | Candidate — `property_type` уже существует; `XFR-D-073` резолвит только registry-key reuse, не field-level presentation (§7) |
 | 3 | Geographic generalization (уровень огрубления геопризнаков) | `PRODUCT + LEGAL` | Candidate, эхо Feature Schema открытого решения №7 |
 | 4 | Cohort/uniqueness/re-identification method и thresholds | `PRODUCT + LEGAL` (+ `DEVELOPMENT` для измеримости, candidate) | Candidate, эхо Feature Schema №7, Evaluation Plan №9, Risk Policy №10 — три независимых sibling-документа уже указывают тот же owner для смежных вопросов |
 | 5 | Combination-risk algorithm | `PRODUCT + LEGAL` (+ `AI`, candidate) | Candidate, источник не называет прямо |
@@ -363,7 +365,7 @@ Presentation artifact не должен обслуживаться, если und
 | 13 | Test dataset/evidence | `AI + DEVELOPMENT` (candidate/inherited context через `MATCHING_EVALUATION_PLAN`) | Candidate — Evaluation Plan уже owner процедуры вообще, но не имеет готовой metric family под этот случай (§14) |
 | 14 | Approval/change-control process для самого артефакта `SAFE_PRESENTATION_POLICY` | `PRODUCT + LEGAL` (+ `Chief AI Architect` координация, candidate) | Candidate |
 
-Architecture §37 вопрос №6 **не закрывается** ни одной строкой этого перечня — он остаётся полностью `OPEN`.
+Architecture §37 вопрос №6 **не закрыт полностью**: только governance/evidence-prerequisite часть имеет `PARTIALLY_RESOLVED_BOUNDARY`; exact fields, transformations, values, evidence, risk methods, policy approval, runtime и implementation остаются `OPEN`.
 
 ---
 
@@ -374,8 +376,8 @@ Architecture §37 вопрос №6 **не закрывается** ни одн�
 | Стадия | Статус |
 |---|---|
 | Safe Presentation Policy proposal reviewed | Cross-functional review этого документа — не завершено |
-| Field allowlist approved | `OPEN` — Architecture §37 №6 |
-| Object-type registry-key identity decided | `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` — `XFR-D-073 v1.0` (§7, §15 пункт 2); matrix content, field allowlist, `property_type`/`property_type_other` display и runtime carrier остаются `OPEN` |
+| Field allowlist governance/evidence boundary | `PARTIALLY_RESOLVED_BOUNDARY` — `XFR-D-072 v1.0`; actual rows/fields/transformations/values/evidence remain `OPEN` |
+| Object-type registry-key identity decided | `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` — `XFR-D-073 v1.0` (§7, §15 пункт 2); `XFR-D-072 v1.0` добавляет только `PARTIALLY_RESOLVED_BOUNDARY` governance/evidence prerequisites; matrix contents, actual field allowlist, `property_type`/`property_type_other` display и runtime carrier остаются `OPEN` |
 | Re-identification method/threshold approved | `OPEN` (§14 пункт 4) |
 | Evaluation evidence collected | Отдельная стадия, не завершена этим документом |
 | Exact Safe Presentation Policy approved | Отдельное cross-functional решение, не этот Proposal |
@@ -401,11 +403,11 @@ Architecture §37 вопрос №6 **не закрывается** ни одн�
 #### `SPP-C-005` — combination risk не сводится к per-field оценке
 **Given** несколько полей, каждое по отдельности coarse. **When** формируется presentation. **Then** оценивается совместный (joint) риск комбинации, а не отдельно каждое поле (§6.1, §8 сценарий 1).
 
-#### `SPP-C-006` — нет утверждённого field allowlist
-**Given** любой раздел документа. **When** запрашивается конкретное разрешённое поле. **Then** ни одно конкретное поле не объявлено разрешённым; все candidate families (§6) остаются `DECISION_CANDIDATE_FOR_REVIEW`.
+#### `SPP-C-006` — governance/evidence boundary approved; нет утверждённого actual field allowlist
+**Given** `XFR-D-072 v1.0` и любой раздел документа. **When** запрашивается конкретное разрешённое поле. **Then** ни одно конкретное поле не объявлено разрешённым; утверждены только owner/approver/evidence roles, default-deny, independent-row completeness, registry isolation, minimum qualitative evidence prerequisites, joint combination-risk/non-compensation и no-automatic-authorization boundary; все candidate families (§6) и actual rows остаются `DECISION_CANDIDATE_FOR_REVIEW`/`OPEN_BLOCKED_PENDING_DECISION`.
 
-#### `SPP-C-007` — property_type registry-key reuse RESOLVED; field allowlist/display remain OPEN
-**Given** закрытый enum `property_type` (`CAMPAIGN_TECHNICAL_ASSIGNMENT.md` §6.1) и human-approved governance decision `XFR-D-073 v1.0`. **When** запрашивается статус registry-key identity и статус field allowlist/показа для Safe Presentation. **Then** reuse этих восьми значений как design-time registry key — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY` (§7, §15 пункт 2); parallel vocabulary не создан; fail-closed evolution rule применяется к любому будущему/неизвестному значению (без отдельной matrix row — presentation запрещён, без fallback к `other` или к другой строке, без inheritance allowlist одной строки другой строкой, и отсутствие matrix row при этом не считается отрицательным фактом об объекте или выводом о его безопасности/небезопасности — только fail-closed governance-состояние отсутствия review); field allowlist (`XFR-D-072`), показ `property_type`/`property_type_other` пользователю и runtime enum остаются `OPEN_BLOCKED_PENDING_DECISION`, не объявлены утверждёнными этим или каким-либо другим решением.
+#### `SPP-C-007` — property_type registry-key reuse RESOLVED; allowlist governance PARTIAL; contents/display OPEN
+**Given** закрытый enum `property_type` (`CAMPAIGN_TECHNICAL_ASSIGNMENT.md` §6.1) и human-approved governance decisions `XFR-D-072 v1.0`/`XFR-D-073 v1.0`. **When** запрашивается статус registry-key identity и field-allowlist governance/contents для Safe Presentation. **Then** reuse этих восьми значений как design-time registry key — `RESOLVED_GOVERNANCE_REGISTRY_REUSE_BOUNDARY`; field-allowlist governance/evidence prerequisites — `PARTIALLY_RESOLVED_BOUNDARY`; parallel vocabulary не создан; fail-closed evolution/independent-row rules запрещают fallback к `other`, inheritance и presentation без complete approved row; отсутствие row — только governance state, не negative/risk fact. Actual field allowlist, показ `property_type`/`property_type_other`, evidence, risk methods и runtime enum остаются `OPEN_BLOCKED_PENDING_DECISION`.
 
 #### `SPP-C-008` — нет качественного/численного risk registry
 **Given** любая candidate family §6.1–§6.9 и её поле `Combination-risk dependency`. **When** проверяется формат. **Then** ни одна family не получает ordinal label (`LOW/MEDIUM/HIGH`, «низкий/средний/высокий», «средний-высокий» или эквивалент) ни в каком поле; combination risk описан только через конкретный механизм утечки/реконструкции/корреляции/overclaim/повторного раскрытия; formal method/threshold для его измерения — `OPEN` (§6, §7, §8).
@@ -446,8 +448,8 @@ Architecture §37 вопрос №6 **не закрывается** ни одн�
 #### `SPP-C-020` — invalidation/cache fail closed; qualitative block approved, mechanics open
 **Given** source/policy/freshness изменились после генерации presentation, либо underlying Qualification result помечен historical/non-actionable (`XFR-D-038`). **When** запрашивается уже сгенерированное представление. **Then** stale presentation не должен обслуживаться из кеша без ревалидации — качественный запрет подтверждён `RESOLVED_QUALITATIVE_BOUNDARY` (`XFR-D-038`, `XFR-D-044`); exact cache/TTL/invalidation runtime mechanics остаются `OPEN_BLOCKED_PENDING_DECISION` (§9).
 
-#### `SPP-C-021` — Architecture §37 №6 остаётся OPEN
-**Given** документ существует на уровне draft со статусом `Proposal for cross-functional review — does not authorize implementation` (не `APPROVED`). **When** запрашивается статус вопроса №6. **Then** он явно `OPEN`, decision owner `PRODUCT + LEGAL`.
+#### `SPP-C-021` — Architecture §37 №6 остаётся только PARTIALLY_RESOLVED_BOUNDARY
+**Given** документ существует на уровне draft со статусом `Proposal for cross-functional review — does not authorize implementation` (не `APPROVED`) и human-approved `XFR-D-072 v1.0`. **When** запрашивается статус вопроса №6. **Then** governance/evidence-prerequisite boundary явно `PARTIALLY_RESOLVED_BOUNDARY`, decision owner `PRODUCT + LEGAL`, а actual allowlist/evidence/policy/runtime/implementation остаются `OPEN`.
 
 #### `SPP-C-022` — три gates BLOCKED
 **Given** тот же контекст. **When** оценивается статус трёх gates. **Then** `IMPLEMENTATION_READINESS_GATE`/`SYNTHETIC_ACCEPTANCE_GATE`/`PRODUCTION_LAUNCH_GATE` остаются `BLOCKED`.
@@ -466,7 +468,7 @@ Architecture §37 вопрос №6 **не закрывается** ни одн�
 
 - пригоден только для cross-functional review (`PRODUCT + LEGAL`, с technical/coordination участием Chief AI Architect/AI/DEVELOPMENT как candidate-ролей, не owners);
 - не утверждает ни один field allowlist, object-type registry, качественный/численный risk enum, threshold, локализованный UI-текст, legal basis или reason namespace;
-- не закрывает Architecture §37 вопрос №6 — остаётся `OPEN`;
+- не закрывает Architecture §37 вопрос №6 полностью — `XFR-D-072 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY`, actual allowlist/evidence/policy/runtime/implementation остаются `OPEN`;
 - не обновляет и не требует обновления Controlled Artifact Manifest (Architecture §52.1) — запись `SAFE_PRESENTATION_POLICY` не добавляется до реального утверждения;
 - не переводит `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` или `PRODUCTION_LAUNCH_GATE` в иной статус — все три `BLOCKED`;
 - не запускает implementation, model release, реальные данные, Reveal или production launch;
