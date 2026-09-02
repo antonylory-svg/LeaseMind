@@ -3,7 +3,7 @@
 **Версия:** 1.0
 **Дата:** 2026-09-02
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `019d5db9cd8eea9d2b033964479ee66365028c4d`
+**Reviewed repository commit:** `acea18092194ae4fb4415fc12605ee38f477ee03`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Wave 2B Feature compatibility decision records commit:** `324242c88cee07f1b48b0ff134ffaefc360d1bcf`
@@ -38,6 +38,7 @@
 **Safe Presentation cache/expiry/revocation governance owner-review decision record commit:** `0023dfc1cbb5dd89931d3ae71b048cec0015498a`
 **Safe Presentation runtime carrier governance owner-review decision record commit:** `a48d1807691305932316b888cebbfe757c2fff03`
 **Safe Presentation evidence/test governance owner-review decision record commit:** `dcb70f505a50d3e9cba2c1296b63e9c299c87948`
+**Safe Presentation artifact approval governance owner-review decision record commit:** `8fc894068f504b6627bf70267912d8f95802445a`
 **Coordination:** Chief AI Architect — coordination candidate only, not owner of every indexed decision
 
 ## 1. Назначение и граница документа
@@ -437,6 +438,18 @@ Record не утверждает Safe Presentation Policy, dataset/evidence pack
 
 > **Temporal hygiene note for Safe Presentation §4.6/§15 (evidence/test portion):** §5.5.11 является более поздним owner-review overlay поверх исторических §5.5/§5.5.1–§5.5.10. Там, где исторические checkpoints называют `XFR-D-083`/actual evidence полностью `OPEN`, это читается как состояние на момент соответствующего sync: qualitative evidence/test governance boundary теперь `PARTIALLY_RESOLVED_BOUNDARY`, но actual evidence contents, execution and verdict remain `OPEN`.
 
+### 5.5.12. Safe Presentation artifact approval governance owner-review decision-status overlay
+
+Этот отдельный later overlay отражает human-approved `XFR-D-084 v1.0` поверх исторического Wave 2D checkpoint §5.5 и §5.5.1–§5.5.11. Historical §5.5 и §5.5.1–§5.5.11 не переписываются. Canonical identity `SPP-14 → XFR-D-084`, `PRIMARY_STANDALONE`, и counts не меняются.
+
+| Canonical ID | Decision record | Human-approved boundary | Остаётся `OPEN`/pending |
+|---|---|---|---|
+| `XFR-D-084` | `LeaseMind_MATCHING_DECISION_XFR-D-084_v1.0.md` | `RESOLVED_PROCEDURAL_GOVERNANCE_BOUNDARY` — artifact/approval-flow governance owner `PRODUCT + LEGAL`; Chief AI Architect — coordinator и mandatory independent architecture reviewer; `AI + DEVELOPMENT` — mandatory technical approvers current v0.1 и evidence-procedure input без unilateral approval. Actual approval set — пять independent role determinations на одном frozen semantic version/SHA-256. Frozen package, owner readiness, architecture review, AI/DEVELOPMENT determinations, same-hash finalization, separate immutable actual approval record, manifest-entry-last, byte/hash-change restart, role-signed `NOT_APPLICABLE` guard и merge/PR/CI/file/decision/manifest non-authority утверждены. Для current v0.1 `NOT_APPLICABLE` недоступен всем пяти mandatory roles | Actual `SAFE_PRESENTATION_POLICY` approval, frozen approval package, five role determinations, approval record, named appointments/RBAC/signature carrier, exact record/manifest schemas, Controlled Artifact Manifest entry, all Policy content/evidence/carrier/production/runtime/implementation; Architecture §36.2 conditions 2/5 и все gate transitions |
+
+Record не утверждает Safe Presentation Policy, field/content decision, evidence package/result, Data Contracts carrier, production data/applicability, runtime или implementation и не создаёт approval record/manifest entry. `XFR-D-072`–`XFR-D-083` и `XFR-D-M3` не переписываются, не поглощаются и сохраняют собственные `OPEN` contents/statuses. `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` и `PRODUCTION_LAUNCH_GATE` остаются `BLOCKED`.
+
+> **Temporal hygiene note for Safe Presentation §4.6/§15 (artifact-approval portion):** §5.5.12 является более поздним owner-review overlay поверх исторических §5.5/§5.5.1–§5.5.11. Там, где исторические checkpoints называют `XFR-D-084`/approval procedure полностью `OPEN` или candidate, это читается как состояние на момент соответствующего sync: exact procedure теперь `RESOLVED_PROCEDURAL_GOVERNANCE_BOUNDARY`, но actual Policy approval, approval record, manifest entry и downstream effects remain `OPEN`/pending.
+
 ### 5.6. Wave 2E Risk aggregation decision-status overlay
 
 Canonical IDs/роли в §4.3 (Risk Policy crosswalk) не изменены. Ниже — честный overlay статуса одной MRP-строки (`MRP-02`), разрешённой Wave 2E qualitative governance decision.
@@ -694,7 +707,13 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 **Current Safe Presentation evidence/test status:** `XFR-D-083 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` roles/preregistration/separate-family/fail-closed/non-compensation/synthetic/no-automatic-change discipline; actual dataset, methods, metrics, statistics, execution/verdict, production applicability, policy/runtime and implementation remain `OPEN`. Это не изменяет canonical counts или crosswalk и не снимает ни один gate.
 
+**Current Safe Presentation artifact-approval status:** `XFR-D-084 v1.0` разрешает только `RESOLVED_PROCEDURAL_GOVERNANCE_BOUNDARY` five-role same-hash approval/change-control flow; actual Policy approval, Architecture §36.2 conditions 2/5, approval record и manifest entry остаются unmet/pending. Это не закрывает Architecture §37 №6 content, не меняет `XFR-D-072`–`XFR-D-083`/`XFR-D-M3` и не снимает ни один gate.
+
 ## 11. Следующий формат работы
+
+**Current sync provenance (supersedes all later prior-sync prose in this section):** Safe Presentation artifact approval governance owner-review decision commit `8fc894068f504b6627bf70267912d8f95802445a` поверх prior Safe Presentation decision chain; base/reviewed commit для этого sync pass — merge commit `acea18092194ae4fb4415fc12605ee38f477ee03` с parents `440dddba690be35e062606029e6afeb138d92bb0` и `8fc894068f504b6627bf70267912d8f95802445a`, 2026-09-02. Header metadata и §5.5.12 совпадают с этим provenance.
+
+Отдельный Safe Presentation artifact approval governance owner-review завершён record `XFR-D-084`; inventory coverage теперь включает §5.5.12 и canonical `SPP-14 → XFR-D-084`. Counts остаются 102 source keys / 90 canonical IDs, Evaluation Plan register остаётся 17 rows. Это completion процедуры, не actual Policy approval.
 
 **Current sync provenance (supersedes all later prior-sync prose in this section):** Safe Presentation evidence/test governance owner-review decision commit `dcb70f505a50d3e9cba2c1296b63e9c299c87948` поверх prior Safe Presentation decision chain; base/reviewed commit для этого sync pass — merge commit `019d5db9cd8eea9d2b033964479ee66365028c4d` с parents `888f66055d875cf6b0e28fa9923310e16c54ebfb` и `dcb70f505a50d3e9cba2c1296b63e9c299c87948`, 2026-09-02. Header metadata и §5.5.11 совпадают с этим provenance.
 
@@ -720,6 +739,8 @@ Index ссылается на отдельные decision records, но сам �
 **Current overlay coverage:** inventory includes Safe Presentation field-allowlist governance owner-review §5.5.1, Safe Presentation geographic-generalization governance owner-review §5.5.2, Safe Presentation combination-risk algorithm governance owner-review §5.5.3, Safe Presentation successive-disclosure budget governance owner-review §5.5.4, Safe Presentation reason/explanation catalog governance owner-review §5.5.5, Safe Presentation wording governance owner-review §5.5.6, Safe Presentation localization governance owner-review §5.5.7, Safe Presentation audience/purpose governance owner-review §5.5.8, Safe Presentation cache/expiry/revocation governance owner-review §5.5.9, Safe Presentation runtime carrier governance owner-review §5.5.10 and Evaluation post-freeze correction governance owner-review §5.8.13; canonical identities `SPP-01 → XFR-D-072`, `SPP-02 → XFR-D-073`, `SPP-03 → XFR-D-074`, `SPP-05 → XFR-D-075`, `SPP-06 → XFR-D-076`, `SPP-07 → XFR-D-077`, `SPP-08 → XFR-D-078`, `SPP-09 → XFR-D-079`, `SPP-10 → XFR-D-080`, `SPP-11 → XFR-D-081`, `SPP-12 → XFR-D-082`, `EP-17 → XFR-D-071`, 102 source keys, 90 canonical IDs and the 17-row Evaluation Plan register are unchanged.
 
 **Current overlay coverage extension (supersedes the preceding pre-XFR-D-083 coverage sentence):** добавлен Safe Presentation evidence/test governance owner-review §5.5.11; canonical identity `SPP-13 → XFR-D-083` сохраняется, counts/crosswalk не меняются, actual dataset/method/metric/run/verdict остаются `OPEN`, все три gates — `BLOCKED`.
+
+**Current overlay coverage extension (supersedes preceding pre-XFR-D-084 coverage sentences):** добавлен Safe Presentation artifact approval governance owner-review §5.5.12; canonical identity `SPP-14 → XFR-D-084` сохраняется, counts/crosswalk не меняются, actual Policy approval/approval record/manifest entry remain pending, все три gates — `BLOCKED`.
 
 ## 12. Acceptance criteria
 
