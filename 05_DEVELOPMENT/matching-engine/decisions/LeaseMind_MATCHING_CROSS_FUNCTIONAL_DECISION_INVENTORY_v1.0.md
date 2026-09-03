@@ -3,7 +3,7 @@
 **Версия:** 1.0
 **Дата:** 2026-09-02
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `a0f75dc79f2d99173126f8481e25c27d3de813f8`
+**Reviewed repository commit:** `0daeefbac9e23787b488a8af5b15f0782058dda2`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Qualification version-compatibility governance decision record commit:** `9dedc190b180c4dd591842dece2fbe07a3fc9a0c`
@@ -14,6 +14,7 @@
 **Safe Presentation field-allowlist governance owner-review decision record commit:** `e9aea580ab1d5181a4305781ce938f69387838a4`
 **Wave 2E Risk aggregation decision record commit:** `0d3a843133f4959c82d0d41e226a10d0947d74ed`
 **Risk→Qualification interface governance decision record commit:** `be3aab29356ea0edb83a55726b8ac96b30b5bfd5`
+**Risk reason-reference governance decision record commit:** `f2f6d6a039dce4d1f9551676a514fd8cf6e1319b`
 **Wave 2F Scoring semantics decision records commit:** `900731c692a5d003804074b71d97b91630bf88de`
 **Wave 2G Evaluation semantics decision records commit:** `6f086787ea799941c5bea649c9b90a6bd76eaac6`
 **Scoring governance owner-review decision records commit:** `bcee8eb751bb3a61a7bdc91a919c107fe0ce6491`
@@ -499,6 +500,18 @@ Risk artifact owner остаётся `Chief AI Architect + LEGAL`, Qualification
 
 > **Temporal hygiene note for Risk §4.3/§13:** §5.6.1 является более поздним owner-review overlay поверх исторического §5.6. Там, где §5.6 называет весь `XFR-D-055` interface `OPEN`, это читается как состояние на момент Wave 2E: qualitative governance/read-only/fail-closed boundary теперь `PARTIALLY_RESOLVED_BOUNDARY`, но exact trigger/mapping/schema/carrier/data/RBAC/policies/runtime/implementation остаются `OPEN`.
 
+### 5.6.2. Risk reason-reference governance decision-status overlay
+
+Этот отдельный later overlay отражает human-approved `XFR-D-052 v1.0` поверх исторического Wave 2E checkpoint §5.6 и более позднего interface overlay §5.6.1. Historical §5.6 и §5.6.1 не переписываются. Canonical identity `MRP-07 → XFR-D-052`, `PRIMARY_STANDALONE`, и counts не меняются.
+
+| Canonical ID | Decision record | Human-approved boundary | Остаётся `OPEN` |
+|---|---|---|---|
+| `XFR-D-052` | `LeaseMind_MATCHING_DECISION_XFR-D-052_v1.0.md` | `PARTIALLY_RESOLVED_BOUNDARY` — governance owner `Chief AI Architect + AI`; mandatory approvers `PRODUCT + LEGAL + DEVELOPMENT`; evidence/technical-procedure owner `AI + DEVELOPMENT`, без unilateral approval. Утверждены internal opaque Risk reason-reference и separation от Risk category/severity, Architecture §25.1/§25.2/§25.3, Hard Constraint `XFR-D-010`, Qualification `XFR-D-039`, reviewer/legal outcome и user-facing `XFR-D-077`; equality/prefix/similar wording не создают alias/mapping. Future use требует separately approved meaning/applicability и binding к Risk Policy version/hash, source/evidence и original calculation/result provenance; historical bundle immutable, changed meaning требует new version + new calculation. Missing/unknown/unmapped/ambiguous/conflicting/stale/version/hash/scope-incompatible reference fails closed без clean/low/negative/legal/route/display inference и без history mutation; exact handling остаётся под `XFR-D-051`/`XFR-D-055`. `XFR-D-048` multi-component/non-compensation сохраняется | Namespace/name/prefix/codes/values/enum/catalog/exhaustiveness; factor/category coverage, granularity/cardinality; order/priority/severity/criticality; aliases/mappings; versioning/compatibility/change/deprecation/supersession/migration/fallback/TTL/hash fields; `XFR-D-047`/`049`/`051`/`053`/`055`/`M2`; schema/carrier/API/DB/events/data/evidence/RBAC/policy/manifest/runtime/implementation |
+
+Risk artifact owner остаётся `Chief AI Architect + LEGAL`, Qualification owner — `Chief AI Architect + PRODUCT`, `XFR-D-055` roles и `XFR-D-M2` owner `AI + LEGAL` не изменяются. Existing post-Match Data Contracts reason codes не импортируются. Record не утверждает Risk/Qualification/Safe Presentation Policy, Data Contracts, dataset/evaluation, production data, runtime или implementation. `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` и `PRODUCTION_LAUNCH_GATE` остаются `BLOCKED`.
+
+> **Temporal hygiene note for Risk §4.3/§13 row 7:** §5.6.2 является более поздним owner-review overlay поверх исторических §5.6/§5.6.1 и pre-decision register wording. Где прежний text называет `XFR-D-052` целиком `OPEN` или `Chief AI Architect + AI` только candidate, текущее чтение — `PARTIALLY_RESOLVED_BOUNDARY` с тем же owner, approvers `PRODUCT + LEGAL + DEVELOPMENT` и non-unilateral evidence/technical role `AI + DEVELOPMENT`; все exact namespace/value/mapping/compatibility/carrier contents остаются `OPEN`.
+
 ### 5.7. Wave 2F Scoring semantics decision-status overlay
 
 Canonical IDs/роли в §4.5 (Scoring Policy crosswalk) не изменены. Ниже — исторический Wave 2F overlay трёх MSP-строк (`MSP-10`, `MSP-15`, `MSP-17`) и тогдашнее состояние смежных строк (`MSP-16`, `MSP-18`). Более поздние owner-boundary решения `XFR-D-024`/`XFR-D-027` отражены отдельно в §5.7.1, без переписывания Wave 2F.
@@ -693,7 +706,7 @@ Evaluation Plan не содержит metric family для:
 
 `XFR-D-039` (Qualification mapping/namespace owner, anchor) → `XFR-D-010` (hard-constraint reason codes) и `XFR-D-052` (Risk reason namespace) → `XFR-D-077` (user-facing localized catalog).
 
-Все решения остаются `OPEN`; anchor означает dependency order, не approval. `XFR-D-040 v1.0` (Wave 2A) утвердил multi-cause preservation и primary-reason selection **rule** (Qualification Policy №13, механизм выбора при наличии approved catalog) — это не сами значения/порядок catalog; эта dependency chain остаётся полностью `OPEN`, `XFR-D-040` её не закрывает.
+На момент исходного XFR-F2 checkpoint все четыре решения оставались `OPEN`; anchor означал dependency order, не approval. Текущее состояние задают более поздние owner-review overlays: `XFR-D-039`, `XFR-D-052` и `XFR-D-077` имеют только `PARTIALLY_RESOLVED_BOUNDARY`, `XFR-D-010` остаётся `OPEN`, а exact namespace/codes/values/mappings/catalog/wording/order/compatibility/carrier contents всей цепочки остаются `OPEN`. `XFR-D-040 v1.0` (Wave 2A) утвердил multi-cause preservation и primary-reason selection **rule** (Qualification Policy №13, механизм выбора при наличии approved catalog) — это не сами значения/порядок catalog и не закрытие dependency chain.
 
 ### `XFR-F3` — Qualification runtime owner escalation (`LOW`, `RESOLVED`)
 
@@ -713,7 +726,7 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 > **Temporal hygiene note for Wave 2 row:** встроенное описание Scoring отражает checkpoint Wave 2F до owner review. Текущее состояние задаёт более поздний §5.7.1: `XFR-D-024` разрешает только governance owner будущей Priority Score policy, а `XFR-D-027` — только role boundary шагов §30.3 №1–3; вся содержательная policy, exact procedure/quorum/content и реализация остаются `OPEN`.
 
-> **Temporal hygiene note for Risk portion of Wave 2 row:** встроенное описание Wave 2E/§5.6 отражает checkpoint до `XFR-D-055`. Текущее состояние задаёт §5.6.1: Risk→Qualification qualitative governance/read-only/fail-closed boundary теперь `PARTIALLY_RESOLVED_BOUNDARY`; exact trigger/mapping, `XFR-D-M2`, schema/carrier/data/evidence/RBAC/policies/runtime/implementation остаются `OPEN`.
+> **Temporal hygiene note for Risk portion of Wave 2 row:** встроенное описание Wave 2E/§5.6 отражает checkpoint до `XFR-D-055`/`XFR-D-052`. Текущее состояние задают §5.6.1–§5.6.2: Risk→Qualification interface и Risk reason-reference governance имеют только `PARTIALLY_RESOLVED_BOUNDARY`; exact trigger, namespace/codes/values/order/severity/mappings/compatibility/fallback/TTL/hash fields, `XFR-D-M2`, schema/carrier/data/evidence/RBAC/policies/manifest/runtime/implementation остаются `OPEN`.
 
 > **Temporal hygiene note for Qualification versioning portion of Wave 2/7 rows:** исторический Wave 2A checkpoint и downstream-design placement `XFR-D-043` не означают, что весь вопрос остаётся полностью open или что implementation разрешена. Текущее состояние задаёт §5.2.1: prospective supersession/immutable history/current-compatible-bundle/fail-closed qualitative boundary — `PARTIALLY_RESOLVED_BOUNDARY`; exact taxonomy, matrix, lifecycle, carrier, evidence, policy/manifest approval, runtime и implementation остаются `OPEN`.
 
@@ -754,9 +767,15 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 **Current Qualification version-compatibility status:** `XFR-D-043 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` governance/prospective-supersession/immutable-history/current-compatible-bundle/fail-closed semantics; exact taxonomy/version scheme/matrix/triggers/cascade/migration/TTL/carrier/API/events/hash/RBAC/data/evidence/policy/manifest/runtime/implementation остаются `OPEN`. `XFR-D-038` `STALE` и четыре Qualification results не изменены; ни один gate не снят.
 
-**Current Qualification reason-mapping status:** `XFR-D-039 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` для ролей, разделения трёх Architecture §25 namespaces, source-input discipline, separately approved version/hash-bound mapping prerequisite и fail-closed/no-guessed-route/no-negative-fact/no-display semantics. Exhaustive mapping/cardinality/catalog/codes/order/fallback/compatibility/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`; `XFR-D-010`/`XFR-D-052` остаются independent `OPEN`, а `XFR-D-077` — independent `PARTIALLY_RESOLVED_BOUNDARY` с exact contents `OPEN`. Ни один gate не снят.
+**Current Qualification reason-mapping status:** `XFR-D-039 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` для ролей, разделения трёх Architecture §25 namespaces, source-input discipline, separately approved version/hash-bound mapping prerequisite и fail-closed/no-guessed-route/no-negative-fact/no-display semantics. Exhaustive mapping/cardinality/catalog/codes/order/fallback/compatibility/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`; `XFR-D-010` остаётся independent `OPEN`, а `XFR-D-052` и `XFR-D-077` — independent `PARTIALLY_RESOLVED_BOUNDARY` с exact contents `OPEN`. Ни один gate не снят.
+
+**Current Risk reason-reference status:** `XFR-D-052 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` roles/internal-opaque-reference/namespace-separation/version-hash-provenance/immutable-history/fail-closed/non-compensation semantics. Exact namespace/name/codes/values/order/severity/mappings/compatibility/change/fallback/TTL/hash fields/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`; `XFR-D-048`/`XFR-D-039`/`XFR-D-040`/`XFR-D-055`/`XFR-D-077` не переписываются, `XFR-D-010` остаётся `OPEN`, и ни один gate не снят.
 
 ## 11. Следующий формат работы
+
+**Current sync provenance (supersedes preceding Risk sync-pass provenance prose in this section):** Risk reason-reference governance decision commit `f2f6d6a039dce4d1f9551676a514fd8cf6e1319b`; base/reviewed commit — merge `0daeefbac9e23787b488a8af5b15f0782058dda2` with parents `d30af1ce266d7a002eb041d96feb977f737c97db` and `f2f6d6a039dce4d1f9551676a514fd8cf6e1319b`, 2026-09-02. Header metadata and §5.6.2 match this provenance.
+
+Current Risk reason-reference sync status: canonical `MRP-07 → XFR-D-052` remains unchanged and is now `PARTIALLY_RESOLVED_BOUNDARY` only for roles, internal opaque-reference/namespace separation, version/hash/provenance/immutable-history, fail-closed and `XFR-D-048` preservation semantics. Exact namespace/codes/values/order/severity/mappings/compatibility/fallback/TTL/hash fields/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation remain `OPEN`; counts remain 102 source keys / 90 canonical IDs, Risk register remains 14 rows and all three gates remain `BLOCKED`.
 
 **Current sync provenance (supersedes preceding Qualification sync-pass provenance prose in this section):** Qualification reason-mapping governance decision commit `deccdda8142717e99313918a3da85683ea7f4b67`; base/reviewed commit — merge `a0f75dc79f2d99173126f8481e25c27d3de813f8` with parents `2b2928b4858c2b04038d2a4848047fd75c55a520` and `deccdda8142717e99313918a3da85683ea7f4b67`, 2026-09-02. Header metadata and §5.2.2 match this provenance.
 
@@ -807,6 +826,8 @@ Index ссылается на отдельные decision records, но сам �
 
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-039 Qualification coverage):** добавлен Qualification reason-mapping governance overlay §5.2.2; canonical identity `MQP-12 → XFR-D-039` сохраняется, counts/crosswalk не меняются, exact mapping/cardinality/catalog/codes/order/fallback/compatibility/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`, все три gates — `BLOCKED`.
 
+**Current overlay coverage extension (supersedes preceding pre-XFR-D-052 Risk coverage):** добавлен Risk reason-reference governance overlay §5.6.2; canonical identity `MRP-07 → XFR-D-052` сохраняется, counts/crosswalk не меняются, exact namespace/codes/values/order/severity/mappings/compatibility/fallback/TTL/hash fields/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`, все три gates — `BLOCKED`.
+
 ## 12. Acceptance criteria
 
 ### `XFR-C-001` — полное покрытие
@@ -828,7 +849,7 @@ Review waves не допускают numeric weights/thresholds до approved ev
 `XFR-D-045` и `XFR-D-083` не считаются покрытыми существующей Evaluation Plan metric family.
 
 ### `XFR-C-007` — reason dependency не свёрнута
-`XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077`; четыре outputs остаются разными. `XFR-D-039` и `XFR-D-077` имеют только `PARTIALLY_RESOLVED_BOUNDARY`, `XFR-D-010` и `XFR-D-052` остаются `OPEN`, а exact mapping/catalog/wording/runtime contents остаются `OPEN` для всех применимых звеньев.
+`XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077`; четыре outputs остаются разными. `XFR-D-039`, `XFR-D-052` и `XFR-D-077` имеют только `PARTIALLY_RESOLVED_BOUNDARY`, `XFR-D-010` остаётся `OPEN`, а exact namespace/codes/values/mapping/catalog/wording/order/compatibility/carrier/runtime contents остаются `OPEN` для всех применимых звеньев.
 
 ### `XFR-C-008` — Architecture questions остаются OPEN
 §37 №2, №3, №6, №7, №8, №10, №11 явно `OPEN`.
