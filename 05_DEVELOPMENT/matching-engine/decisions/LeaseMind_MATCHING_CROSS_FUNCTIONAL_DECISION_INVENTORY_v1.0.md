@@ -1,9 +1,9 @@
 # LeaseMind MATCHING CROSS-FUNCTIONAL DECISION INVENTORY
 
 **Версия:** 1.0
-**Дата:** 2026-09-04
+**Дата:** 2026-09-05
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `217b49f16b1037b6a731d3fa94338e188a9dc801`
+**Reviewed repository commit:** `5fa81be7f79b0856658572cba2a66e6c5ab650ba`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Qualification version-compatibility governance decision record commit:** `9dedc190b180c4dd591842dece2fbe07a3fc9a0c`
@@ -14,6 +14,7 @@
 **Qualification synthetic-production evidence-boundary decision record commit:** `61a7225c35b794161c5be652eb250e4248f48e13`
 **Wave 2B Feature compatibility decision records commit:** `324242c88cee07f1b48b0ff134ffaefc360d1bcf`
 **Wave 2C Feature input semantics decision records commit:** `9956f943329b38da109039d57b8ba4721caf2a0a`
+**Feature Hard Constraint reason-catalog governance decision record commit:** `cfe74deb19887175e56e053b98c0396995df37dd`
 **Wave 2D Safe Presentation registry decision records commit:** `fbd885bec655bb5f82c91c53719f1f4f153243f0`
 **Safe Presentation field-allowlist governance owner-review decision record commit:** `e9aea580ab1d5181a4305781ce938f69387838a4`
 **Wave 2E Risk aggregation decision record commit:** `0d3a843133f4959c82d0d41e226a10d0947d74ed`
@@ -379,6 +380,18 @@ Canonical IDs/роли в §4.1 (Feature Schema crosswalk) не изменены
 | `XFR-D-011` | `LeaseMind_MATCHING_DECISION_XFR-D-011_v1.0.md` | Qualitative code-point literal-match baseline `APPROVED` для `region_membership`/`city_membership`/`districts_membership` (№17–19); ни одна строка не возвращает `INCOMPATIBLE_CANDIDATE`; case-folding/Unicode-normalization/alias/catalog-id enhancements остаются независимыми open follow-up |
 
 Ни один из двух records не утверждает Feature Schema Proposal approval, runtime/API/DB/schema implementation или прохождение какого-либо governance gate. Missing PRODUCT-поля для 8 исключённых значений `location_priority`, Property capacity-поле для `expected_occupancy_signal`, а также нормализация/alias/catalog-id для geography-полей остаются отдельными open вопросами, не закрытыми этими records.
+
+### 5.4.1. Feature Hard Constraint reason-catalog governance decision-status overlay
+
+Этот отдельный later overlay отражает human-approved `XFR-D-010 v1.0` поверх исторических/current Feature checkpoints §5.3–§5.4. Historical §5.3–§5.4 не переписываются. Canonical identity `FS-13 → XFR-D-010`, `PRIMARY_STANDALONE`, и counts 102 source keys / 90 canonical IDs не меняются.
+
+| Canonical ID | Decision record | Human-approved boundary | Остаётся `OPEN` |
+|---|---|---|---|
+| `XFR-D-010` | `LeaseMind_MATCHING_DECISION_XFR-D-010_v1.0.md` | `PARTIALLY_RESOLVED_BOUNDARY` — governance owner `Chief AI Architect + AI`; mandatory approvers `PRODUCT + LEGAL + DEVELOPMENT`; evidence/technical-preparation owner `AI + DEVELOPMENT` без unilateral authority. Five reason namespaces остаются distinct: Hard Constraint, Architecture §25.1 internal algorithmic, Qualification, Risk и user-facing safe explanation catalog `XFR-D-077`; wording/localization/audience остаются separately governed `XFR-D-078`/`XFR-D-079`/`XFR-D-080`. Только separately approved applicable Hard Constraint definition может позднее получить separately approved version/hash/provenance-bound catalog entry; string/token/code similarity, reuse или carrier не создают identity, mapping, alias, equivalence, route либо display permission. Missing/unmapped/unknown/ambiguous/stale/conflicting/version/hash/scope-incompatible catalog material fail closed только для affected governed use без guessed code/mapping/negative fact/Hard Constraint failure/rejection/Qualification route/primary reason/display text, history mutation или потери иных causes/evidence. `XFR-D-033` precedence, `XFR-D-040` multi-cause/primary rule и evidence-prerequisite/no-automatic-authorization boundary сохраняются | Exact namespace/name/prefix/codes/values/exhaustiveness/cardinality/order/severity/membership; lawful Hard Constraint set (`XFR-D-014`); applicable compatibility remnants (`XFR-D-001`/`XFR-D-002`/`XFR-D-012`); per-feature evidence sufficiency (`XFR-D-M1`); every mapping/alias/relationship and compatibility rule; wording/localization/audience; schema/API/DB/events/carrier/RBAC; data/evidence/manifests/runs/results/verdicts/production authority/applicability; Feature Schema and other Policy/Controlled Artifact Manifest approvals; runtime/implementation; `XFR-F1`; all gate transitions |
+
+Explicit reason dependency remains `XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077`: four canonical outputs and all five namespaces remain distinct. `XFR-D-033`, `XFR-D-040`, `XFR-D-039`, `XFR-D-052`, `XFR-D-077`, `XFR-D-078`, `XFR-D-079`, `XFR-D-080`, `XFR-D-014`, applicable `XFR-D-001`/`XFR-D-002`/`XFR-D-012` and `XFR-D-M1` remain independent and are not reopened, absorbed, approved or superseded. No Feature candidate is promoted, `automatic_ineligible_allowed = NO` remains unchanged, no automatic exclusion/routing/display/policy/manifest/runtime behavior or approval is created, and `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE`, `PRODUCTION_LAUNCH_GATE` remain `BLOCKED`.
+
+> **Temporal hygiene note for Feature Schema §10 row 13:** §5.4.1 is the later current overlay over pre-decision `OPEN`/candidate-owner wording in the crosswalk commentary, §10 and earlier status summaries. Current reading is `PARTIALLY_RESOLVED_BOUNDARY` with human-approved roles and qualitative namespace/provenance/fail-closed/non-authorization semantics only. Every exact/content/data/production/policy/carrier/runtime/implementation/gate item remains `OPEN`/`BLOCKED`.
 
 ### 5.5. Wave 2D Safe Presentation registry decision-status overlay
 
@@ -853,6 +866,8 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 **Current Risk reason-reference status:** `XFR-D-052 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` roles/internal-opaque-reference/namespace-separation/version-hash-provenance/immutable-history/fail-closed/non-compensation semantics. Exact namespace/name/codes/values/order/severity/mappings/compatibility/change/fallback/TTL/hash fields/carrier/data/evidence/RBAC/policy/manifest/runtime/implementation остаются `OPEN`; `XFR-D-048`/`XFR-D-039`/`XFR-D-040`/`XFR-D-055`/`XFR-D-077` не переписываются, `XFR-D-010` остаётся `OPEN`, и ни один gate не снят.
 
+**Current Feature Hard Constraint reason-catalog status (supersedes all earlier pre-decision `XFR-D-010 OPEN` wording only):** `XFR-D-010 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` для decision-specific roles, five-namespace separation, separately approved Hard Constraint-definition and version/hash/provenance prerequisites, no inferred mapping/alias/equivalence, affected-use fail-closed handling, `XFR-D-033`/`XFR-D-040` preservation and prerequisite-only/no-automatic-authorization semantics. Exact namespace/name/codes/values/cardinality/order/severity/membership/lawful set/mappings/wording/localization/audience/compatibility/schema/carrier/RBAC/data/evidence/production/policy/manifest/runtime/implementation and `XFR-F1` remain `OPEN`; the explicit chain `XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077` and all three `BLOCKED` gates remain unchanged.
+
 **Current Risk duplication-detection status:** `XFR-D-056 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` decision-specific roles, advisory-only possible-duplicate, source-authority/history preservation, duplicate-dependent-only fail-closed, no-automatic entity/access/Eligibility/routing/legal/cross-entity consequence and evidence-prerequisite semantics. Exact taxonomy/keys/algorithm/threshold/evidence/confirming authority/reviewer/schema/data/policy/runtime/implementation остаются `OPEN`; `XFR-D-048` применяется только после separately approved critical classification, transport deduplication не становится entity resolution, и ни один gate не снят.
 
 **Current Risk reviewer-authority/queue/Decision-linkage status:** `XFR-D-053 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` decision-specific roles, request-not-outcome, separately approved version/hash-bound policy + appointment + least-privilege RBAC + eligible-evidence prerequisites, conflict check до case opening/evidence access и повторно непосредственно перед decision, Legal-writer/Matching-immutability, queue/SLA non-authority, no-ad-hoc-policy, fail-closed, separate payer-second-level/applicable-four-eyes and §21.7-structural-only safeguards. Exact reviewer/appointing authority/names/appointments/RBAC/quorum/queue/SLA/outcomes/evidence/Decision schema/appeal/carrier/data/runtime/implementation остаются `OPEN`; `XFR-D-041` distinct и ни один gate не снят.
@@ -866,6 +881,10 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 **Current Qualification synthetic-production evidence status:** `XFR-D-046 v1.0` разрешает `RESOLVED_EVIDENCE_BOUNDARY` only for decision-specific owner/approvers/consulted/evidence roles, separately authorized synthetic-use prerequisite, synthetic non-extrapolation, no transfer/pooling/compensation, affected-claim fail-closed, production-evidence-prerequisite-only and no-automatic-change semantics. Exact taxonomy/metrics/formulas/numbers/data/manifests/runs/results/verdicts/calibration/readiness criteria, production authority/lawful basis/appointments/RBAC, policy approval, runtime/implementation and all gate transitions remain `OPEN`/`BLOCKED`; `XFR-D-045`/`XFR-F1` and all named sibling boundaries remain independent.
 
 ## 11. Следующий формат работы
+
+**Current sync provenance (supersedes preceding Feature sync-pass provenance prose in this section):** Feature Hard Constraint reason-catalog governance decision commit `cfe74deb19887175e56e053b98c0396995df37dd`; base/reviewed commit — merge `5fa81be7f79b0856658572cba2a66e6c5ab650ba` with parents `ece1816b7b7991c975c4bc3d3aa91b72f6697bfd` and `cfe74deb19887175e56e053b98c0396995df37dd`, 2026-09-05. Header metadata and §5.4.1 match this provenance.
+
+Current Feature Hard Constraint reason-catalog sync status: canonical `FS-13 → XFR-D-010`, `PRIMARY_STANDALONE`, remains unchanged and is now `PARTIALLY_RESOLVED_BOUNDARY` only for roles, five-namespace separation, approved-definition/version/hash/provenance prerequisites, no-inference, affected-use fail-closed, multi-cause preservation and no-automatic-authorization semantics. All exact/content/data/production/policy/carrier/runtime/implementation/gate contents remain `OPEN`/`BLOCKED`; counts remain 102 source keys / 90 canonical IDs, Feature decision register remains 19 rows, Evaluation Plan register remains 17 rows, and all three gates remain `BLOCKED`.
 
 **Current sync provenance (supersedes preceding Qualification sync-pass provenance prose in this section):** Qualification synthetic-production evidence-boundary decision commit `61a7225c35b794161c5be652eb250e4248f48e13`; base/reviewed commit — merge `217b49f16b1037b6a731d3fa94338e188a9dc801` with parents `7613f379907dad5612b6fdd4f1b29887728e5f94` and `61a7225c35b794161c5be652eb250e4248f48e13`, 2026-09-04. Header metadata and §5.2.6 match this provenance.
 
@@ -952,6 +971,8 @@ Index ссылается на отдельные decision records, но сам �
 
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-046 Qualification coverage):** добавлен Qualification synthetic-production evidence-boundary overlay §5.2.6; canonical identity `MQP-20 → XFR-D-046`, `PRIMARY_STANDALONE`, сохраняется, counts/crosswalk не меняются, exact taxonomy/metrics/data/manifests/runs/results/verdicts/calibration/readiness criteria, production authority/lawful basis/appointments/RBAC, policy approval/runtime/implementation/gate transitions остаются `OPEN`/`BLOCKED`, все три gates — `BLOCKED`.
 
+**Current overlay coverage extension (supersedes preceding pre-XFR-D-010 Feature coverage):** добавлен Feature Hard Constraint reason-catalog governance overlay §5.4.1; canonical identity `FS-13 → XFR-D-010`, `PRIMARY_STANDALONE`, сохраняется, counts/crosswalk не меняются, exact namespace/catalog/mapping/presentation/carrier/RBAC/data/evidence/production/policy/manifest/runtime/implementation contents и `XFR-F1` остаются `OPEN`/`BLOCKED`, все три gates — `BLOCKED`.
+
 ## 12. Acceptance criteria
 
 ### `XFR-C-001` — полное покрытие
@@ -973,7 +994,7 @@ Review waves не допускают numeric weights/thresholds до approved ev
 `XFR-D-045` и `XFR-D-083` не считаются покрытыми существующей Evaluation Plan metric family. `XFR-D-045 v1.0` разрешает только governance/evidence-prerequisite boundary вокруг Qualification gap; `XFR-F1` metric-family content остаётся `OPEN`.
 
 ### `XFR-C-007` — reason dependency не свёрнута
-`XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077`; четыре outputs остаются разными. `XFR-D-039`, `XFR-D-052` и `XFR-D-077` имеют только `PARTIALLY_RESOLVED_BOUNDARY`, `XFR-D-010` остаётся `OPEN`, а exact namespace/codes/values/mapping/catalog/wording/order/compatibility/carrier/runtime contents остаются `OPEN` для всех применимых звеньев.
+`XFR-D-039 → {XFR-D-010, XFR-D-052} → XFR-D-077`; четыре outputs и five reason namespaces остаются разными. `XFR-D-039`, `XFR-D-010`, `XFR-D-052` и `XFR-D-077` имеют только `PARTIALLY_RESOLVED_BOUNDARY`, а exact namespace/codes/values/membership/mapping/catalog/wording/localization/audience/order/severity/compatibility/carrier/RBAC/data/evidence/production/policy/manifest/runtime/implementation contents остаются `OPEN` для всех применимых звеньев.
 
 ### `XFR-C-008` — Architecture questions остаются OPEN
 §37 №2, №3, №6, №7, №8, №10, №11 явно `OPEN`.
