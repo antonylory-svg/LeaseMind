@@ -1,9 +1,9 @@
 # LeaseMind MATCHING CROSS-FUNCTIONAL DECISION INVENTORY
 
 **Версия:** 1.0
-**Дата:** 2026-09-05
+**Дата:** 2026-09-06
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `5fa81be7f79b0856658572cba2a66e6c5ab650ba`
+**Reviewed repository commit:** `46318c94e196bb22a6ed9abff4e6fcfa0242be82`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Qualification version-compatibility governance decision record commit:** `9dedc190b180c4dd591842dece2fbe07a3fc9a0c`
@@ -23,6 +23,7 @@
 **Risk duplication-detection governance decision record commit:** `5851a711fe9eac34db2014b99baee3f7c853e0ab`
 **Risk reviewer-authority/queue/Decision-linkage governance decision record commit:** `156b7761eb9902710791e50eb9e95900ac7bf4c0`
 **Wave 2F Scoring semantics decision records commit:** `900731c692a5d003804074b71d97b91630bf88de`
+**Scoring segment-override evidence-governance decision record commit:** `db6e33f7d93d8ed7fa5ff85192ffef81e639e476`
 **Wave 2G Evaluation semantics decision records commit:** `6f086787ea799941c5bea649c9b90a6bd76eaac6`
 **Scoring governance owner-review decision records commit:** `bcee8eb751bb3a61a7bdc91a919c107fe0ce6491`
 **Evaluation label-evidence owner-review decision record commit:** `9dbc8049cbd8b2d14e997111d43649e76e969e01`
@@ -628,6 +629,18 @@ Canonical IDs и source keys в §4.5 не изменены. Этот отдел
 
 Обе записи разрешают только ownership/role semantics. Они не утверждают Priority Score, Scoring Policy Proposal, numeric values, evaluation procedure или implementation и не меняют ни один gate: `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` и `PRODUCTION_LAUNCH_GATE` остаются `BLOCKED`.
 
+### 5.7.2. Scoring segment-override evidence-governance decision-status overlay
+
+Canonical identity `MSP-04 → XFR-D-018`, `PRIMARY_STANDALONE`, и crosswalk/counts не изменены. Этот более поздний overlay синхронизирует только human-approved qualitative boundary и не переписывает исторические §5.7/§5.7.1.
+
+| Canonical ID | Record | Current status | Remaining open dependency |
+|---|---|---|---|
+| `XFR-D-018` | `LeaseMind_MATCHING_DECISION_XFR-D-018_v1.0.md` | `PARTIALLY_RESOLVED_BOUNDARY` — substantive governance owner `AI + PRODUCT` отделён от Scoring artifact owner `Chief AI Architect + PRODUCT`; mandatory approvers `Chief AI Architect + LEGAL + DEVELOPMENT`; evidence/technical-procedure owner `AI + DEVELOPMENT` без unilateral authority. После отдельного approval global baseline он остаётся sole Scoring authority без отдельно approved, evidence-supported, version/hash-bound applicable override. Membership только explicit/source-authoritative/lawful/applicable, без inference/proxy/default; missing/unknown/unclassified/ambiguous/stale/conflicting/expired/revoked/incompatible/out-of-scope/unauthorized state не активирует override. Утверждены non-weakening/non-discrimination/non-compensation, immutable evidence-category prerequisites, affected-use-only fail-closed и no-automatic-action boundaries; actual override требует полного набора `AI + PRODUCT + Chief AI Architect + LEGAL + DEVELOPMENT` на одной candidate version/hash | Exact segment universe/intersections/membership/lawful basis, global baseline/override policies and applicability, weights/thresholds/formulas/deltas/tolerances, metrics/numerators/denominators/aggregation/uncertainty/statistics, dataset/allocation/manifest/lineage/tuning-final/run/results/verdict, production authority/applicability, schema/API/DB/events/carrier/RBAC/runtime/monitoring/rollback/implementation; `XFR-D-M5`/Architecture §37 №3 remain `OPEN` |
+
+`XFR-D-042`, `XFR-D-045`/`XFR-F1`, `XFR-D-057`–`XFR-D-071`, `XFR-D-023`, `XFR-D-026` и `XFR-D-027` сохраняют независимые boundaries/statuses. Synthetic-only evidence не устанавливает production applicability/readiness. Record не утверждает current Scoring Policy Proposal или global baseline, не меняет weight/threshold/formula/model/policy/override/Eligibility/Qualification/Risk/routing/rejection/display/release/runtime/production и не снимает gate: `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE`, `PRODUCTION_LAUNCH_GATE` остаются `BLOCKED`.
+
+> **Temporal hygiene note for Scoring §12 row 4 and historical §5.7.1:** §5.7.2 является более поздним overlay. Где прежний text называет `XFR-D-018`/segment-override evidence boundary полностью `OPEN`, текущее чтение — `PARTIALLY_RESOLVED_BOUNDARY` только для перечисленных qualitative governance/evidence safeguards; все exact substantive/data/statistical/policy/production/runtime/implementation contents остаются `OPEN`.
+
 ### 5.8. Wave 2G Evaluation semantics decision-status overlay
 
 Canonical IDs/роли в §4.2 (Evaluation Plan crosswalk) не изменены. Ниже — честный overlay статуса трёх EP-строк (`EP-02`, `EP-03`, `EP-15`), получивших Wave 2G governance decisions. Два records разрешают только fail-closed boundaries; один разрешает qualitative terminology. Evaluation Plan Proposal и Architecture §37 вопрос №10 остаются `OPEN`.
@@ -880,7 +893,13 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 **Current Qualification synthetic-production evidence status:** `XFR-D-046 v1.0` разрешает `RESOLVED_EVIDENCE_BOUNDARY` only for decision-specific owner/approvers/consulted/evidence roles, separately authorized synthetic-use prerequisite, synthetic non-extrapolation, no transfer/pooling/compensation, affected-claim fail-closed, production-evidence-prerequisite-only and no-automatic-change semantics. Exact taxonomy/metrics/formulas/numbers/data/manifests/runs/results/verdicts/calibration/readiness criteria, production authority/lawful basis/appointments/RBAC, policy approval, runtime/implementation and all gate transitions remain `OPEN`/`BLOCKED`; `XFR-D-045`/`XFR-F1` and all named sibling boundaries remain independent.
 
+**Current Scoring segment-override evidence-governance status (supersedes earlier pre-decision `XFR-D-018 OPEN` wording only):** `XFR-D-018 v1.0` разрешает только `PARTIALLY_RESOLVED_BOUNDARY` role split, approved-global-baseline-sole-authority, explicit lawful membership/no-inference, non-weakening/non-discrimination/non-compensation, minimum evidence-category, affected-use fail-closed and no-automatic-action semantics. Exact segments/membership/lawful basis/values/formulas/metrics/statistics/data/manifest/run/results/verdict, policy/production/runtime/implementation remain `OPEN`; `XFR-D-M5`/Architecture §37 №3 and all named sibling decisions remain independent, and no gate is lifted.
+
 ## 11. Следующий формат работы
+
+**Current sync provenance (supersedes preceding Feature sync-pass provenance prose in this section):** Scoring segment-override evidence-governance decision commit `db6e33f7d93d8ed7fa5ff85192ffef81e639e476`; base/reviewed commit — merge `46318c94e196bb22a6ed9abff4e6fcfa0242be82` with parents `3885619e4c4b19ee73dc42957b3f83b5874a3450` and `db6e33f7d93d8ed7fa5ff85192ffef81e639e476`, 2026-09-06. Header metadata and §5.7.2 match this provenance.
+
+Current Scoring segment-override sync status: canonical `MSP-04 → XFR-D-018`, `PRIMARY_STANDALONE`, remains unchanged and is now `PARTIALLY_RESOLVED_BOUNDARY` only for decision-specific roles, global-baseline/override authority, explicit lawful membership/no-inference, non-weakening/non-discrimination/non-compensation, evidence-category prerequisite, affected-use fail-closed and no-automatic-action semantics. All exact segment/value/metric/statistical/data/manifest/result/verdict/policy/production/carrier/runtime/implementation contents remain `OPEN`; counts remain 102 source keys / 90 canonical IDs, Scoring decision register remains 18 rows, Evaluation Plan register remains 17 rows, and all three gates remain `BLOCKED`.
 
 **Current sync provenance (supersedes preceding Feature sync-pass provenance prose in this section):** Feature Hard Constraint reason-catalog governance decision commit `cfe74deb19887175e56e053b98c0396995df37dd`; base/reviewed commit — merge `5fa81be7f79b0856658572cba2a66e6c5ab650ba` with parents `ece1816b7b7991c975c4bc3d3aa91b72f6697bfd` and `cfe74deb19887175e56e053b98c0396995df37dd`, 2026-09-05. Header metadata and §5.4.1 match this provenance.
 
@@ -972,6 +991,8 @@ Index ссылается на отдельные decision records, но сам �
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-046 Qualification coverage):** добавлен Qualification synthetic-production evidence-boundary overlay §5.2.6; canonical identity `MQP-20 → XFR-D-046`, `PRIMARY_STANDALONE`, сохраняется, counts/crosswalk не меняются, exact taxonomy/metrics/data/manifests/runs/results/verdicts/calibration/readiness criteria, production authority/lawful basis/appointments/RBAC, policy approval/runtime/implementation/gate transitions остаются `OPEN`/`BLOCKED`, все три gates — `BLOCKED`.
 
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-010 Feature coverage):** добавлен Feature Hard Constraint reason-catalog governance overlay §5.4.1; canonical identity `FS-13 → XFR-D-010`, `PRIMARY_STANDALONE`, сохраняется, counts/crosswalk не меняются, exact namespace/catalog/mapping/presentation/carrier/RBAC/data/evidence/production/policy/manifest/runtime/implementation contents и `XFR-F1` остаются `OPEN`/`BLOCKED`, все три gates — `BLOCKED`.
+
+**Current overlay coverage extension (supersedes preceding pre-XFR-D-018 Scoring coverage):** добавлен Scoring segment-override evidence-governance overlay §5.7.2; canonical identity `MSP-04 → XFR-D-018`, `PRIMARY_STANDALONE`, сохраняется, counts/crosswalk не меняются, actual segments/membership/lawful basis/weights/thresholds/formulas/metrics/statistics/data/manifest/run/results/verdict/policy/production/carrier/runtime/implementation remain `OPEN`, Scoring register остаётся 18 rows, Evaluation Plan register — 17 rows, все три gates — `BLOCKED`.
 
 ## 12. Acceptance criteria
 
