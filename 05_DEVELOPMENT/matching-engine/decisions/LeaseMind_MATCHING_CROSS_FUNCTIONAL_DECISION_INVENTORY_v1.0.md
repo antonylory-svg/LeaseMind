@@ -3,7 +3,7 @@
 **Версия:** 1.0
 **Дата:** 2026-09-07
 **Статус:** `Cross-functional decision inventory — records decision status; does not authorize implementation or approve any Proposal`
-**Reviewed repository commit:** `3b26a2e34b544a0e5fd31a0b4771701aaa3b89fe`
+**Reviewed repository commit:** `d81c48707d2fe5aea35c833f9f53e60e01e7c979`
 **Wave 1 decision records commit:** `a5fe497b9d297ef9ca4e342b636f214417bf230a`
 **Wave 2A Qualification semantics decision records commit:** `89d33ee0f1cf018cfb4e14001c5f081cc6000e80`
 **Qualification version-compatibility governance decision record commit:** `9dedc190b180c4dd591842dece2fbe07a3fc9a0c`
@@ -33,6 +33,7 @@
 **Scoring sensitivity/calibration evidence-governance decision record commit:** `9e96a1a06857a1138e9a3c13a157252a58fa5afd`
 **Scoring criterion-class weighting governance decision record commit:** `1873e8c660cc108604ef05eef220e3cf7e281147`
 **Scoring weight-policy governance decision record commit:** `fc97be88bddb0103a55a94e4e788d322c199f28d`
+**Feature/Scoring joint-calibration governance decision record commit:** `9b94f7515242123a2c963844907e6c9a3c51e2ab`
 **Evaluation label-evidence owner-review decision record commit:** `9dbc8049cbd8b2d14e997111d43649e76e969e01`
 **Evaluation adjudication owner-review decision record commit:** `b21c3aba27c23e7f046ef6550841a03b7a6947b9`
 **Evaluation grouping-isolation owner-review decision record commit:** `2371109746841469d8519cc74a968ee65a20d898`
@@ -745,6 +746,18 @@ Canonical merged identity `MSP-02 + MSP-03 → XFR-D-M5` remains unchanged; both
 
 > **Temporal hygiene note for Scoring §§6/10/12 rows 2–3, historical §5.7–§5.7.9 and pre-decision summaries:** where earlier text calls `XFR-D-M5` or Architecture §37 question №3 wholly `OPEN`, current reading is §5.7.10: the qualitative role/family/global-versus-segment/Hard-Constraint/fail-closed/evidence/historical/no-automatic-action boundary is `PARTIALLY_RESOLVED_BOUNDARY`; every exact weight/ratio/formula/normalization/threshold semantic/value/segment/lawful-basis/data/statistical/policy/production/carrier/runtime/implementation content remains `OPEN`.
 
+### 5.7.11. Feature/Scoring joint-calibration governance decision-status overlay
+
+Canonical merged identity `FS-12 + MSP-12 → XFR-D-M6` remains unchanged; both source keys remain `PRIMARY_MERGED_MEMBER`, and crosswalk/counts stay 102 source keys / 90 canonical IDs (§4.5/§5). This later overlay synchronizes human-approved `XFR-D-M6 v1.0` without rewriting historical §5.7/§5.7.1–§5.7.10. Provenance is exact: reviewed merge `d81c48707d2fe5aea35c833f9f53e60e01e7c979` has parents `d7d1d9dabfc74d4ee91f731925bdf12bf86a5511` and decision commit `9b94f7515242123a2c963844907e6c9a3c51e2ab`.
+
+| Canonical ID | Record | Current status | Remaining open dependency |
+|---|---|---|---|
+| `XFR-D-M6` | `LeaseMind_MATCHING_DECISION_XFR-D-M6_v1.0.md` | `PARTIALLY_RESOLVED_BOUNDARY` — governance owner `Chief AI Architect + AI` is human-approved candidate-derived and not `SOURCE_NORMATIVE`; Scoring artifact owner remains `Chief AI Architect + PRODUCT`, Feature artifact owner `PRODUCT + LEGAL + AI`, Evaluation/evidence artifact owner `AI + DEVELOPMENT`; mandatory approvers `PRODUCT + LEGAL + DEVELOPMENT`; evidence/technical-procedure owner `AI + DEVELOPMENT` has no unilateral authority. Approved only: semantic separation of Feature Fit, Feature Weight, categorical `evidence_status`, feature/value Evidence Confidence, `required_evidence_level`, overall Confidence, Hard Constraint/Eligibility, Risk and Qualification; exact seven-value Architecture §13 enum preservation; closed immutable version/hash-bound candidate discipline; affected-use fail-closed; double-counting/non-compensation review; qualitative evidence prerequisites; historical binding and no automatic action | Every exact mapping/function/order/hierarchy/value/range/direction/monotonicity/default/fallback, including `[0,1]` approval; feature/source/use applicability; normalization/numerator/denominator/missing arithmetic/zero-active-weight/exact double-counting treatment; data/labels/splits/metrics/targets/objective/loss/statistics/results; precision/rounding/serialization; Feature/Scoring/Evaluation/Risk/Qualification Policy and manifest approval; production-data authority/applicability/readiness; schema/carrier/API/DB/events/runtime/monitoring/rollback/implementation and every gate remain `OPEN` |
+
+`XFR-D-019`, `XFR-D-020`, `XFR-D-022`, `XFR-D-025`, `XFR-D-026`, `XFR-D-027`, `XFR-D-M5`, Feature Schema decision №1, `XFR-D-057`–`XFR-D-071` and all independent Feature, Scoring, Evaluation, Risk and Qualification boundaries retain their identity, status and authority. Synthetic-only evidence creates no production claim; no result or technical success automatically changes mapping, function, Policy, model, score, route, runtime or gate. No Proposal, dataset/run/result, production-data use, policy/manifest, schema/carrier/runtime or implementation is approved; `IMPLEMENTATION_READINESS_GATE`, `SYNTHETIC_ACCEPTANCE_GATE` and `PRODUCTION_LAUNCH_GATE` remain `BLOCKED`.
+
+> **Temporal hygiene note for Feature/Scoring open-decision row №12, historical §5.7–§5.7.10 and pre-decision summaries:** where earlier text calls `XFR-D-M6`, `FS-12` or `MSP-12` wholly `OPEN`, current reading is §5.7.11: the qualitative roles/semantic-separation/fail-closed/double-counting/evidence/historical/no-automatic-action boundary is `PARTIALLY_RESOLVED_BOUNDARY`; every exact mapping/function/order/hierarchy/value/range/calibration/data/statistical/policy/production/carrier/runtime/implementation content remains `OPEN`.
+
 ### 5.8. Wave 2G Evaluation semantics decision-status overlay
 
 Canonical IDs/роли в §4.2 (Evaluation Plan crosswalk) не изменены. Ниже — честный overlay статуса трёх EP-строк (`EP-02`, `EP-03`, `EP-15`), получивших Wave 2G governance decisions. Два records разрешают только fail-closed boundaries; один разрешает qualitative terminology. Evaluation Plan Proposal и Architecture §37 вопрос №10 остаются `OPEN`.
@@ -1009,6 +1022,8 @@ Governance escalation выполнена record `XFR-D-031 v1.0`: semantic owner
 
 **Current Scoring weight-policy governance status (supersedes earlier pre-decision `XFR-D-M5 OPEN` wording only):** merged `MSP-02 + MSP-03 → XFR-D-M5`, both `PRIMARY_MERGED_MEMBER`, now has `PARTIALLY_RESOLVED_BOUNDARY` only for exact role separation, distinct parameter families, approved-global-baseline/segment-override authority, explicit lawful membership/no inference, Hard Constraint precedence/non-compensation, affected-use fail-closed/no-default, immutable evidence, historical version binding and no-automatic-action semantics. Every exact weight/ratio/formula/normalization/threshold semantic/value/scope/segment/lawful-basis/data/metric/statistic/result/policy/production/schema/carrier/runtime/implementation remains `OPEN`; all sibling boundaries remain independent and no gate is lifted.
 
+**Current Feature/Scoring joint-calibration status (supersedes only earlier claims that merged `XFR-D-M6` is wholly `OPEN`):** `XFR-D-M6 v1.0` now has `PARTIALLY_RESOLVED_BOUNDARY` only for decision/artifact role separation, semantic separation, seven-value enum preservation, immutable candidate/evidence discipline, affected-use fail-closed, double-counting/non-compensation, historical binding and no-automatic-action safeguards. Every exact mapping/function/order/value/range/calibration/data/statistical/policy/production/carrier/runtime/implementation content remains `OPEN`; no gate is lifted.
+
 ## 11. Следующий формат работы
 
 **Current sync provenance (supersedes preceding Feature sync-pass provenance prose in this section):** Scoring segment-override evidence-governance decision commit `db6e33f7d93d8ed7fa5ff85192ffef81e639e476`; base/reviewed commit — merge `46318c94e196bb22a6ed9abff4e6fcfa0242be82` with parents `3885619e4c4b19ee73dc42957b3f83b5874a3450` and `db6e33f7d93d8ed7fa5ff85192ffef81e639e476`, 2026-09-06. Header metadata and §5.7.2 match this provenance.
@@ -1168,6 +1183,10 @@ Index ссылается на отдельные decision records, но сам �
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-025 Scoring coverage):** добавлен Scoring criterion-class weighting governance overlay §5.7.9; canonical identity `MSP-13 → XFR-D-025`, `PRIMARY_STANDALONE`, сохраняется отдельно от `MSP-02 + MSP-03 → XFR-D-M5`, counts/crosswalk не меняются, exact assignments/participation/hierarchy/weights/ratios/formulas/normalization/denominator/double-counting/segments/precision/data/metrics/statistics/policy/production/schema/carrier/runtime/implementation remain `OPEN`, Scoring register остаётся 18 rows, Evaluation Plan register — 17 rows, все три gates — `BLOCKED`.
 
 **Current overlay coverage extension (supersedes preceding pre-XFR-D-M5 Scoring coverage):** добавлен Scoring weight-policy governance overlay §5.7.10; canonical merged identity `MSP-02 + MSP-03 → XFR-D-M5` сохраняется с обоими source keys `PRIMARY_MERGED_MEMBER`, counts/crosswalk не меняются, every exact weight/ratio/formula/normalization/threshold semantic/value/scope/segment/lawful-basis/data/metrics/statistics/policy/production/schema/carrier/runtime/implementation remains `OPEN`, Scoring register остаётся 18 rows, Evaluation Plan register — 17 rows, все три gates — `BLOCKED`.
+
+> **Current XFR-D-M6 roadmap/provenance correction:** the next substantive work for `FS-12 + MSP-12` is limited to separately governed exact candidate and evidence decisions under §5.7.11, not implementation. Reviewed merge `d81c48707d2fe5aea35c833f9f53e60e01e7c979` joins prior main `d7d1d9dabfc74d4ee91f731925bdf12bf86a5511` with decision commit `9b94f7515242123a2c963844907e6c9a3c51e2ab`; Feature Schema remains 19 rows, Scoring Policy 18 rows and Evaluation Plan 17 rows.
+
+**Current overlay coverage extension (supersedes preceding pre-XFR-D-M6 Feature/Scoring coverage):** added joint-calibration governance overlay §5.7.11; canonical merged identity `FS-12 + MSP-12 → XFR-D-M6` remains unchanged with both source keys `PRIMARY_MERGED_MEMBER`; counts/crosswalk remain 102 source keys / 90 canonical IDs; all exact calibration/data/policy/production/schema/carrier/runtime/implementation contents remain `OPEN`, and all three gates remain `BLOCKED`.
 
 ## 12. Acceptance criteria
 
