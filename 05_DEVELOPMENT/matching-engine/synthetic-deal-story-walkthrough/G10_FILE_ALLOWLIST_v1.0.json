@@ -1,0 +1,176 @@
+{
+  "artifact_type": "G10_SYNTHETIC_DEAL_STORY_WALKTHROUGH_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-22",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g10-synthetic-deal-story-walkthrough",
+    "git_commit": "fbf73505b8da915f7d8bf9218d8062f20a83625d"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false
+  },
+  "walkthrough": {
+    "url": "http://127.0.0.1:5173/synthetic-deal-story-walkthrough.html",
+    "html_title": "SYNTHETIC DEAL STORY WALKTHROUGH — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g9": "SEPARATE_SIBLING_PAGE_REUSING_G9_STORY_UNCHANGED",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "state_count": 5,
+    "initial_state_zero_based": 0,
+    "initial_visible_step": 1,
+    "reload_visible_step": 1,
+    "always_visible_lines": [
+      "SYNTHETIC DEAL STORY WALKTHROUGH — NOT PRODUCTION APPROVED",
+      "SCENARIO: SYNTHETIC_DEAL_STORY_A"
+    ],
+    "panels_in_order": [
+      {
+        "progress": "STEP 1 OF 5",
+        "visible_lines": [
+          "STEP 1 — SYNTHETIC_USER_A / SYNTHETIC_NEED_A"
+        ]
+      },
+      {
+        "progress": "STEP 2 OF 5",
+        "visible_lines": [
+          "STEP 2 — SYNTHETIC_CAMPAIGN_PREVIEW_A"
+        ]
+      },
+      {
+        "progress": "STEP 3 OF 5",
+        "visible_lines": [
+          "STEP 3 — SYNTHETIC_SAFE_PRESENTATION_A",
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ]
+      },
+      {
+        "progress": "STEP 4 OF 5",
+        "visible_lines": [
+          "STEP 4 — SYNTHETIC_HUMAN_CONTINUATION_REQUIRED"
+        ]
+      },
+      {
+        "progress": "STEP 5 OF 5",
+        "visible_lines": [
+          "OUTCOME — SYNTHETIC_NO_DEAL_EXECUTED",
+          "NO MATCH, SCORE, QUALIFICATION, RISK DECISION OR PRODUCTION APPROVAL OCCURRED"
+        ]
+      }
+    ],
+    "controls": {
+      "count": 2,
+      "native_type": "button",
+      "logical_dom_order": [
+        "BACK",
+        "NEXT"
+      ],
+      "back_disabled_at_step": 1,
+      "next_disabled_at_step": 5,
+      "transition": "PLUS_OR_MINUS_ONE_CLAMPED_NO_WRAP_NO_SKIP",
+      "native_keyboard_activation_only": [
+        "ENTER",
+        "SPACE"
+      ]
+    },
+    "accessibility": {
+      "navigation_aria_label": "SYNTHETIC WALKTHROUGH NAVIGATION",
+      "progress_aria_live": "polite",
+      "progress_aria_atomic": "true",
+      "default_visible_keyboard_focus": true,
+      "motion": "NONE"
+    }
+  },
+  "reuse": {
+    "g7_safe_presentation_component": "REUSE_UNCHANGED",
+    "g8_synthetic_input": {
+      "mode": "REUSE_UNCHANGED",
+      "recipient": "SYNTHETIC_RECIPIENT_A",
+      "audience": "SYNTHETIC_AUDIENCE_A",
+      "purpose": "SYNTHETIC_PURPOSE_STATIC_RENDER_TEST",
+      "locale": "x-leasemind-synthetic",
+      "heading": "SYNTHETIC_HEADING",
+      "message": "SYNTHETIC_MESSAGE",
+      "stale": false,
+      "revoked": false,
+      "hash_matches": true,
+      "binding_matches": true
+    },
+    "g9_story_tokens_and_meaning": "REUSE_UNCHANGED"
+  },
+  "prohibited_behavior": [
+    "AUTOPLAY",
+    "TIMERS",
+    "RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "NETWORK_CALLS",
+    "PERSISTENCE",
+    "LOGGING",
+    "DIAGNOSTICS",
+    "WRAP_OR_SKIP_NAVIGATION",
+    "MOTION_OR_ANIMATION",
+    "ADDITIONAL_VISIBLE_COPY"
+  ],
+  "excluded_capabilities": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "SCORING_CONFIDENCE_RISK_QUALIFICATION_RANKING_OR_THRESHOLDS",
+    "CAMPAIGN_LAUNCH_DEAL_EXECUTION_OUTCOME_RECORDING_OR_LEGAL_FINANCIAL_ACTION",
+    "SAFE_PRESENTATION_POLICY_APPROVAL",
+    "DATA_CONTRACTS_OR_CARRIER",
+    "CONTROLLED_ARTIFACT_MANIFEST",
+    "ACTUAL_EVIDENCE_OR_PRODUCTION_APPLICABILITY",
+    "RUNTIME_PRODUCTION_BUILD_DEPLOYMENT_API_DATABASE_EVENT_STORAGE_CACHE_OR_TELEMETRY"
+  ],
+  "result_label": "G10_SYNTHETIC_DEAL_STORY_WALKTHROUGH_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G10_SYNTHETIC_DEAL_STORY_WALKTHROUGH_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-walkthrough/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-walkthrough/G10_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-deal-story-walkthrough.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealStoryWalkthroughScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticDealStoryWalkthrough.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealStoryWalkthroughEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticDealStoryWalkthrough.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-walkthrough/G10_SYNTHETIC_DEAL_STORY_WALKTHROUGH_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
