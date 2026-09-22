@@ -1,0 +1,63 @@
+{
+  "artifact_type": "G8_SYNTHETIC_SAFE_PRESENTATION_VISIBLE_DEMO_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-22",
+  "authorization_commit": "2697052f43da576071688d9c53a2f73a2e2985bc",
+  "authorized_baseline_commit": "a6d5edb23c025040487d30d2c41ac5e0b18fccd5",
+  "frozen_allowlist_sha256": "878ee8c31217b685c27aaa33c04e56ab973812637665351db30cce6b4e2e96eb",
+  "result": "PASS",
+  "result_label": "G8_SYNTHETIC_VISIBLE_DEMO_VERIFIED",
+  "scope": {
+    "url": "http://127.0.0.1:5173/safe-presentation-synthetic-demo.html",
+    "access": "MANUAL_DEV_ONLY",
+    "default_production_build": "EXCLUDED_BY_UNREFERENCED_STANDALONE_HTML_AND_UNCHANGED_SINGLE_ENTRY_VITE_CONFIGURATION",
+    "g7_reuse": "UNCHANGED",
+    "network_storage_cache_telemetry_persistence_logging_diagnostics": "ABSENT"
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm run typecheck",
+      "working_directory": "apps/web",
+      "result": "PASS"
+    },
+    {
+      "name": "focused_g7_g8_tests",
+      "command": "node --import tsx --test --test-concurrency=1 tests/safePresentationSyntheticPreview.test.tsx tests/safePresentationSyntheticIsolation.test.ts tests/safePresentationSyntheticVisibleDemo.test.ts",
+      "working_directory": "apps/web",
+      "result": "PASS",
+      "tests_passed": 11,
+      "tests_failed": 0,
+      "environment_note": "The host Node userInfo call returned ERR_SYSTEM_ERROR/ENOMEM before test loading. The passing run used a temporary process-only userInfo shim loaded before tsx; the shim was outside the repository, changed no application or test behavior, and was removed after the run."
+    },
+    {
+      "name": "html_entry_binding",
+      "result": "PASS"
+    },
+    {
+      "name": "exact_render_contract",
+      "result": "PASS"
+    },
+    {
+      "name": "g7_reuse_and_byte_identity",
+      "result": "PASS",
+      "component_sha256": "3cfd9f3c88ebfdd74a4f03679f6e8acf2f882d6ecfd29883eae16091e1d30e96",
+      "projector_sha256": "b3d866a0172e04b5a89106eeb7c210854d5103b9260f8cc4178659d8eb60214f"
+    },
+    {
+      "name": "forbidden_references_and_capabilities",
+      "result": "PASS"
+    },
+    {
+      "name": "production_root_isolation_and_static_build_exclusion",
+      "result": "PASS"
+    }
+  ],
+  "governance": {
+    "gate_impact": "NONE",
+    "verification_label_is_a_governance_gate": false,
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  }
+}
