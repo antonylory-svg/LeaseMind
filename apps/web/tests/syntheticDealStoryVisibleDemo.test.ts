@@ -34,6 +34,9 @@ const EXPECTED_VISIBLE_LINES = [
 
 const read = (file: string) => readFileSync(file, 'utf8');
 const sha256 = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex');
+const normalizedTextSha256 = (file: string) => createHash('sha256')
+  .update(read(file).replace(/\r\n/g, '\n'))
+  .digest('hex');
 
 function visibleLines(markup: string): string[] {
   return markup
@@ -127,16 +130,16 @@ test('G9 implementation contains none of the prohibited behavior', () => {
 
 test('production roots are unchanged and default production build excludes G9', () => {
   const unchangedRoots = new Map([
-    [path.join(WEB_ROOT, 'index.html'), '1667fd70d3fc5917af1483825596d52c30898d723ccc40253e88fff10181501d'],
-    [path.join(WEB_ROOT, 'src', 'App.tsx'), 'fe83b04ec53a60390d1952534acabe4bdb854c5f547e0dd7f87fa3971aa20c21'],
-    [path.join(WEB_ROOT, 'src', 'main.tsx'), '1070e131737963119be2db58c80b8d738d1eaa670f8509965d5dac62bd8675b8'],
-    [path.join(WEB_ROOT, 'vite.config.ts'), '5255c6a9ee853b5b4a39fe555a519fccd887247ff9daf1e7fd0aa72b7895b3c1'],
-    [path.join(WEB_ROOT, 'package.json'), 'b3cce19967ce20abda0f6c9eb81f34ec3111bad5a920746eb470b90c2cfe3fb1'],
-    [path.join(REPOSITORY_ROOT, 'package.json'), 'ff635666b33a75063909bb4d85bd60939b2bb569e669e9d801acba0b5961ee2b']
+    [path.join(WEB_ROOT, 'index.html'), '1d08f52ac7e778e1c6dab84c62fd69bd37468f2cb4ec12db1670af5bf385e0ba'],
+    [path.join(WEB_ROOT, 'src', 'App.tsx'), 'ada0935e881b6f63d4b5089068a0ca1b8372fa8cadee4d068660293ad54dd67b'],
+    [path.join(WEB_ROOT, 'src', 'main.tsx'), 'e2af5d6696016c7fe1a33871de10620894a3a150977c5ffe3449620962611e97'],
+    [path.join(WEB_ROOT, 'vite.config.ts'), '6d7013e7e32ade37e5f1c61c5d23d239fc5a0a71f08092e6d94e770f9059b179'],
+    [path.join(WEB_ROOT, 'package.json'), '38da9057e32345f6c0260cd7b16bbe956c412e548617e807a29d1ec2b9021ae3'],
+    [path.join(REPOSITORY_ROOT, 'package.json'), '2a858e9f265d7bf8988c28dd71a738fa10c4a9e15adb69118e07decf78884015']
   ]);
 
   for (const [file, expectedHash] of unchangedRoots) {
-    assert.equal(sha256(file), expectedHash, file);
+    assert.equal(normalizedTextSha256(file), expectedHash, file);
     assert.equal(read(file).includes('synthetic-deal-story-demo'), false, file);
     assert.equal(read(file).includes('syntheticDealStoryDemoEntry'), false, file);
   }
