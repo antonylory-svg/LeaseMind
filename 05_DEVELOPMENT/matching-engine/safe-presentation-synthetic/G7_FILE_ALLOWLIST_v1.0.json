@@ -1,0 +1,78 @@
+{
+  "artifact_type": "G7_SYNTHETIC_SAFE_PRESENTATION_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-22",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g7-synthetic-safe-presentation-slice",
+    "git_commit": "91271b53aa50a9530a0ee3967975b3d286798e12"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G7_SYNTHETIC_SAFE_PRESENTATION_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/G7_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/schema/safe-presentation-synthetic-preview.schema.json",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/fixtures/valid-minimal.json",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/fixtures/blocked-stale.json",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/fixtures/blocked-revoked.json",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/fixtures/blocked-binding-mismatch.json",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/fixtures/invalid-forbidden-content-cases.json",
+      "state": "planned"
+    },
+    {
+      "path": "apps/api/tests/safePresentationSyntheticContract.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/safePresentationSyntheticPreview.test.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/safePresentationSyntheticIsolation.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SafePresentationSyntheticPreview.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/safePresentationSyntheticViewModel.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/safe-presentation-synthetic/G7_SYNTHETIC_REFERENCE_PACKAGE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
