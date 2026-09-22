@@ -1,0 +1,31 @@
+{
+  "artifact_type": "G9_SYNTHETIC_DEAL_STORY_VISIBLE_DEMO_VERIFICATION",
+  "package_version": "1.0",
+  "authorization_commit": "908aaffbc1a34ad84b01b08df20b6410733eefdd",
+  "allowlist_sha256": "45fba78599108ed604ab8f87862f77c3f3cc7659417bc241ca9cf5f925d281a9",
+  "result": "G9_SYNTHETIC_DEAL_STORY_VISIBLE_DEMO_VERIFIED",
+  "result_is_governance_gate": false,
+  "checks": {
+    "web_typecheck": "PASS",
+    "focused_g7_g8_g9_tests": {
+      "status": "PASS",
+      "passed": 18,
+      "failed": 0,
+      "environment_note": "The ordinary focused Node+tsx invocation on this host failed before test loading due to node:os uv_os_get_passwd ERR_SYSTEM_ERROR/ENOMEM; the passing 18/18 run used a temporary process-only pre-import userInfo shim before tsx; the shim was outside/no file in repo, changed no app/test behavior, and left no repository artifact."
+    },
+    "authorized_paths_only": "PASS",
+    "g7_g8_reuse_unchanged": "PASS",
+    "exact_seven_tokens_and_eleven_visible_lines": "PASS",
+    "prohibited_behavior_absent": "PASS",
+    "production_roots_unchanged": "PASS",
+    "default_production_build_exclusion": "PASS_BY_CONFIGURATION_AND_REFERENCE_INSPECTION",
+    "production_build_executed": false
+  },
+  "excluded_capabilities_remain": "OPEN_AND_UNIMPLEMENTED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  }
+}
