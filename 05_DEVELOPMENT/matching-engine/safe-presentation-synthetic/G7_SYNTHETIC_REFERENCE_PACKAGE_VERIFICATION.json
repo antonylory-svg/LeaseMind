@@ -1,0 +1,33 @@
+{
+  "artifact_type": "G7_SYNTHETIC_REFERENCE_PACKAGE_VERIFICATION",
+  "package_version": "1.0",
+  "authorization_commit": "185573eecddf0d843fc713a06436b3f12b1d6eba",
+  "baseline_commit": "91271b53aa50a9530a0ee3967975b3d286798e12",
+  "frozen_allowlist_sha256": "a137d9ae6c4e7639ffeb4f1fc57e0674157336ecb5b7e9a3578db13668c33c9e",
+  "result_label": "G7_SYNTHETIC_REFERENCE_PACKAGE_VERIFIED",
+  "checks": {
+    "api_typecheck": "PASS",
+    "web_typecheck": "PASS",
+    "closed_schema_contract": "PASS",
+    "exact_domain_tokens": "PASS",
+    "watermark_render": "PASS",
+    "blocked_output_only": "PASS",
+    "rejected_input_no_echo": "PASS",
+    "runtime_isolation": "PASS",
+    "network_cache_telemetry_persistence_absent": "PASS"
+  },
+  "test_totals": {
+    "contract": 4,
+    "render": 3,
+    "isolation": 2,
+    "failed": 0
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_applicability": false,
+    "runtime_approval": false
+  }
+}

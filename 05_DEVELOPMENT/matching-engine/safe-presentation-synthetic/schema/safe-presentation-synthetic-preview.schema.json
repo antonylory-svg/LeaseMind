@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:leasemind:g7:synthetic-safe-presentation:1.0",
+  "title": "G7 Synthetic Safe Presentation Preview Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recipient",
+    "audience",
+    "purpose",
+    "locale",
+    "heading",
+    "message",
+    "stale",
+    "revoked",
+    "hash_matches",
+    "binding_matches"
+  ],
+  "properties": {
+    "recipient": {
+      "const": "SYNTHETIC_RECIPIENT_A"
+    },
+    "audience": {
+      "const": "SYNTHETIC_AUDIENCE_A"
+    },
+    "purpose": {
+      "const": "SYNTHETIC_PURPOSE_STATIC_RENDER_TEST"
+    },
+    "locale": {
+      "const": "x-leasemind-synthetic"
+    },
+    "heading": {
+      "const": "SYNTHETIC_HEADING"
+    },
+    "message": {
+      "const": "SYNTHETIC_MESSAGE"
+    },
+    "stale": {
+      "type": "boolean"
+    },
+    "revoked": {
+      "type": "boolean"
+    },
+    "hash_matches": {
+      "type": "boolean"
+    },
+    "binding_matches": {
+      "type": "boolean"
+    }
+  }
+}
