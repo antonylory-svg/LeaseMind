@@ -1,0 +1,80 @@
+{
+  "artifact_type": "G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-23",
+  "authorization_commit": "f20957961cb4e86c39d8437d2838aa34d191faa4",
+  "result": "PASSED",
+  "result_label": "G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_VERIFIED",
+  "allowlist_sha256": "293a762abe050c77db6a9aaab3d44c980e1b182259edc2dc758ae31d5bb8af67",
+  "scope": {
+    "planned_paths_created": 6,
+    "paths_outside_allowlist_changed": 0,
+    "staging_clean": true,
+    "g7_g8_g9_g10_g11_g12_modified": false,
+    "production_entry_or_build_configuration_modified": false
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm --prefix apps/web run typecheck",
+      "status": "PASSED"
+    },
+    {
+      "name": "focused_g7_g8_g9_g10_g11_g12_g13_tests",
+      "command": "node --import <process-only userInfo shim> --import tsx --test --test-concurrency=1 <eight focused G7-G13 test files>",
+      "status": "PASSED",
+      "passed": 47,
+      "failed": 0,
+      "environment_note": "The ordinary Node+tsx invocation failed before test loading because node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM. The passing 47/47 run used the established inline process-only userInfo shim, changed no repository file or application/test behavior, and left no artifact."
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASSED"
+    },
+    {
+      "name": "closed_path_boundary",
+      "status": "PASSED",
+      "allowed_paths": 9,
+      "planned_paths_created": 6,
+      "unexpected_paths": 0
+    },
+    {
+      "name": "manual_browser_smoke",
+      "url": "http://127.0.0.1:5173/synthetic-matching-flow-console.html",
+      "status": "PASSED",
+      "checked_viewport_width_px": 644,
+      "checks": [
+        "exact_title_scenario_disclaimer_and_six_stage_panels_simultaneously_visible",
+        "exact_stage_node_copy_order_and_fixture_warning",
+        "exact_unchanged_g7_g8_safe_presentation_output",
+        "continue_and_hold_are_transient_display_choices_only",
+        "continue_and_hold_preserve_same_synthetic_no_deal_executed_result",
+        "reset_and_reload_clear_transient_choice",
+        "native_enter_and_space_activation",
+        "exact_accessible_navigation_disposition_group_and_live_region",
+        "current_render_non_occurrence_panel_always_visible",
+        "visible_keyboard_focus",
+        "no_horizontal_page_overflow_at_checked_viewport",
+        "url_unchanged",
+        "no_browser_console_warnings_or_errors"
+      ]
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-matching-flow-console.html": "a8249f5b20a592db69eec180335973761479e4060f59e38543fba29ea7916d72",
+    "apps/web/src/synthetic/syntheticMatchingFlowConsoleScenario.ts": "9d5eeaff38a37a6bf24b3951240cbf8136ec61849fd18acd8b8ec9d8d7ac74d9",
+    "apps/web/src/synthetic/SyntheticMatchingFlowConsole.tsx": "4ef9ab18aa646640a79f5133d5d67da6d412594b99a5b4bcb6dfccbefab04513",
+    "apps/web/src/synthetic/syntheticMatchingFlowConsoleEntry.tsx": "27a7bf249c303ca2903f20216f23fdcbdb8cb1506d20d0044571679d734d0057",
+    "apps/web/tests/syntheticMatchingFlowConsole.test.ts": "d0faac0bea6892245b9a8aa7a2dc1666e8e4cdf9f42934a3b6a191ac8f3eeaa0"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "commit_created": false,
+  "push_performed": false,
+  "pr_mutation_performed": false
+}
