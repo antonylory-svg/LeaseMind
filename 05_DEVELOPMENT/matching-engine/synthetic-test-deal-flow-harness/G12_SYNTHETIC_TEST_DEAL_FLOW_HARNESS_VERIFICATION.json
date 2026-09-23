@@ -1,0 +1,78 @@
+{
+  "artifact_type": "G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-23",
+  "authorization_commit": "af372af7ede405de0b3fb44cc3f12210aed095ea",
+  "result": "PASSED",
+  "result_label": "G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_VERIFIED",
+  "allowlist_sha256": "02851ef4d03fb8232f04c4917766750f0a5db7b53b99501d1cafe2580a7080a2",
+  "scope": {
+    "planned_paths_created": 6,
+    "paths_outside_allowlist_changed": 0,
+    "staging_clean": true,
+    "g7_g8_g9_g10_g11_modified": false,
+    "production_entry_or_build_configuration_modified": false
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm --prefix apps/web run typecheck",
+      "status": "PASSED"
+    },
+    {
+      "name": "focused_g7_g8_g9_g10_g11_g12_tests",
+      "command": "node --import <process-only userInfo and React shim> --import tsx --test --test-concurrency=1 <seven focused G7-G12 test files>",
+      "status": "PASSED",
+      "passed": 40,
+      "failed": 0,
+      "environment_note": "The ordinary Node+tsx invocation failed before test loading because node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM. The passing 40/40 run used the established inline process-only userInfo and React shim, changed no repository file or application/test behavior, and left no artifact."
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASSED"
+    },
+    {
+      "name": "closed_path_boundary",
+      "status": "PASSED",
+      "allowed_paths": 9,
+      "planned_paths_created": 6,
+      "unexpected_paths": 0
+    },
+    {
+      "name": "manual_browser_smoke",
+      "url": "http://127.0.0.1:5173/synthetic-test-deal-flow-harness.html",
+      "status": "PASSED",
+      "checks": [
+        "exact_title_scenario_disclaimer_and_initial_step_one",
+        "exact_six_step_mouse_progression",
+        "fixture_only_not_matched_or_ranked_warning",
+        "step_four_exact_unchanged_g7_g8_safe_presentation_output",
+        "continue_and_hold_reach_same_no_deal_terminal",
+        "selected_disposition_is_transient_display_only",
+        "reset_and_reload_clear_disposition_and_restore_step_one",
+        "native_enter_and_space_activation",
+        "exact_accessible_navigation_and_disposition_group_names",
+        "no_horizontal_page_overflow_at_checked_viewport",
+        "url_unchanged",
+        "no_browser_console_warnings_or_errors"
+      ]
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-test-deal-flow-harness.html": "0c10d5f8c406832f31da152022e4e947411d317fe1aac341a04b939b37cce3e5",
+    "apps/web/src/synthetic/syntheticTestDealFlowScenario.ts": "d4666f8c7be8cdced8ae165910d77c0171fc388e24a394b3be2ea02eef7e4d25",
+    "apps/web/src/synthetic/SyntheticTestDealFlowHarness.tsx": "5e799f360eb6c27f101807c1e09549f8588bccd78c5f1ccb486cd6a9c0a29d97",
+    "apps/web/src/synthetic/syntheticTestDealFlowEntry.tsx": "a442bd2dda470c7d3f823133a5e8a60c13b97f07c73a7c616fa588b05d7334e4",
+    "apps/web/tests/syntheticTestDealFlowHarness.test.ts": "7b9a3ca31dab3b7ce5f2a2476e58177920671198952edc5571235d2ae5689ed5"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "commit_created": false,
+  "push_performed": false,
+  "pr_mutation_performed": false
+}
