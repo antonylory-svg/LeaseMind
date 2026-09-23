@@ -1,0 +1,70 @@
+{
+  "artifact_type": "G11_SYNTHETIC_DEAL_STORY_REHEARSAL_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-23",
+  "authorization_commit": "5c18489181a7424d57db01b659ab01b5005e4b5e",
+  "frozen_allowlist_sha256": "8b59e5fd0e901e06efd26e0ab9391710334a323cdec1b11f236671070e80d023",
+  "scope": {
+    "planned_paths_created": 6,
+    "paths_outside_allowlist_changed": 0,
+    "staging_clean": true,
+    "g7_g8_g9_g10_modified": false,
+    "production_entry_or_build_configuration_modified": false
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm run typecheck --workspace @leasemind/web",
+      "status": "PASSED"
+    },
+    {
+      "name": "focused_g7_g8_g9_g10_g11_tests",
+      "command": "node --import <process-only userInfo and React shim> --import tsx --test --test-concurrency=1 <six focused G7-G11 test files>",
+      "status": "PASSED",
+      "passed": 32,
+      "failed": 0,
+      "environment_note": "The ordinary Node+tsx invocation failed before test loading because node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM. The passing 32/32 run used an inline process-only userInfo and React shim, changed no repository file or application/test behavior, and left no artifact."
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASSED"
+    },
+    {
+      "name": "manual_browser_smoke",
+      "url": "http://127.0.0.1:5173/synthetic-deal-story-rehearsal.html",
+      "status": "PASSED",
+      "checks": [
+        "exact_title_disclaimer_summary_and_initial_step_one",
+        "mouse_next_through_all_five_steps",
+        "mouse_back_to_step_one",
+        "exactly_one_current_summary_item_at_each_checked_state",
+        "step_three_exact_unchanged_safe_presentation_output",
+        "endpoint_buttons_disabled",
+        "restart_from_step_five_to_step_one",
+        "native_enter_on_next_and_space_on_restart",
+        "reload_resets_to_step_one",
+        "url_unchanged",
+        "no_browser_console_warnings_or_errors"
+      ]
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-deal-story-rehearsal.html": "40da1b4e92f723386f0c34f109a155350e8ee0f5ffadc9ee6f9de132a7046b2b",
+    "apps/web/src/synthetic/syntheticDealStoryRehearsalScenario.ts": "f8413e65083803e3dd2e026abadecb269dd22f9a708f36ab09ed05e31a8f2584",
+    "apps/web/src/synthetic/SyntheticDealStoryRehearsal.tsx": "ec7bc4c4cd0a514bcf7f26532cef6f887f7acec8f9952608db0c8aea149af3f7",
+    "apps/web/src/synthetic/syntheticDealStoryRehearsalEntry.tsx": "1a59c7d324acd7e8d08563614d1e7f26f24887c3415a7d19593b45c6dacfdc5b",
+    "apps/web/tests/syntheticDealStoryRehearsal.test.ts": "04ec268bc50104acc0c4d61e3b8d807f8cd500a572f2d240e933dbdcf9557d83"
+  },
+  "result_label": "G11_SYNTHETIC_DEAL_STORY_REHEARSAL_VERIFIED",
+  "result_status": "PASSED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "commit_created": false,
+  "push_performed": false,
+  "pr_mutation_performed": false
+}
