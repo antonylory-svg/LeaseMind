@@ -1,0 +1,256 @@
+{
+  "artifact_type": "G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-23",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g13-synthetic-matching-flow-console",
+    "git_commit": "c3ab5c1c78d739d1e0cc59db88095e59083eef74"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "console": {
+    "url": "http://127.0.0.1:5173/synthetic-matching-flow-console.html",
+    "html_title": "SYNTHETIC MATCHING FLOW CONSOLE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g7_g12": "SEPARATE_SIBLING_CONSOLE_REUSING_FROZEN_G7_G8_AND_G12_STAGE_NODE_SEMANTICS_UNCHANGED",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "RESPONSIVE_MULTI_PANEL_ACCESSIBLE_PAGE_LAYOUT_ONLY",
+    "multi_panel_definition": "ACCESSIBLE_PAGE_LAYOUT_ONLY_NOT_GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING",
+    "multi_panel_excludes": [
+      "GEOGRAPHY",
+      "TENANCY",
+      "DEPLOYMENT",
+      "SEGMENTATION",
+      "ROUTING"
+    ],
+    "stage_panel_count": 6,
+    "stage_panels_simultaneously_visible": true,
+    "progression_controls": "ABSENT",
+    "next_back_stepper_current_panel_hiding_progression_or_automatic_transition": "PROHIBITED",
+    "initial_render_visible_stage_panels": 6,
+    "reload_render_visible_stage_panels": 6,
+    "reset_render_visible_stage_panels": 6,
+    "always_visible_lines": [
+      "SYNTHETIC MATCHING FLOW CONSOLE — NOT PRODUCTION APPROVED",
+      "SCENARIO: SYNTHETIC_MATCHING_FLOW_CONSOLE_A",
+      "MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION"
+    ],
+    "stage_nodes_simultaneously_visible": [
+      {
+        "node": "STAGE_NODE_1_TEST_DEAL_TOKEN",
+        "panel_accessible_name": "STAGE NODE 1 — TEST DEAL TOKEN",
+        "visible_lines": [
+          "TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A"
+        ]
+      },
+      {
+        "node": "STAGE_NODE_2_CAMPAIGN_PREVIEW",
+        "panel_accessible_name": "STAGE NODE 2 — CAMPAIGN PREVIEW",
+        "visible_lines": [
+          "CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+          "PREVIEW ONLY — NOT LAUNCHED"
+        ]
+      },
+      {
+        "node": "STAGE_NODE_3_FIXTURE_PAIR",
+        "panel_accessible_name": "STAGE NODE 3 — FIXTURE PAIR",
+        "visible_lines": [
+          "SYNTHETIC_FIXTURE_PARTY_A + SYNTHETIC_FIXTURE_PARTY_B",
+          "FIXTURE ONLY — NOT MATCHED OR RANKED"
+        ],
+        "fixture_warning": "FIXTURE ONLY — NOT MATCHED OR RANKED"
+      },
+      {
+        "node": "STAGE_NODE_4_SAFE_PRESENTATION",
+        "panel_accessible_name": "STAGE NODE 4 — SAFE PRESENTATION",
+        "visible_lines": [
+          "SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A",
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ],
+        "rendering": "UNCHANGED_G7_SAFE_PRESENTATION_COMPONENT_RENDERING_UNCHANGED_G8_SYNTHETIC_INPUT"
+      },
+      {
+        "node": "STAGE_NODE_5_HUMAN_REHEARSAL_DISPOSITION",
+        "panel_accessible_name": "STAGE NODE 5 — HUMAN REHEARSAL DISPOSITION",
+        "visible_lines": [
+          "HUMAN REHEARSAL DISPOSITION REQUIRED"
+        ],
+        "allowed_dispositions": [
+          "CONTINUE REHEARSAL",
+          "HOLD REHEARSAL"
+        ]
+      },
+      {
+        "node": "STAGE_NODE_6_NON_OCCURRENCE_RESULT",
+        "panel_accessible_name": "STAGE NODE 6 — NON-OCCURRENCE RESULT",
+        "visible_lines": [
+          "SYNTHETIC_NO_DEAL_EXECUTED",
+          "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED"
+        ],
+        "result_token": "SYNTHETIC_NO_DEAL_EXECUTED"
+      }
+    ],
+    "non_occurrence_panel": {
+      "visibility": "ALWAYS_VISIBLE",
+      "heading": "CURRENT-RENDER NON-OCCURRENCE PANEL",
+      "visible_lines": [
+        "CURRENT RENDER ONLY — NOT A LEDGER — NOT PERSISTENT",
+        "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED"
+      ],
+      "characterization": "CURRENT_RENDER_ONLY_NEVER_CALLED_LEDGER_NEVER_CALLED_PERSISTENT",
+      "description": "Read-only statement bound to the current render only. It is not a ledger, not a persistent record, not an at-rest store and not reusable evidence."
+    },
+    "controls": {
+      "native_type": "button",
+      "progression_controls": "ABSENT",
+      "disposition_controls": [
+        "CONTINUE REHEARSAL",
+        "HOLD REHEARSAL"
+      ],
+      "reset_control": "RESET",
+      "disposition_transition": "RECORD_TRANSIENT_IN_MEMORY_DISPLAY_CHOICE_ONLY_PRESERVING_SAME_SYNTHETIC_NO_DEAL_EXECUTED",
+      "reset_transition": "CLEAR_TRANSIENT_DISPLAY_CHOICE",
+      "reload_transition": "CLEAR_TRANSIENT_DISPLAY_CHOICE",
+      "selected_choice_display": "TRANSIENT_IN_MEMORY_UI_STATE_ONLY",
+      "native_keyboard_activation_only": [
+        "ENTER",
+        "SPACE"
+      ]
+    },
+    "accessibility": {
+      "navigation_aria_label": "SYNTHETIC MATCHING FLOW CONSOLE CONTROLS",
+      "disposition_group_aria_label": "HUMAN REHEARSAL DISPOSITION",
+      "selection_status_aria_live": "polite",
+      "selection_status_aria_atomic": "true",
+      "default_visible_keyboard_focus": true,
+      "responsive_reflow": "REQUIRED_WITHOUT_HORIZONTAL_PAGE_SCROLL_AT_SUPPORTED_VIEWPORTS",
+      "reduced_motion": "NO_MOTION_OR_ANIMATION"
+    },
+    "styling_scope": "PRESENTATION_READY_RESPONSIVE_CONSOLE_LOCAL_STYLES_ONLY"
+  },
+  "frozen_vocabulary": {
+    "closed": true,
+    "scenario_token": "SYNTHETIC_MATCHING_FLOW_CONSOLE_A",
+    "stage_node_tokens": [
+      "SYNTHETIC_TEST_DEAL_A",
+      "SYNTHETIC_CAMPAIGN_PREVIEW_A",
+      "SYNTHETIC_FIXTURE_PARTY_A",
+      "SYNTHETIC_FIXTURE_PARTY_B",
+      "SYNTHETIC_SAFE_PRESENTATION_A",
+      "SYNTHETIC_HEADING",
+      "SYNTHETIC_MESSAGE",
+      "SYNTHETIC_NO_DEAL_EXECUTED"
+    ],
+    "disposition_tokens": [
+      "CONTINUE REHEARSAL",
+      "HOLD REHEARSAL"
+    ],
+    "reset_token": "RESET",
+    "result_token": "SYNTHETIC_NO_DEAL_EXECUTED",
+    "prohibited_token_classes": [
+      "PERSON",
+      "ORGANIZATION",
+      "ADDRESS",
+      "GEOGRAPHY",
+      "PROPERTY",
+      "MONEY",
+      "DATE",
+      "UUID",
+      "CONTACT",
+      "BUSINESS_RECORD"
+    ]
+  },
+  "mutable_state": {
+    "persistent_state": "NONE",
+    "transient_in_memory_state_only": [
+      "SELECTED_REHEARSAL_DISPOSITION"
+    ],
+    "disposition_choices": [
+      "CONTINUE REHEARSAL",
+      "HOLD REHEARSAL"
+    ],
+    "both_choices_preserve": "SYNTHETIC_NO_DEAL_EXECUTED",
+    "reset_clears_choice": true,
+    "reload_clears_choice": true
+  },
+  "reuse": {
+    "g7_safe_presentation_component_and_blocked_no_echo_behavior": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g12_stage_node_tokens_copy_and_meaning": "REUSE_UNCHANGED_SIMULTANEOUS_DISPLAY_ONLY",
+    "g7_g8_g9_g10_g11_g12_bytes": "BYTE_UNCHANGED"
+  },
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "CONTACT_OR_COMMUNICATION",
+    "CAMPAIGN_LAUNCH",
+    "DEAL_EXECUTION_OR_OUTCOME_RECORDING",
+    "NEXT_BACK_STEPPER_CURRENT_PANEL_HIDING_PROGRESSION_OR_AUTOMATIC_TRANSITION",
+    "GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING_SEMANTICS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "LEDGER_OR_PERSISTENT_TREATMENT_OF_THE_NON_OCCURRENCE_PANEL",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_OR_RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_OR_LINKS",
+    "MOTION_OR_ANIMATION",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION"
+  ],
+  "result_label": "G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-flow-console/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-flow-console/G13_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-matching-flow-console.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchingFlowConsoleScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMatchingFlowConsole.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchingFlowConsoleEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticMatchingFlowConsole.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-flow-console/G13_SYNTHETIC_MATCHING_FLOW_CONSOLE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
+
