@@ -1,0 +1,279 @@
+{
+  "artifact_type": "G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-23",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g14-synthetic-match-review-workspace",
+    "git_commit": "8e39671176db17c5ecefbf79ebe63b5faf91630d"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "workspace": {
+    "package_name": "G14 Synthetic Match Review Workspace",
+    "url": "http://127.0.0.1:5173/synthetic-match-review-workspace.html",
+    "html_title": "SYNTHETIC MATCH REVIEW WORKSPACE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g7_g13": "SEPARATE_SIBLING_WORKSPACE_REUSING_FROZEN_G7_G8_AND_G13_SEMANTICS_UNCHANGED",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "PRODUCT_SHAPED_RESPONSIVE_TWO_SIDED_REVIEW_ACCESSIBLE_PAGE_LAYOUT_ONLY",
+    "two_sided_definition": "RESPONSIVE_VISUAL_ARRANGEMENT_OF_CO_DISPLAYED_ALWAYS_VISIBLE_REGIONS_ON_ONE_PAGE_ONLY_NOT_GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING",
+    "two_sided_excludes": [
+      "GEOGRAPHY",
+      "TENANCY",
+      "DEPLOYMENT",
+      "SEGMENTATION",
+      "ROUTING"
+    ],
+    "always_visible_lines": [
+      "SYNTHETIC MATCH REVIEW WORKSPACE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION"
+    ],
+    "two_sided_review": {
+      "co_display_only": true,
+      "both_sides_simultaneously_visible": true,
+      "owner_side": {
+        "panel_accessible_name": "OWNER-SIDE NEED",
+        "token": "SYNTHETIC_FIXTURE_PARTY_A",
+        "visible_line": "OWNER-SIDE NEED — SYNTHETIC_FIXTURE_PARTY_A"
+      },
+      "tenant_side": {
+        "panel_accessible_name": "TENANT-SIDE CANDIDATE",
+        "token": "SYNTHETIC_FIXTURE_PARTY_B",
+        "visible_line": "TENANT-SIDE CANDIDATE — SYNTHETIC_FIXTURE_PARTY_B"
+      },
+      "always_adjacent_warning": "CO-DISPLAY ONLY — NOT COMPARED OR MATCHED",
+      "preserved_pair_warning": "FIXTURE ONLY — NOT MATCHED OR RANKED",
+      "comparison_compatibility_scoring_or_recommendation": "PROHIBITED",
+      "role_labels_note": "OWNER-SIDE NEED AND TENANT-SIDE CANDIDATE ARE UI REHEARSAL LABELS ONLY AND GRANT NO BUSINESS MEANING"
+    },
+    "preauthored_fixture_evidence": {
+      "source": "EXACT_PRE_AUTHORED_FIXTURE_COPY_REUSING_EXISTING_G12_G13_TOKENS",
+      "computed_evidence_or_recommendation": "PROHIBITED",
+      "always_adjacent_label": "PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED",
+      "rows": [
+        "TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A",
+        "CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+        "SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A"
+      ]
+    },
+    "safe_presentation_reuse": {
+      "rendering": "UNCHANGED_G7_SAFE_PRESENTATION_COMPONENT_RENDERING_UNCHANGED_G8_SYNTHETIC_INPUT",
+      "visible_lines": [
+        "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+        "SYNTHETIC_HEADING",
+        "SYNTHETIC_MESSAGE"
+      ],
+      "g7_blocked_no_echo_output": "SYNTHETIC PRESENTATION BLOCKED"
+    },
+    "preserved_g13_flow": {
+      "meaning": "REUSE_UNCHANGED",
+      "order_preserved": true,
+      "presentation": "SIMULTANEOUS_NOT_A_STEPPER",
+      "node_tokens_in_order": [
+        {
+          "node": "STAGE_NODE_1_TEST_DEAL_TOKEN",
+          "tokens": ["SYNTHETIC_TEST_DEAL_A"],
+          "expression": "PRE_AUTHORED_FIXTURE_EVIDENCE_ROW"
+        },
+        {
+          "node": "STAGE_NODE_2_CAMPAIGN_PREVIEW",
+          "tokens": ["SYNTHETIC_CAMPAIGN_PREVIEW_A"],
+          "expression": "PRE_AUTHORED_FIXTURE_EVIDENCE_ROW"
+        },
+        {
+          "node": "STAGE_NODE_3_FIXTURE_PAIR",
+          "tokens": ["SYNTHETIC_FIXTURE_PARTY_A", "SYNTHETIC_FIXTURE_PARTY_B"],
+          "expression": "TWO_SIDED_CO_DISPLAY_OWNER_SIDE_AND_TENANT_SIDE"
+        },
+        {
+          "node": "STAGE_NODE_4_SAFE_PRESENTATION",
+          "tokens": ["SYNTHETIC_SAFE_PRESENTATION_A", "SYNTHETIC_HEADING", "SYNTHETIC_MESSAGE"],
+          "expression": "SAFE_PRESENTATION_REUSE_REGION"
+        },
+        {
+          "node": "STAGE_NODE_5_HUMAN_REHEARSAL_DISPOSITION",
+          "tokens": ["HUMAN REHEARSAL DISPOSITION REQUIRED"],
+          "expression": "HUMAN_REHEARSAL_CONTROLS"
+        },
+        {
+          "node": "STAGE_NODE_6_NON_OCCURRENCE_RESULT",
+          "tokens": ["SYNTHETIC_NO_DEAL_EXECUTED"],
+          "expression": "ALWAYS_VISIBLE_NON_OCCURRENCE_RESULT"
+        }
+      ],
+      "non_occurrence_semantics": "REUSE_UNCHANGED",
+      "progression_controls_next_back_stepper": "ABSENT_PROHIBITED"
+    },
+    "controls": {
+      "native_type": "button",
+      "rehearsal_controls": [
+        "REHEARSE INTEREST",
+        "REHEARSE HOLD"
+      ],
+      "reset_control": "RESET",
+      "progression_controls": "ABSENT",
+      "rehearsal_transition": "RECORD_TRANSIENT_IN_MEMORY_SELECTION_ONLY_PRESERVING_SAME_SYNTHETIC_NO_DEAL_EXECUTED",
+      "reset_transition": "CLEAR_TRANSIENT_SELECTION",
+      "reload_transition": "CLEAR_TRANSIENT_SELECTION",
+      "native_keyboard_activation_only": [
+        "ENTER",
+        "SPACE"
+      ]
+    },
+    "selection_status": {
+      "visible_line": "UI REHEARSAL SELECTION ONLY — NOT APPROVAL",
+      "state": "TRANSIENT_IN_MEMORY_UI_STATE_ONLY",
+      "aria_live": "polite",
+      "aria_atomic": "true"
+    },
+    "non_occurrence_result": {
+      "visibility": "ALWAYS_VISIBLE",
+      "result_token": "SYNTHETIC_NO_DEAL_EXECUTED",
+      "visible_lines": [
+        "SYNTHETIC_NO_DEAL_EXECUTED",
+        "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED"
+      ],
+      "characterization": "CURRENT_RENDER_ONLY_NEVER_CALLED_LEDGER_NEVER_CALLED_PERSISTENT"
+    },
+    "accessibility": {
+      "navigation_aria_label": "SYNTHETIC MATCH REVIEW WORKSPACE CONTROLS",
+      "rehearsal_group_aria_label": "HUMAN REHEARSAL DISPOSITION",
+      "owner_side_panel_accessible_name": "OWNER-SIDE NEED",
+      "tenant_side_panel_accessible_name": "TENANT-SIDE CANDIDATE",
+      "default_visible_keyboard_focus": true,
+      "responsive_reflow": "REQUIRED_WITHOUT_HORIZONTAL_PAGE_SCROLL_AT_SUPPORTED_VIEWPORTS",
+      "reduced_motion": "NO_MOTION_OR_ANIMATION"
+    },
+    "styling_scope": "PRESENTATION_READY_RESPONSIVE_WORKSPACE_LOCAL_STYLES_ONLY"
+  },
+  "frozen_vocabulary": {
+    "closed": true,
+    "reused_g12_g13_tokens": [
+      "SYNTHETIC_TEST_DEAL_A",
+      "SYNTHETIC_CAMPAIGN_PREVIEW_A",
+      "SYNTHETIC_FIXTURE_PARTY_A",
+      "SYNTHETIC_FIXTURE_PARTY_B",
+      "SYNTHETIC_SAFE_PRESENTATION_A",
+      "SYNTHETIC_HEADING",
+      "SYNTHETIC_MESSAGE",
+      "SYNTHETIC_NO_DEAL_EXECUTED"
+    ],
+    "disposition_tokens": [
+      "REHEARSE INTEREST",
+      "REHEARSE HOLD"
+    ],
+    "reset_token": "RESET",
+    "warning_tokens": [
+      "CO-DISPLAY ONLY — NOT COMPARED OR MATCHED",
+      "PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED",
+      "UI REHEARSAL SELECTION ONLY — NOT APPROVAL",
+      "FIXTURE ONLY — NOT MATCHED OR RANKED"
+    ],
+    "prohibited_token_classes": [
+      "PERSON",
+      "ORGANIZATION",
+      "ADDRESS",
+      "GEOGRAPHY",
+      "PROPERTY",
+      "MONEY",
+      "DATE",
+      "UUID",
+      "CONTACT",
+      "BUSINESS_RECORD"
+    ]
+  },
+  "mutable_state": {
+    "persistent_state": "NONE",
+    "transient_in_memory_state_only": [
+      "SELECTED_REHEARSAL_CHOICE"
+    ],
+    "choices": [
+      "REHEARSE INTEREST",
+      "REHEARSE HOLD"
+    ],
+    "both_choices_preserve": "SYNTHETIC_NO_DEAL_EXECUTED",
+    "reset_clears_choice": true,
+    "reload_clears_choice": true,
+    "selection_disclaimer": "UI REHEARSAL SELECTION ONLY — NOT APPROVAL"
+  },
+  "reuse": {
+    "g7_safe_presentation_component_and_blocked_no_echo_behavior": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g13_six_node_tokens_order_meaning": "REUSE_UNCHANGED_NOT_A_STEPPER",
+    "g13_non_occurrence_semantics": "REUSE_UNCHANGED",
+    "g7_g8_g9_g10_g11_g12_g13_bytes": "BYTE_UNCHANGED"
+  },
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "COMPARISON_COMPATIBILITY_OR_MATCH",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_OR_BEST_CLAIMS",
+    "CONTACT_OR_COMMUNICATION",
+    "CAMPAIGN_LAUNCH",
+    "DEAL_EXECUTION_OR_OUTCOME_RECORDING",
+    "NEXT_BACK_STEPPER_CURRENT_PANEL_HIDING_PROGRESSION_OR_AUTOMATIC_TRANSITION",
+    "GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING_SEMANTICS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "LEDGER_OR_PERSISTENT_TREATMENT_OF_THE_NON_OCCURRENCE_RESULT",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_OR_RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_OR_LINKS",
+    "MOTION_OR_ANIMATION",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION"
+  ],
+  "result_label": "G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-match-review-workspace/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-match-review-workspace/G14_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-match-review-workspace.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchReviewWorkspaceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMatchReviewWorkspace.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchReviewWorkspaceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticMatchReviewWorkspace.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-match-review-workspace/G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
