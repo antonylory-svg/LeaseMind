@@ -1,0 +1,185 @@
+{
+  "artifact_type": "G11_SYNTHETIC_DEAL_STORY_REHEARSAL_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-23",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g11-synthetic-deal-story-rehearsal",
+    "git_commit": "301bdaf85213b17449ceaf7632afd1754c731e59"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false
+  },
+  "rehearsal": {
+    "url": "http://127.0.0.1:5173/synthetic-deal-story-rehearsal.html",
+    "html_title": "SYNTHETIC DEAL STORY REHEARSAL — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g10": "SEPARATE_SIBLING_PAGE_REUSING_G10_STATES_AND_G7_G8_RENDERING_UNCHANGED",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "state_count": 5,
+    "initial_state_zero_based": 0,
+    "initial_visible_step": 1,
+    "reload_visible_step": 1,
+    "always_visible_lines": [
+      "SYNTHETIC DEAL STORY REHEARSAL — NOT PRODUCTION APPROVED",
+      "SCENARIO: SYNTHETIC_DEAL_STORY_A",
+      "DISPLAY-ONLY REHEARSAL — NO WORKFLOW EXECUTION"
+    ],
+    "summary": {
+      "heading": "FIVE-STEP SYNTHETIC STORY",
+      "aria_label": "SYNTHETIC STORY STEP SUMMARY",
+      "ordered_entries": [
+        "STEP 1 — SYNTHETIC_USER_A / SYNTHETIC_NEED_A",
+        "STEP 2 — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+        "STEP 3 — SYNTHETIC_SAFE_PRESENTATION_A",
+        "STEP 4 — SYNTHETIC_HUMAN_CONTINUATION_REQUIRED",
+        "STEP 5 — SYNTHETIC_NO_DEAL_EXECUTED"
+      ],
+      "current_item_aria_current": "step",
+      "non_current_item_aria_current": "ABSENT"
+    },
+    "panels_in_order": [
+      {
+        "progress": "STEP 1 OF 5",
+        "visible_lines": [
+          "STEP 1 — SYNTHETIC_USER_A / SYNTHETIC_NEED_A"
+        ]
+      },
+      {
+        "progress": "STEP 2 OF 5",
+        "visible_lines": [
+          "STEP 2 — SYNTHETIC_CAMPAIGN_PREVIEW_A"
+        ]
+      },
+      {
+        "progress": "STEP 3 OF 5",
+        "visible_lines": [
+          "STEP 3 — SYNTHETIC_SAFE_PRESENTATION_A",
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ]
+      },
+      {
+        "progress": "STEP 4 OF 5",
+        "visible_lines": [
+          "STEP 4 — SYNTHETIC_HUMAN_CONTINUATION_REQUIRED"
+        ]
+      },
+      {
+        "progress": "STEP 5 OF 5",
+        "visible_lines": [
+          "OUTCOME — SYNTHETIC_NO_DEAL_EXECUTED",
+          "NO MATCH, SCORE, QUALIFICATION, RISK DECISION OR PRODUCTION APPROVAL OCCURRED"
+        ]
+      }
+    ],
+    "controls": {
+      "count": 3,
+      "native_type": "button",
+      "logical_dom_order": [
+        "BACK",
+        "NEXT",
+        "RESTART"
+      ],
+      "back_disabled_at_step": 1,
+      "restart_disabled_at_step": 1,
+      "next_disabled_at_step": 5,
+      "back_next_transition": "PLUS_OR_MINUS_ONE_CLAMPED_NO_WRAP_NO_SKIP",
+      "restart_transition": "RESET_TO_STEP_1",
+      "native_keyboard_activation_only": [
+        "ENTER",
+        "SPACE"
+      ]
+    },
+    "accessibility": {
+      "navigation_aria_label": "SYNTHETIC REHEARSAL NAVIGATION",
+      "progress_aria_live": "polite",
+      "progress_aria_atomic": "true",
+      "summary_aria_label": "SYNTHETIC STORY STEP SUMMARY",
+      "summary_current_item_aria_current": "step",
+      "default_visible_keyboard_focus": true,
+      "motion": "NONE"
+    }
+  },
+  "reuse": {
+    "g10_five_states_and_copy": "REUSE_UNCHANGED",
+    "g7_safe_presentation_component": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g9_story_tokens_order_meaning_and_exclusions": "REUSE_UNCHANGED"
+  },
+  "prohibited_behavior": [
+    "AUTOPLAY",
+    "TIMERS",
+    "RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "NETWORK_CALLS",
+    "PERSISTENCE",
+    "LOGGING",
+    "DIAGNOSTICS",
+    "WRAP_OR_SKIP_NAVIGATION",
+    "MOTION_OR_ANIMATION",
+    "UNAUTHORIZED_VISIBLE_COPY",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION"
+  ],
+  "excluded_capabilities": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "SCORING_CONFIDENCE_RISK_QUALIFICATION_RANKING_OR_THRESHOLDS",
+    "CAMPAIGN_LAUNCH_DEAL_EXECUTION_OUTCOME_RECORDING_OR_LEGAL_FINANCIAL_ACTION",
+    "SAFE_PRESENTATION_POLICY_APPROVAL",
+    "DATA_CONTRACTS_OR_CARRIER",
+    "CONTROLLED_ARTIFACT_MANIFEST",
+    "ACTUAL_EVIDENCE_OR_PRODUCTION_APPLICABILITY",
+    "RUNTIME_PRODUCTION_BUILD_DEPLOYMENT_API_DATABASE_EVENT_STORAGE_CACHE_OR_TELEMETRY"
+  ],
+  "result_label": "G11_SYNTHETIC_DEAL_STORY_REHEARSAL_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G11_SYNTHETIC_DEAL_STORY_REHEARSAL_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-rehearsal/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-rehearsal/G11_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-deal-story-rehearsal.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealStoryRehearsalScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticDealStoryRehearsal.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealStoryRehearsalEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticDealStoryRehearsal.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-story-rehearsal/G11_SYNTHETIC_DEAL_STORY_REHEARSAL_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
