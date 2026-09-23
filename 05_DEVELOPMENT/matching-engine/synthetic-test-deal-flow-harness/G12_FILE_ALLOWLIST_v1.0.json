@@ -1,0 +1,181 @@
+{
+  "artifact_type": "G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-23",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g12-synthetic-test-deal-flow-harness",
+    "git_commit": "0082852898af31cb3fd1865c9ec9437d4969b9c7"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false
+  },
+  "harness": {
+    "url": "http://127.0.0.1:5173/synthetic-test-deal-flow-harness.html",
+    "html_title": "SYNTHETIC TEST-DEAL FLOW HARNESS — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g7_g11": "SEPARATE_SIBLING_HARNESS_REUSING_FROZEN_G7_G8_G9_G10_G11_SEMANTICS_UNCHANGED",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "state_count": 6,
+    "initial_state_zero_based": 0,
+    "initial_visible_step": 1,
+    "reload_visible_step": 1,
+    "always_visible_lines": [
+      "SYNTHETIC TEST-DEAL FLOW HARNESS — NOT PRODUCTION APPROVED",
+      "SCENARIO: SYNTHETIC_TEST_DEAL_FLOW_A",
+      "MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION"
+    ],
+    "steps_in_order": [
+      {
+        "progress": "STEP 1 OF 6",
+        "visible_lines": [
+          "TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A"
+        ]
+      },
+      {
+        "progress": "STEP 2 OF 6",
+        "visible_lines": [
+          "CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+          "PREVIEW ONLY — NOT LAUNCHED"
+        ]
+      },
+      {
+        "progress": "STEP 3 OF 6",
+        "visible_lines": [
+          "SYNTHETIC_FIXTURE_PARTY_A + SYNTHETIC_FIXTURE_PARTY_B",
+          "FIXTURE ONLY — NOT MATCHED OR RANKED"
+        ]
+      },
+      {
+        "progress": "STEP 4 OF 6",
+        "visible_lines": [
+          "SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A",
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ]
+      },
+      {
+        "progress": "STEP 5 OF 6",
+        "visible_lines": [
+          "HUMAN REHEARSAL DISPOSITION REQUIRED"
+        ],
+        "allowed_dispositions": [
+          "CONTINUE REHEARSAL",
+          "HOLD REHEARSAL"
+        ]
+      },
+      {
+        "progress": "STEP 6 OF 6",
+        "visible_lines": [
+          "SYNTHETIC_NO_DEAL_EXECUTED",
+          "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED"
+        ],
+        "selected_disposition_display": "UI_STATE_ONLY"
+      }
+    ],
+    "controls": {
+      "native_type": "button",
+      "pre_disposition_controls": [
+        "NEXT STEP",
+        "RESET HARNESS"
+      ],
+      "disposition_controls": [
+        "CONTINUE REHEARSAL",
+        "HOLD REHEARSAL",
+        "RESET HARNESS"
+      ],
+      "terminal_controls": [
+        "RESET HARNESS"
+      ],
+      "next_transition": "PLUS_ONE_TO_STEP_5_ONLY_NO_WRAP_NO_SKIP",
+      "disposition_transition": "SELECT_UI_STATE_AND_ADVANCE_TO_COMMON_STEP_6",
+      "reset_transition": "CLEAR_DISPOSITION_AND_RESET_TO_STEP_1",
+      "native_keyboard_activation_only": [
+        "ENTER",
+        "SPACE"
+      ]
+    },
+    "accessibility": {
+      "navigation_aria_label": "SYNTHETIC TEST-DEAL FLOW CONTROLS",
+      "progress_aria_live": "polite",
+      "progress_aria_atomic": "true",
+      "disposition_group_aria_label": "HUMAN REHEARSAL DISPOSITION",
+      "default_visible_keyboard_focus": true,
+      "responsive_reflow": "REQUIRED_WITHOUT_HORIZONTAL_PAGE_SCROLL_AT_SUPPORTED_VIEWPORTS",
+      "reduced_motion": "NO_MOTION_OR_ANIMATION"
+    },
+    "styling_scope": "PRESENTATION_READY_RESPONSIVE_HARNESS_LOCAL_STYLES_ONLY"
+  },
+  "reuse": {
+    "g7_safe_presentation_component_and_blocked_no_echo_behavior": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g9_story_tokens_order_meaning_and_exclusions": "REUSE_UNCHANGED",
+    "g10_walkthrough_contract": "REUSE_SEMANTICS_UNCHANGED",
+    "g11_rehearsal_contract": "REUSE_SEMANTICS_UNCHANGED"
+  },
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "CONTACT_OR_COMMUNICATION",
+    "CAMPAIGN_LAUNCH",
+    "DEAL_EXECUTION_OR_OUTCOME_RECORDING",
+    "AUTOPLAY_TIMERS_OR_RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "MOTION_OR_ANIMATION",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION"
+  ],
+  "result_label": "G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-test-deal-flow-harness/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-test-deal-flow-harness/G12_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-test-deal-flow-harness.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticTestDealFlowScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticTestDealFlowHarness.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticTestDealFlowEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticTestDealFlowHarness.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-test-deal-flow-harness/G12_SYNTHETIC_TEST_DEAL_FLOW_HARNESS_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
