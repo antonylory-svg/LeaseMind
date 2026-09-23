@@ -1,0 +1,130 @@
+{
+  "artifact_type": "G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-23",
+  "authorization_commit": "51165755e1695c1c7a026003056723dbb4a0ef5e",
+  "authorization_commit_subject": "docs(matching): authorize G14 synthetic match review workspace",
+  "baseline_commit": "8e39671176db17c5ecefbf79ebe63b5faf91630d",
+  "branch": "development/sprint-7-matching-g14-synthetic-match-review-workspace",
+  "result": "PASSED",
+  "result_label": "G14_SYNTHETIC_MATCH_REVIEW_WORKSPACE_VERIFIED",
+  "allowlist_sha256": "9c3bafee5592b7cb37434350ac9477d50a860f59330039aa4b4fff0d492069aa",
+  "scope": {
+    "planned_paths_created": 6,
+    "paths_outside_allowlist_changed": 0,
+    "staging_clean": true,
+    "commit_created_during_code_phase": false,
+    "g7_g8_g9_g10_g11_g12_g13_modified": false,
+    "allowlist_readme_or_authorization_record_modified": false,
+    "production_entry_or_build_configuration_modified": false,
+    "package_or_dependency_configuration_modified": false
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm --prefix apps/web run typecheck",
+      "status": "PASSED",
+      "detail": "tsc -p tsconfig.json --noEmit reported no diagnostics for the six G14 paths or any existing file."
+    },
+    {
+      "name": "full_existing_dev_test_suite",
+      "command": "npm --prefix apps/web test",
+      "status": "PASSED",
+      "passed": 196,
+      "failed": 0,
+      "detail": "node --import tsx --test tests/*.test.ts over all eighteen test files, including the new G14 file. No shim was required on Node v22.23.1."
+    },
+    {
+      "name": "focused_g14_test_file",
+      "command": "node --import tsx --test tests/syntheticMatchReviewWorkspace.test.ts",
+      "status": "PASSED",
+      "passed": 8,
+      "failed": 0,
+      "detail": "Asserts frozen copy, the eight frozen abstract tokens, exact CO_DISPLAY_COPY_IN_FLOW_ORDER, simultaneous co-display, three fixture rows with the adjacent label, both warnings, unchanged G7/G8 reuse bytes and rendered output, native button order and type, aria navigation/group/live region, transient-only selection, prohibited-behavior absence, the closed nine-path allowlist and production-root isolation."
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASSED",
+      "detail": "No whitespace errors. At the time of this check, before creation of this verification artifact, git status --short listed only the five new untracked G14 code/test paths; the staged area was empty and no tracked file was modified. The final closed-path check below covers all six planned paths including this artifact."
+    },
+    {
+      "name": "closed_path_boundary",
+      "status": "PASSED",
+      "allowed_paths": 9,
+      "planned_paths_created": 6,
+      "unexpected_paths": 0,
+      "detail": "All six planned paths exist; the three documentation paths stay byte-unchanged and the allowlist still hashes to the frozen value."
+    },
+    {
+      "name": "frozen_copy_and_semantics",
+      "status": "PASSED",
+      "detail": "Visible copy equals the frozen strings exactly: title and h1 SYNTHETIC MATCH REVIEW WORKSPACE — NOT PRODUCTION APPROVED; MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION; CO-DISPLAY ONLY — NOT COMPARED OR MATCHED; FIXTURE ONLY — NOT MATCHED OR RANKED; PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED; OWNER-SIDE NEED — SYNTHETIC_FIXTURE_PARTY_A; TENANT-SIDE CANDIDATE — SYNTHETIC_FIXTURE_PARTY_B; HUMAN REHEARSAL DISPOSITION REQUIRED; UI REHEARSAL SELECTION ONLY — NOT APPROVAL; SYNTHETIC_NO_DEAL_EXECUTED plus NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED; controls REHEARSE INTEREST, REHEARSE HOLD, RESET."
+    },
+    {
+      "name": "prohibited_behavior_absence",
+      "status": "PASSED",
+      "detail": "Static inspection and bounded tests found no implementation of matching, comparison, scoring, confidence, ranking, eligibility or recommendation; no network, API, database, event or router integration; no persistence, storage, cookies, cache, logging or telemetry; no ledger or persistent treatment of the non-occurrence result; no NEXT, BACK, stepper, current-panel hiding, progression or automatic transition; no query or hash state; no custom keyboard handler; no form, editable input, selector or link; no autoplay, timer or randomness; no motion or animation; and no menu, link or router exposure."
+    },
+    {
+      "name": "browser_smoke_headless_chrome",
+      "kind": "AUTOMATED_HEADLESS_CHROME_DEVTOOLS_PROTOCOL_SMOKE_NOT_A_HUMAN_VISUAL_REVIEW",
+      "url": "http://127.0.0.1:5173/synthetic-match-review-workspace.html",
+      "browser": "Chrome/153.0.8010.54",
+      "status": "PASSED",
+      "checks_run": 33,
+      "checks_failed": 0,
+      "checked_viewport_widths_px": [360, 390, 768, 1280],
+      "verified": [
+        "exact_document_title_and_exact_visible_heading",
+        "both_sides_co_displayed_simultaneously_with_both_adjacent_warnings",
+        "three_preauthored_fixture_rows_each_with_the_adjacent_fixture_label",
+        "unchanged_g7_rendering_of_unchanged_g8_input_present",
+        "native_type_button_elements_exact_order_labels_and_no_other_control",
+        "exact_navigation_group_and_single_live_region_accessible_names",
+        "selection_absent_on_initial_render_without_selection_disclaimer",
+        "rehearse_interest_and_rehearse_hold_are_transient_ui_only_with_exact_disclaimer",
+        "both_choices_and_reset_keep_synthetic_no_deal_executed_visible",
+        "reset_and_reload_clear_the_selection_and_keep_the_url_unchanged",
+        "native_enter_and_native_space_activation",
+        "visible_keyboard_focus_outline",
+        "no_horizontal_page_overflow_at_all_four_checked_viewports",
+        "production_app_has_no_workspace_link_or_workspace_copy",
+        "g13_console_still_renders_unchanged",
+        "no_page_level_console_errors_warnings_or_runtime_exceptions"
+      ],
+      "environment_note": "The smoke ran as an automated headless Chrome DevTools-protocol session driven from a temporary script outside the repository, removed after the run; it created and changed no repository file. The only browser console entry was Chrome's automatic /favicon.ico request returning 404; no page in apps/web declares a favicon, so the same entry appears for index.html and for the unchanged G13 console, and it is an environment artifact rather than a workspace defect. Keyboard activation used standard CDP key events; an initial rawKeyDown-only Enter event produced no activation and was replaced by the standard keyDown-with-text Enter event, the same shape that activated Space. This is automated evidence and does not replace a human visual and assistive-technology review."
+    }
+  ],
+  "independent_recheck": {
+    "web_typecheck": "PASSED",
+    "ordinary_focused_test_attempt": "ENVIRONMENT_FAILURE_BEFORE_TEST_LOADING",
+    "ordinary_failure_detail": "node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM before tsx loaded the test file.",
+    "process_only_userinfo_shim": "USED_WITHOUT_REPOSITORY_FILE_OR_APPLICATION_TEST_BEHAVIOR_CHANGE",
+    "focused_g14_tests": {
+      "passed": 8,
+      "failed": 0
+    },
+    "full_web_tests": {
+      "passed": 196,
+      "failed": 0
+    }
+  },
+  "file_sha256": {
+    "apps/web/synthetic-match-review-workspace.html": "92b5bb80e737dbc061150c102f47a580b76eab777f1676f918dd96cfd2fd72e7",
+    "apps/web/src/synthetic/syntheticMatchReviewWorkspaceScenario.ts": "e7ef6489ae65b2d0b216e886adee1ca39ac99c5f9d89fbc2fd3f55f0eaf38959",
+    "apps/web/src/synthetic/SyntheticMatchReviewWorkspace.tsx": "6664bace7e59c93649a9169c1c98b61564abe1f903dbd5822c16e5be53e2e99a",
+    "apps/web/src/synthetic/syntheticMatchReviewWorkspaceEntry.tsx": "b8635609c2b626de200d66f86929df2ece3602e05c6c2bccc57fac82ae7ca825",
+    "apps/web/tests/syntheticMatchReviewWorkspace.test.ts": "d4eac34bf37be5cb204b8188de3313b6af886418039e04d29c84ed78c9db7a12"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "policy_data_contract_carrier_manifest_production_runtime_or_deployment_approval": "NONE"
+  },
+  "commit_created": false,
+  "push_performed": false,
+  "pr_mutation_performed": false
+}
