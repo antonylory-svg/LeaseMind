@@ -1,0 +1,162 @@
+{
+  "artifact_type": "G15_DEAL_REHEARSAL_BOARD_VERIFICATION",
+  "package_version": "1.0",
+  "verification_date": "2026-09-24",
+  "authorization_commit": "be40ab1d066b921d478888133301bfaa64f760ee",
+  "authorization_commit_subject": "docs(matching): authorize G15 synthetic deal rehearsal board",
+  "baseline_commit": "0b3d965c29cad04ed67a73545f8c22d054da115d",
+  "branch": "development/sprint-7-matching-g15-synthetic-deal-rehearsal-board",
+  "result": "PASSED",
+  "result_label": "G15_SYNTHETIC_DEAL_REHEARSAL_BOARD_VERIFIED",
+  "allowlist_sha256": "53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2",
+  "scope": {
+    "planned_paths_created": 6,
+    "paths_outside_allowlist_changed": 0,
+    "staging_clean": true,
+    "commit_created_during_code_phase": false,
+    "g7_g8_g9_g10_g11_g12_g13_g14_modified": false,
+    "allowlist_readme_or_authorization_record_modified": false,
+    "production_entry_or_build_configuration_modified": false,
+    "package_or_dependency_configuration_modified": false
+  },
+  "checks": [
+    {
+      "name": "web_typecheck",
+      "command": "npm --prefix apps/web run typecheck",
+      "status": "PASSED",
+      "detail": "tsc -p tsconfig.json --noEmit reported no diagnostics for the six G15 paths or any existing file."
+    },
+    {
+      "name": "full_existing_dev_test_suite",
+      "command": "npm --prefix apps/web test",
+      "status": "PASSED",
+      "passed": 206,
+      "failed": 0,
+      "detail": "The npm test script (node --import tsx --test tests/*.test.ts) ran eighteen test files, including the new G15 file, with 206 passing and zero failing tests; the pre-G15 baseline was 196 passing tests over seventeen files. One further file, tests/safePresentationSyntheticPreview.test.tsx, stays outside the script glob and is unchanged. No shim was required on Node v22.23.1."
+    },
+    {
+      "name": "focused_g15_test_file",
+      "command": "node --import tsx --test tests/syntheticDealRehearsalBoard.test.ts",
+      "status": "PASSED",
+      "passed": 10,
+      "failed": 0,
+      "detail": "Asserts the frozen scenario copy, warnings, boundary rows and controls; the eight frozen abstract tokens with no new scenario token and no SCENARIO line; all six regions rendered at once in fixed order with no stepper or progression affordance; both co-display warnings, the chain warning, the fixture rows, the boundary panel and the non-occurrence result; native button order, type, accessible names and the single aria-live region; transient-only selection with reset; the standalone page binding; unchanged G7/G8 reuse with no G11-G14 embedding; prohibited-behavior absence; and the closed nine-path allowlist with production-root isolation."
+    },
+    {
+      "name": "git_diff_check",
+      "command": "git diff --check",
+      "status": "PASSED",
+      "detail": "No whitespace errors. At the time of this check, before creation of this verification artifact, git status --short listed only the five new untracked G15 code/test paths; the staged area was empty and no tracked file was modified. The final closed-path check below covers all six planned paths including this artifact."
+    },
+    {
+      "name": "closed_path_boundary",
+      "status": "PASSED",
+      "allowed_paths": 9,
+      "planned_paths_created": 6,
+      "unexpected_paths": 0,
+      "detail": "All six planned paths exist; the three documentation paths stay byte-unchanged and the allowlist still hashes to the frozen value 53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2."
+    },
+    {
+      "name": "frozen_copy_and_semantics",
+      "status": "PASSED",
+      "detail": "Visible copy equals the frozen strings exactly: HTML title and h1 SYNTHETIC DEAL REHEARSAL BOARD — NOT PRODUCTION APPROVED; MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION; SEQUENCE SHOWN AT ONCE — NOT A STEPPER — NOT PROGRESSION; OWNER-SIDE NEED AND TENANT-SIDE CANDIDATE with OWNER-SIDE NEED — SYNTHETIC_FIXTURE_PARTY_A and TENANT-SIDE CANDIDATE — SYNTHETIC_FIXTURE_PARTY_B; CO-DISPLAY ONLY — NOT COMPARED OR MATCHED; FIXTURE ONLY — NOT MATCHED OR RANKED; PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED; WHAT THIS BOARD IS NOT — FIXTURE COPY with FIXTURE COPY — NOT A STATUS CLAIM; UI REHEARSAL SELECTION ONLY — NOT APPROVAL; SYNTHETIC_NO_DEAL_EXECUTED with NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED. The frozen data vocabulary is exactly the eight allowlist tokens SYNTHETIC_TEST_DEAL_A, SYNTHETIC_CAMPAIGN_PREVIEW_A, SYNTHETIC_FIXTURE_PARTY_A, SYNTHETIC_FIXTURE_PARTY_B, SYNTHETIC_SAFE_PRESENTATION_A, SYNTHETIC_HEADING, SYNTHETIC_MESSAGE and SYNTHETIC_NO_DEAL_EXECUTED; no additional data-bearing token, no new scenario token and no SCENARIO line was introduced."
+    },
+    {
+      "name": "all_at_once_layout_and_no_stepper",
+      "status": "PASSED",
+      "detail": "The single page renders all six regions simultaneously in the frozen order on the initial render, after RESET and after reload: OWNER-SIDE NEED AND TENANT-SIDE CANDIDATE, END-TO-END REHEARSAL CHAIN — SHOWN AT ONCE, PRE-AUTHORED SYNTHETIC FIXTURE, SAFE PRESENTATION, WHAT THIS BOARD IS NOT and NON-OCCURRENCE RESULT. No region is hidden, revealed, reordered or replaced, and the chain warning stays visible with the chain. A source scan of the board, scenario and entry modules and the standalone HTML found no NEXT, BACK, STEP or region-index affordance and no progression, wizard, autoplay or automatic-transition behavior; the browser smoke independently measured zero matches for NEXT, BACK and STEP 1 OF in the rendered text."
+    },
+    {
+      "name": "fixture_and_boundary_copy",
+      "status": "PASSED",
+      "detail": "Every visible evidence or reason row is exact pre-authored fixture copy and each carries the always-adjacent exact label PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED; the browser smoke counted six adjacent labels, one per visible fixture-bearing tile plus the PRE-AUTHORED SYNTHETIC FIXTURE region, and no computed evidence, score, reason or recommendation exists. The fixture rows TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A, CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A, SYNTHETIC_FIXTURE_PARTY_A + SYNTHETIC_FIXTURE_PARTY_B, SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A and HUMAN REHEARSAL DISPOSITION REQUIRED are present unchanged. The boundary panel shows the exact title WHAT THIS BOARD IS NOT — FIXTURE COPY, the adjacent line FIXTURE COPY — NOT A STATUS CLAIM, and the six exact rows NOT A MATCH, NOT A SCORE OR CONFIDENCE, NOT A QUALIFICATION OR RISK DECISION, NOT A RANKING OR RECOMMENDATION, NOT A CONTACT, CAMPAIGN LAUNCH, DEAL OR OUTCOME and NOT PRODUCTION APPROVED."
+    },
+    {
+      "name": "g7_g8_reuse_and_prior_package_isolation",
+      "status": "PASSED",
+      "detail": "The board imports the unchanged G7 component apps/web/src/synthetic/SafePresentationSyntheticPreview.tsx, which still hashes to 3cfd9f3c88ebfdd74a4f03679f6e8acf2f882d6ecfd29883eae16091e1d30e96, and passes it the unchanged G8 input apps/web/src/synthetic/safePresentationSyntheticDemoInput.ts, which still hashes to e928bbc0cb10c8995e3c4b742005f8e1fd697c782f98580f99079d9972ddea45; the browser smoke rendered that unchanged component and confirmed the visible lines SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED, SYNTHETIC_HEADING and SYNTHETIC_MESSAGE, with G7 blocked/no-echo behavior and the exact blocked output SYNTHETIC PRESENTATION BLOCKED untouched. No G11, G12, G13 or G14 page component is imported or embedded, and G9 to G14 token, order, meaning and verification semantics are unchanged."
+    },
+    {
+      "name": "transient_selection_and_non_occurrence",
+      "status": "PASSED",
+      "detail": "The only mutable state is the transient in-memory REHEARSE INTEREST / REHEARSE HOLD selection, which never persists, never leaves the page and never touches storage, URL, query, hash or network. Either choice makes the selection-status region state UI REHEARSAL SELECTION ONLY — NOT APPROVAL, transitions no region, and leaves the same always-visible SYNTHETIC_NO_DEAL_EXECUTED plus NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED in place; RESET and reload both clear the selection. The browser smoke measured the exact selection copy for both choices, the disclaimer count returning to zero after RESET and after reload, the non-occurrence token staying present with two occurrences throughout, and zero local or session storage keys."
+    },
+    {
+      "name": "accessibility_and_native_activation",
+      "status": "PASSED",
+      "detail": "Exactly three native type button controls exist in the exact DOM order REHEARSE INTEREST, REHEARSE HOLD, RESET, with no fourth control and no progression control; the browser smoke confirmed element tag BUTTON with attribute type button for all three. Navigation aria-label is exactly SYNTHETIC DEAL REHEARSAL BOARD CONTROLS, the rehearsal group accessible name is exactly HUMAN REHEARSAL DISPOSITION, and there is exactly one aria-live polite aria-atomic true selection-status region. Native Enter and native Space both activated the focused control with no custom keyboard handler, and keyboard focus stayed visibly discernible (native outline style auto, 1 px, focus-visible true) without suppressing the focus ring."
+    },
+    {
+      "name": "prohibited_behavior_absence",
+      "status": "PASSED",
+      "detail": "A source scan of all four implementation paths found no fetch, XMLHttpRequest or WebSocket call and no other network access, no storage, cookie or cache API, no logging, diagnostics or telemetry call, no timer, interval, animation frame or randomness, no state that outlives the page, no form, editable input, selector or link, no URL query or hash state, no addEventListener keyboard handler, no workflow or business computation, and no match, comparison, score, confidence, qualification, risk, ranking, threshold, eligibility, recommendation, contact, campaign launch or deal logic. The browser smoke independently measured zero form, input, select, textarea and anchor elements, zero storage keys, and zero element transitions and zero element animations on the rendered page."
+    },
+    {
+      "name": "production_root_isolation",
+      "status": "PASSED",
+      "detail": "The board has no menu entry, application link or router registration and is excluded from the default production build: apps/web/index.html, apps/web/src/App.tsx, apps/web/src/main.tsx, apps/web/vite.config.ts and apps/web/package.json contain no reference to the board and are byte-unchanged, and the standalone HTML is reachable only by typing the exact development URL. No production route, build or deployment configuration and no API code or configuration was touched."
+    },
+    {
+      "name": "responsive_layout_and_browser_smoke",
+      "browser": "Chrome/153.0.8010.54",
+      "status": "PASSED",
+      "checks_run": 99,
+      "checks_failed": 0,
+      "checks_run_note": "The 99 measured signals are the 48 presence assertions (document title, heading, exactly fourteen labelled sections, exactly six stage-node tiles, exactly three native controls in the frozen order, group and live-region accessible names, every frozen warning, boundary row and fixture label, the non-occurrence token and its line, the stepper-marker absence probes, the form-element count and the stored-key count), the 24 viewport measurements (horizontal-overflow, transition and animation probes at each of the four widths), the 12 interaction assertions across the initial state, both selections and RESET, the 14 keyboard assertions for native Enter and native Space, and the single console entry; zero of them deviated from the frozen expectation and zero checks failed.",
+      "checked_viewport_widths_px": [360, 390, 768, 1280],
+      "verified": [
+        "exact_document_title_and_exact_visible_heading",
+        "all_six_regions_simultaneously_visible_with_fourteen_labelled_sections_and_six_stage_node_tiles",
+        "both_co_display_warnings_the_chain_warning_the_fixture_label_and_the_boundary_line_visible",
+        "unchanged_g7_rendering_of_unchanged_g8_input_present",
+        "native_type_button_elements_exact_order_labels_and_no_other_control",
+        "exact_navigation_group_and_single_live_region_accessible_names",
+        "selection_absent_on_initial_render_without_selection_disclaimer",
+        "rehearse_interest_and_rehearse_hold_are_transient_ui_only_with_exact_disclaimer",
+        "both_choices_and_reset_keep_synthetic_no_deal_executed_visible",
+        "reset_and_reload_clear_the_selection",
+        "native_enter_and_native_space_activation_with_visible_focus_outline",
+        "no_horizontal_page_overflow_at_all_four_checked_viewports",
+        "no_element_transition_and_no_element_animation",
+        "zero_form_input_select_textarea_or_anchor_elements_and_zero_storage_keys",
+        "no_stepper_progression_or_added_affordance_markers",
+        "production_app_has_no_board_link_or_board_copy"
+      ],
+      "environment_note": "The smoke ran as an automated headless Chrome DevTools-protocol session driven from two temporary scripts outside the repository, both removed after the run; it created and changed no repository file. The only browser console entry was Chrome's automatic /favicon.ico request returning 404; no page in apps/web declares a favicon, so the unchanged production root index.html produced exactly the same single entry when loaded in the same session, which makes it an environment artifact rather than a board defect and leaves no page-level console error, warning or runtime exception attributable to the board. Keyboard activation used standard CDP key events for native Enter and native Space. This is automated evidence and does not replace a human visual and assistive-technology review."
+    },
+    {
+      "name": "prior_package_and_frozen_bytes_unchanged",
+      "status": "PASSED",
+      "detail": "The G7 component and G8 input retain their frozen hashes, the three G15 documentation paths keep the exact allowlist hash 53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2 with the README at 3653e3ba909f445131875a085f00bc4234be1aa692980d0fa790ce75571361fd and the authorization record at 547b526040b80e07f0d320fa81e5be569eeba45413f9c5929811b6d1b2212c5d, git status --short lists only the six new untracked G15 paths, and git diff --cached is empty. G14 and every prior G7 to G13 file, behavior, token and verification meaning remain byte-for-byte and semantically unchanged, and G15 stays a separate sibling package that reinterprets no prior package result as approval, evidence or production applicability."
+    }
+  ],
+  "independent_recheck": {
+    "web_typecheck": "PASSED",
+    "focused_g15_tests": {
+      "passed": 10,
+      "failed": 0
+    },
+    "full_web_tests": {
+      "passed": 206,
+      "failed": 0
+    },
+    "repeat_run_note": "The focused G15 file and the complete suite were each executed in a further shell invocation after the first green run of this phase, with the same zero-failure outcome, and typecheck was re-run in the same pass. No shim, patch or environment workaround was required on Node v22.23.1, and no repository file changed between the runs."
+  },
+  "file_sha256": {
+    "apps/web/synthetic-deal-rehearsal-board.html": "1913a9bee2e40702c20bd57ca46cbef62df6653755606b3fe853ad2158c116e6",
+    "apps/web/src/synthetic/syntheticDealRehearsalBoardScenario.ts": "38e30e5278e8231ad105da70910d276a7d741779f6dfc642dba15df6f8ba7c28",
+    "apps/web/src/synthetic/SyntheticDealRehearsalBoard.tsx": "356330151dd4938509dc115d4cc8e0593308481a4a6530c020061508169c04a0",
+    "apps/web/src/synthetic/syntheticDealRehearsalBoardEntry.tsx": "abacfcd6181b8b6e78c3a8362897dd2b699565417bbd7c1ff516dce126158938",
+    "apps/web/tests/syntheticDealRehearsalBoard.test.ts": "be945bd5b6a05d790c4d8840e59b4f04df16cfb7d019e0fb187e94b72af7fcaf"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "policy_data_contract_carrier_manifest_production_runtime_or_deployment_approval": "NONE"
+  },
+  "commit_created": false,
+  "push_performed": false,
+  "pr_mutation_performed": false
+}
