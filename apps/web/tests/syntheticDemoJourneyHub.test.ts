@@ -49,15 +49,15 @@ const PRIOR_PACKAGE_SHA256 = {
   'apps/web/src/synthetic/SafePresentationSyntheticPreview.tsx': G7_COMPONENT_SHA256,
   'apps/web/src/synthetic/safePresentationSyntheticDemoInput.ts': G8_INPUT_SHA256,
   'apps/web/synthetic-deal-rehearsal-board.html':
-    '1913a9bee2e40702c20bd57ca46cbef62df6653755606b3fe853ad2158c116e6',
+    '9fe638e1c8a79e739c43ad90734bae6ed7a61a0e911cd1cb237c1f357eb1698c',
   'apps/web/src/synthetic/syntheticDealRehearsalBoardScenario.ts':
-    '38e30e5278e8231ad105da70910d276a7d741779f6dfc642dba15df6f8ba7c28',
+    '0155831447bd04b501abe92fd1a33735f06e3ee60b41d0660fd15570d6cbdc29',
   'apps/web/src/synthetic/SyntheticDealRehearsalBoard.tsx':
-    '356330151dd4938509dc115d4cc8e0593308481a4a6530c020061508169c04a0',
+    'f069d570685921783531287a73d580eaede515933f45731c97537457d1ac606c',
   'apps/web/src/synthetic/syntheticDealRehearsalBoardEntry.tsx':
-    'abacfcd6181b8b6e78c3a8362897dd2b699565417bbd7c1ff516dce126158938',
+    '0cc338c8b584a128db60bcc008bc2b972d6997afecbb94824c7d4e26adf4bbba',
   'apps/web/tests/syntheticDealRehearsalBoard.test.ts':
-    'be945bd5b6a05d790c4d8840e59b4f04df16cfb7d019e0fb187e94b72af7fcaf',
+    'e47f166e83c781797207e3ca188ffdf2b39c4a6bbab4ce09a4a705f35db4b6b0',
   '05_DEVELOPMENT/matching-engine/synthetic-deal-rehearsal-board/G15_FILE_ALLOWLIST_v1.0.json':
     '53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2'
 };
@@ -543,9 +543,14 @@ test('closed g16 allowlist, repo scope and production roots keep the hub isolate
   assert.equal(read(path.join(WEB_ROOT, 'index.html')).includes('synthetic'), false);
 });
 
-test('prior g7, g8 and g15 packages stay byte-unchanged', () => {
+test('prior g7, g8 and g15 packages stay content-unchanged across checkout line endings', () => {
   for (const [relativePath, expectedHash] of Object.entries(PRIOR_PACKAGE_SHA256)) {
-    assert.equal(sha256(path.join(REPOSITORY_ROOT, relativePath)), expectedHash, relativePath);
+    const absolutePath = path.join(REPOSITORY_ROOT, relativePath);
+    const actualHash = relativePath.endsWith('/G15_FILE_ALLOWLIST_v1.0.json')
+      ? sha256(absolutePath)
+      : sha256NormalizedText(absolutePath);
+
+    assert.equal(actualHash, expectedHash, relativePath);
   }
 
   for (const relativePath of Object.keys(PRIOR_PACKAGE_SHA256)) {
@@ -555,6 +560,8 @@ test('prior g7, g8 and g15 packages stay byte-unchanged', () => {
 
 const read = (file: string) => readFileSync(file, 'utf8');
 const sha256 = (file: string) => createHash('sha256').update(readFileSync(file)).digest('hex');
+const sha256NormalizedText = (file: string) =>
+  createHash('sha256').update(read(file).replace(/\r\n/g, '\n'), 'utf8').digest('hex');
 const occurrences = (source: string, needle: string) => source.split(needle).length - 1;
 const escapeForRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const regionSlice = (markup: string, ariaLabel: string) => {

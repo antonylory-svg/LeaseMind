@@ -22,9 +22,9 @@
     "allowlist_paths": 9,
     "planned_paths_created_or_authored_in_code_phase": 6,
     "paths_changed_outside_allowlist": 0,
-    "git_commands_run": false,
-    "commit_created": false,
-    "push_or_pull_request_performed": false,
+    "delegated_code_authorship_git_commands_run": false,
+    "delegated_code_authorship_commit_created": false,
+    "delegated_code_authorship_push_or_pull_request_performed": false,
     "g7_g8_g9_g10_g11_g12_g13_g14_g15_source_modified": false,
     "allowlist_readme_or_authorization_record_modified": false,
     "production_entry_point_modified": false,
@@ -96,7 +96,7 @@
     },
     {
       "id": "unchanged_prior_bytes",
-      "detail": "Frozen SHA-256 hashes re-verified by the G16 test file: G7 component 3cfd9f... (frozen prefix), G8 input e928bb... (frozen prefix), and all five G15 package code paths plus the G15 allowlist hash 53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2 plus the G16 allowlist hash f7f552ce0487e9a961ee52b83f2ef8c78f4bcc3067add8a239f80fab6ec82a74. No prior-package byte changed.",
+      "detail": "Canonical LF-normalized SHA-256 hashes are re-verified by the G16 test file for the frozen G7 component, G8 input and all text files in the G15 package, making the unchanged-content guard invariant across Git checkout line-ending policies. The exact-byte LF-only G15 and G16 allowlist hashes remain unchanged. No prior-package content changed.",
       "status": "PASSED"
     },
     {
@@ -131,23 +131,23 @@
     }
   ],
   "file_sha256": {
-    "apps/web/synthetic-demo-journey-hub.html": "c8b2b5f945ff7d18a44eedfb807110726c2e8d0860de589e2036a58338bb236b",
-    "apps/web/src/synthetic/syntheticDemoJourneyHubScenario.ts": "7f0f20d87e24d4520a16fe1d3d3a89949ad213bd4d3ba5a5bc4e44aab02b7842",
-    "apps/web/src/synthetic/SyntheticDemoJourneyHub.tsx": "ca6fc20fcf3a09c0ab3e368f44d5f60ae4725633a5d877b9557d89ce3c6da13b",
-    "apps/web/src/synthetic/syntheticDemoJourneyHubEntry.tsx": "3a61232f3b584de179f21a0d4273d4b76b36422019e77df6c6bc1a7e396bbe4d",
-    "apps/web/tests/syntheticDemoJourneyHub.test.ts": "0ca7a12a11a0b3003ac3d138711a09357c10d3ae8550fb2ab615793bc515b35f"
+    "apps/web/synthetic-demo-journey-hub.html": "6cf9e1243d683ca56ea81987de9bbcf5335c4816b9e0433d7bd46be37eb7eeb5",
+    "apps/web/src/synthetic/syntheticDemoJourneyHubScenario.ts": "e84f53d4b74d5727627ba3ad49e7590ae575e61bbd6b6b44820cc344c34fc6c0",
+    "apps/web/src/synthetic/SyntheticDemoJourneyHub.tsx": "8522aad436edac6a402074265d33dc4063cf635ce195dd4d07396636644a8bfa",
+    "apps/web/src/synthetic/syntheticDemoJourneyHubEntry.tsx": "3fc559a1b07459ed0555e3c5bfd2d6a3ea4477b3474c98485617992bc4d373f8",
+    "apps/web/tests/syntheticDemoJourneyHub.test.ts": "9d2fda3eb8e5db0b31e1d3b8db9229fd4422f84d925d135a154562eee647bc87"
   },
-  "file_sha256_notes": "Computed with SHA-256 over the exact file bytes immediately after the final green test run. This verification artifact is intentionally not self-hashed.",
+  "file_sha256_notes": "Computed with SHA-256 over UTF-8 text normalized to LF, so the recorded content identity is invariant across Git checkout line-ending policies on Windows and Linux. Exact-byte hashes remain authoritative for the LF-only allowlists. This verification artifact is intentionally not self-hashed.",
   "reused_prior_package_hashes": {
     "apps/web/src/synthetic/SafePresentationSyntheticPreview.tsx": "3cfd9f3c88ebfdd74a4f03679f6e8acf2f882d6ecfd29883eae16091e1d30e96",
     "apps/web/src/synthetic/safePresentationSyntheticDemoInput.ts": "e928bbc0cb10c8995e3c4b742005f8e1fd697c782f98580f99079d9972ddea45"
   },
   "prior_package_hashes_reverified": {
-    "apps/web/synthetic-deal-rehearsal-board.html": "1913a9bee2e40702c20bd57ca46cbef62df6653755606b3fe853ad2158c116e6",
-    "apps/web/src/synthetic/syntheticDealRehearsalBoardScenario.ts": "38e30e5278e8231ad105da70910d276a7d741779f6dfc642dba15df6f8ba7c28",
-    "apps/web/src/synthetic/SyntheticDealRehearsalBoard.tsx": "356330151dd4938509dc115d4cc8e0593308481a4a6530c020061508169c04a0",
-    "apps/web/src/synthetic/syntheticDealRehearsalBoardEntry.tsx": "abacfcd6181b8b6e78c3a8362897dd2b699565417bbd7c1ff516dce126158938",
-    "apps/web/tests/syntheticDealRehearsalBoard.test.ts": "be945bd5b6a05d790c4d8840e59b4f04df16cfb7d019e0fb187e94b72af7fcaf",
+    "apps/web/synthetic-deal-rehearsal-board.html": "9fe638e1c8a79e739c43ad90734bae6ed7a61a0e911cd1cb237c1f357eb1698c",
+    "apps/web/src/synthetic/syntheticDealRehearsalBoardScenario.ts": "0155831447bd04b501abe92fd1a33735f06e3ee60b41d0660fd15570d6cbdc29",
+    "apps/web/src/synthetic/SyntheticDealRehearsalBoard.tsx": "f069d570685921783531287a73d580eaede515933f45731c97537457d1ac606c",
+    "apps/web/src/synthetic/syntheticDealRehearsalBoardEntry.tsx": "0cc338c8b584a128db60bcc008bc2b972d6997afecbb94824c7d4e26adf4bbba",
+    "apps/web/tests/syntheticDealRehearsalBoard.test.ts": "e47f166e83c781797207e3ca188ffdf2b39c4a6bbab4ce09a4a705f35db4b6b0",
     "05_DEVELOPMENT/matching-engine/synthetic-deal-rehearsal-board/G15_FILE_ALLOWLIST_v1.0.json": "53addc8cb9c13a6fece1f8cc85b44cb332f86f56ccaa93d16ce3725c031651a2"
   },
   "not_performed_in_this_phase": [],
@@ -176,9 +176,9 @@
     "prior_package_mutations": 0,
     "production_root_mutations": 0,
     "dependency_or_package_manifest_mutations": 0,
-    "commit_created": false,
-    "branch_created": false,
-    "push_or_pull_request_performed": false,
+    "delegated_code_authorship_commit_created": false,
+    "delegated_code_authorship_branch_created": false,
+    "delegated_code_authorship_push_or_pull_request_performed": false,
     "gate_impact": "NONE"
   },
   "conclusion": "G16_SYNTHETIC_DEMO_JOURNEY_HUB_VERIFIED. Automated verification passed with zero failures: typecheck exit code 0, 13 focused G16 tests, and the full existing dev test suite at 219 tests with 219 passes and 0 failures. Browser verification at the exact authorized dev-only URL confirmed all-at-once rendering, exactly eight same-tab native anchors, zero hub console warnings/errors, responsive reflow without horizontal overflow at 360/390/768/1280 CSS pixels, visible native focus and Enter activation. Every frozen prior-package hash was re-verified unchanged; no production-root, allowlist, README or authorization-record byte changed. The disclosed static G13 path composition is accepted within the authorized boundary and advances no governance gate."
