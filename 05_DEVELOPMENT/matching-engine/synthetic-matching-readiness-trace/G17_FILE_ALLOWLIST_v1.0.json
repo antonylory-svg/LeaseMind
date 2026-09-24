@@ -1,0 +1,185 @@
+{
+  "artifact_type": "G17_SYNTHETIC_MATCHING_READINESS_TRACE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-24",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g17-synthetic-matching-readiness-trace",
+    "git_commit": "2315cf992bc0cec185e8f91453f3b150c44c1e87"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "trace": {
+    "package_name": "G17 Synthetic Matching Readiness Trace",
+    "url": "http://127.0.0.1:5173/synthetic-matching-readiness-trace.html",
+    "html_title": "SYNTHETIC MATCHING READINESS TRACE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g16": "SEPARATE_SIBLING_G16_NOT_MODIFIED_NOT_A_NINTH_HUB_ENTRY_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_DESIGN_TIME_GOVERNANCE_COPY_ONLY",
+    "all_regions_simultaneously_visible": true,
+    "stepper_or_progression": "PROHIBITED",
+    "always_visible_lines": [
+      "SYNTHETIC MATCHING READINESS TRACE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY TRACE — NO MATCH COMPUTED",
+      "DESIGN-TIME GOVERNANCE READINESS LABELS ONLY — NOT RUNTIME STATE, NOT AN APPROVAL, NOT A TRACE OF ANY EXECUTION"
+    ],
+    "readiness_labels": [
+      {
+        "label": "READY_FOR_DRAFT",
+        "copy": "DESIGN-TIME LABEL — NOT RUNTIME value_state, NOT AN APPROVED API/EVENT ENUM"
+      },
+      {
+        "label": "READY_AS_CANDIDATE_ONLY",
+        "copy": "CANDIDATE-ONLY — NO ACTIVATION, NO SCORING, NO ELIGIBILITY USE"
+      },
+      {
+        "label": "BLOCKED_PENDING_DECISION",
+        "copy": "BLOCKED RULE — NO COMPARISON RUN, NO PASS, NO FAIL, NO INELIGIBLE"
+      },
+      {
+        "label": "EXCLUDED_FROM_V0_1",
+        "copy": "EXCLUDED FROM v0.1 SCOPE — NOT ELIMINATION, NOT A NEGATIVE FACT"
+      }
+    ],
+    "readiness_reason": {
+      "value": "BLOCKED_PENDING_COMPATIBILITY_TABLE",
+      "copy": "readiness_reason SUBTYPE — NOT A FIFTH STATUS"
+    },
+    "regions_in_order": [
+      "READINESS LABEL SET — DESIGN-TIME ONLY",
+      "WHY NO MATCH CAN BE COMPUTED — DESIGN-TIME REASONS",
+      "GOVERNANCE GATE STATE — FROZEN RECORD COPY",
+      "WHAT THIS TRACE IS NOT — FIXTURE COPY",
+      "NON-OCCURRENCE RESULT"
+    ],
+    "design_time_reasons": [
+      "NO APPROVED ACTIVE RUNTIME COMPARISON EXECUTION",
+      "NO APPROVED WEIGHTS OR THRESHOLDS",
+      "NO APPROVED FEATURE VALUE CONTRACT",
+      "NO APPROVED RUNTIME CARRIER OR DATA CONTRACT",
+      "ALL THREE GOVERNANCE GATES REMAIN BLOCKED"
+    ],
+    "reason_adjacent_line": "PRE-AUTHORED DESIGN-TIME REASON — NOT COMPUTED",
+    "gate_copy_adjacent_line": "FROZEN AUTHORIZATION-RECORD COPY — THIS PAGE CHANGES NO GATE AND ADVANCES NO GATE",
+    "boundary_rows": [
+      "NOT A MATCH",
+      "NOT A COMPARISON OR COMPATIBILITY RESULT",
+      "NOT A SCORE OR CONFIDENCE",
+      "NOT A QUALIFICATION, RISK OR ELIGIBILITY DECISION",
+      "NOT A RANKING, RECOMMENDATION OR ROUTING",
+      "NOT AN APPROVAL OR READINESS EVIDENCE",
+      "NOT A RUNTIME TRACE, LOG, DIAGNOSTIC OR TELEMETRY",
+      "NOT PRODUCTION APPROVED"
+    ],
+    "boundary_adjacent_line": "FIXTURE COPY — NOT A STATUS CLAIM",
+    "non_occurrence": {
+      "token": "SYNTHETIC_NO_MATCH_COMPUTED",
+      "line": "NO MATCH COMPUTED — NO MATCH, COMPARISON, COMPATIBILITY, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, ELIGIBILITY, RECOMMENDATION OR ROUTING OCCURRED",
+      "terminal_last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "region_transition_hide_or_reorder": "PROHIBITED"
+    }
+  },
+  "frozen_data_vocabulary": [
+    "SYNTHETIC_NO_MATCH_COMPUTED"
+  ],
+  "no_new_scenario_token": true,
+  "no_scenario_line": true,
+  "reuse": {
+    "g7_g8_g9_g10_g11_g12_g13_g14_g15_g16_bytes": "BYTE_UNCHANGED",
+    "g16_hub": "NOT_MODIFIED",
+    "g7_g8_g9_g10_g11_g12_g13_g14_g15_g16_component_import_or_embedding": "PROHIBITED",
+    "g17_added_to_g16_hub": "PROHIBITED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY",
+    "PROPERTY",
+    "MONEY",
+    "DATE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "COMPARISON_COMPATIBILITY_PASS_FAIL_OR_FEATURE_VALUE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_VALUE_STATE_EVIDENCE_STATUS_PROCESSING_ELIGIBILITY_OR_LAWFUL_BASIS_STATUS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "URL_QUERY_OR_HASH_STATE",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION",
+    "PROPOSAL_POLICY_DATA_CONTRACT_CARRIER_MANIFEST_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G17_SYNTHETIC_MATCHING_READINESS_TRACE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G17_SYNTHETIC_MATCHING_READINESS_TRACE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-readiness-trace/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-readiness-trace/G17_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-matching-readiness-trace.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchingReadinessTraceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMatchingReadinessTrace.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMatchingReadinessTraceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticMatchingReadinessTrace.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-matching-readiness-trace/G17_MATCHING_READINESS_TRACE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
