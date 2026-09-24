@@ -1,0 +1,278 @@
+{
+  "artifact_type": "G15_SYNTHETIC_DEAL_REHEARSAL_BOARD_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-24",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g15-synthetic-deal-rehearsal-board",
+    "git_commit": "0b3d965c29cad04ed67a73545f8c22d054da115d"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "board": {
+    "package_name": "G15 Synthetic Deal Rehearsal Board",
+    "url": "http://127.0.0.1:5173/synthetic-deal-rehearsal-board.html",
+    "html_title": "SYNTHETIC DEAL REHEARSAL BOARD — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g7_g14": "SEPARATE_SIBLING_BOARD_REUSING_UNCHANGED_G7_G8_AND_RE_EXPRESSING_UNCHANGED_G13_G14_TOKENS_ORDER_MEANING_AND_NON_OCCURRENCE",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "SINGLE_PRODUCT_SHAPED_RESPONSIVE_END_TO_END_REHEARSAL_BOARD_ACCESSIBLE_PAGE_LAYOUT_ONLY",
+    "single_board": true,
+    "all_regions_simultaneously_visible": true,
+    "stepper_or_progression": "PROHIBITED",
+    "always_visible_lines": [
+      "SYNTHETIC DEAL REHEARSAL BOARD — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REHEARSAL — NO DEAL EXECUTION"
+    ],
+    "chain_warning": "SEQUENCE SHOWN AT ONCE — NOT A STEPPER — NOT PROGRESSION",
+    "regions": {
+      "co_display_region": {
+        "accessible_name": "OWNER-SIDE NEED AND TENANT-SIDE CANDIDATE",
+        "simultaneously_visible": true,
+        "owner_side": {
+          "accessible_name": "OWNER-SIDE NEED",
+          "line": "OWNER-SIDE NEED — SYNTHETIC_FIXTURE_PARTY_A"
+        },
+        "tenant_side": {
+          "accessible_name": "TENANT-SIDE CANDIDATE",
+          "line": "TENANT-SIDE CANDIDATE — SYNTHETIC_FIXTURE_PARTY_B"
+        },
+        "always_adjacent_warning": "CO-DISPLAY ONLY — NOT COMPARED OR MATCHED",
+        "pair_warning": "FIXTURE ONLY — NOT MATCHED OR RANKED",
+        "comparison_compatibility_scoring_or_recommendation": "PROHIBITED"
+      },
+      "chain_region": {
+        "accessible_name": "END-TO-END REHEARSAL CHAIN — SHOWN AT ONCE",
+        "chain_warning_adjacent": "SEQUENCE SHOWN AT ONCE — NOT A STEPPER — NOT PROGRESSION",
+        "presentation": "ALL_NODES_SHOWN_AT_ONCE_NEVER_A_STEPPER_NEVER_PROGRESSION",
+        "node_tokens_in_order": [
+          {
+            "node": "STAGE_NODE_1_TEST_DEAL_TOKEN",
+            "accessible_name": "STAGE NODE 1 — TEST DEAL TOKEN",
+            "lines": [
+              "TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A"
+            ],
+            "fixture_label_adjacent": "PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED"
+          },
+          {
+            "node": "STAGE_NODE_2_CAMPAIGN_PREVIEW",
+            "accessible_name": "STAGE NODE 2 — CAMPAIGN PREVIEW",
+            "lines": [
+              "CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+              "PREVIEW ONLY — NOT LAUNCHED"
+            ],
+            "fixture_label_adjacent": "PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED"
+          },
+          {
+            "node": "STAGE_NODE_3_FIXTURE_PAIR",
+            "accessible_name": "STAGE NODE 3 — FIXTURE PAIR",
+            "lines": [
+              "SYNTHETIC_FIXTURE_PARTY_A + SYNTHETIC_FIXTURE_PARTY_B",
+              "FIXTURE ONLY — NOT MATCHED OR RANKED"
+            ]
+          },
+          {
+            "node": "STAGE_NODE_4_SAFE_PRESENTATION",
+            "accessible_name": "STAGE NODE 4 — SAFE PRESENTATION",
+            "lines": [
+              "SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A"
+            ]
+          },
+          {
+            "node": "STAGE_NODE_5_HUMAN_REHEARSAL_DISPOSITION",
+            "accessible_name": "STAGE NODE 5 — HUMAN REHEARSAL DISPOSITION",
+            "lines": [
+              "HUMAN REHEARSAL DISPOSITION REQUIRED"
+            ]
+          },
+          {
+            "node": "STAGE_NODE_6_NON_OCCURRENCE_RESULT",
+            "accessible_name": "STAGE NODE 6 — NON-OCCURRENCE RESULT",
+            "lines": [
+              "SYNTHETIC_NO_DEAL_EXECUTED",
+              "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED"
+            ]
+          }
+        ]
+      },
+      "fixture_evidence_region": {
+        "accessible_name": "PRE-AUTHORED SYNTHETIC FIXTURE",
+        "always_adjacent_label": "PRE-AUTHORED SYNTHETIC FIXTURE — NOT COMPUTED",
+        "rows": [
+          "TEST DEAL TOKEN — SYNTHETIC_TEST_DEAL_A",
+          "CAMPAIGN PREVIEW — SYNTHETIC_CAMPAIGN_PREVIEW_A",
+          "SAFE PRESENTATION — SYNTHETIC_SAFE_PRESENTATION_A"
+        ],
+        "computed_evidence_or_recommendation": "PROHIBITED"
+      },
+      "safe_presentation_region": {
+        "accessible_name": "SAFE PRESENTATION",
+        "rendering": "UNCHANGED_G7_SAFE_PRESENTATION_COMPONENT_RENDERING_UNCHANGED_G8_SYNTHETIC_INPUT",
+        "visible_lines": [
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ],
+        "g7_blocked_no_echo_output": "SYNTHETIC PRESENTATION BLOCKED"
+      },
+      "boundary_panel_region": {
+        "accessible_name": "WHAT THIS BOARD IS NOT",
+        "title": "WHAT THIS BOARD IS NOT — FIXTURE COPY",
+        "rows": [
+          "NOT A MATCH",
+          "NOT A SCORE OR CONFIDENCE",
+          "NOT A QUALIFICATION OR RISK DECISION",
+          "NOT A RANKING OR RECOMMENDATION",
+          "NOT A CONTACT, CAMPAIGN LAUNCH, DEAL OR OUTCOME",
+          "NOT PRODUCTION APPROVED"
+        ],
+        "always_adjacent_line": "FIXTURE COPY — NOT A STATUS CLAIM"
+      },
+      "non_occurrence_region": {
+        "accessible_name": "NON-OCCURRENCE RESULT",
+        "token": "SYNTHETIC_NO_DEAL_EXECUTED",
+        "line": "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED",
+        "always_visible": true,
+        "ledger_or_persistent_treatment": "PROHIBITED"
+      }
+    },
+    "controls": {
+      "accessible_navigation_label": "SYNTHETIC DEAL REHEARSAL BOARD CONTROLS",
+      "rehearsal_group_accessible_name": "HUMAN REHEARSAL DISPOSITION",
+      "selection_status_live_region": {
+        "aria_live": "polite",
+        "aria_atomic": "true"
+      },
+      "buttons_in_dom_order": [
+        "REHEARSE INTEREST",
+        "REHEARSE HOLD",
+        "RESET"
+      ],
+      "element": "NATIVE_TYPE_BUTTON_ONLY",
+      "native_activation": "ENTER_AND_SPACE_ONLY",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "visible_focus": "REQUIRED",
+      "progression_control": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_in_memory_state_only": [
+        "SELECTED_REHEARSAL_CHOICE"
+      ],
+      "choices": [
+        "REHEARSE INTEREST",
+        "REHEARSE HOLD"
+      ],
+      "selection_disclaimer": "UI REHEARSAL SELECTION ONLY — NOT APPROVAL",
+      "selection_transient_only": true,
+      "both_choices_preserve": "SYNTHETIC_NO_DEAL_EXECUTED",
+      "reset_clears_choice": true,
+      "reload_clears_choice": true,
+      "region_transition_or_reorder": "PROHIBITED"
+    }
+  },
+  "frozen_data_vocabulary": [
+    "SYNTHETIC_TEST_DEAL_A",
+    "SYNTHETIC_CAMPAIGN_PREVIEW_A",
+    "SYNTHETIC_FIXTURE_PARTY_A",
+    "SYNTHETIC_FIXTURE_PARTY_B",
+    "SYNTHETIC_SAFE_PRESENTATION_A",
+    "SYNTHETIC_HEADING",
+    "SYNTHETIC_MESSAGE",
+    "SYNTHETIC_NO_DEAL_EXECUTED"
+  ],
+  "no_new_scenario_token": true,
+  "no_scenario_line": true,
+  "reuse": {
+    "g7_safe_presentation_component_and_blocked_no_echo_behavior": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g13_g14_tokens_order_meaning": "RE_EXPRESSED_UNCHANGED",
+    "g13_g14_non_occurrence_semantics": "RE_EXPRESSED_UNCHANGED",
+    "g11_g12_g13_g14_page_component_embedding": "PROHIBITED",
+    "g7_g8_g9_g10_g11_g12_g13_g14_bytes": "BYTE_UNCHANGED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY",
+    "PROPERTY",
+    "MONEY",
+    "DATE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "COMPARISON_COMPATIBILITY_OR_MATCH",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_OR_BEST_CLAIMS",
+    "CONTACT_OR_COMMUNICATION",
+    "CAMPAIGN_LAUNCH",
+    "DEAL_EXECUTION_OR_OUTCOME_RECORDING",
+    "STEPPER_PROGRESSION_CURRENT_REGION_HIDING_OR_AUTOMATIC_TRANSITION",
+    "GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING_SEMANTICS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "LEDGER_OR_PERSISTENT_TREATMENT_OF_THE_NON_OCCURRENCE_RESULT",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_OR_RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_OR_LINKS",
+    "MOTION_OR_ANIMATION",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION"
+  ],
+  "result_label": "G15_SYNTHETIC_DEAL_REHEARSAL_BOARD_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G15_SYNTHETIC_DEAL_REHEARSAL_BOARD_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-rehearsal-board/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-rehearsal-board/G15_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-deal-rehearsal-board.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealRehearsalBoardScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticDealRehearsalBoard.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDealRehearsalBoardEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticDealRehearsalBoard.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-deal-rehearsal-board/G15_DEAL_REHEARSAL_BOARD_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
