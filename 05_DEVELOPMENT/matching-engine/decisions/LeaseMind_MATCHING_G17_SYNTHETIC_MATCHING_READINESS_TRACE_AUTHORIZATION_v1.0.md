@@ -1,13 +1,13 @@
 # LeaseMind Matching G17 Synthetic Matching Readiness Trace Authorization v1.0
 
-**Artifact class:** non-canonical package authorization  
-**Authorization date:** `2026-09-24`  
-**Package version:** `1.0`  
-**Baseline branch:** `development/sprint-7-matching-g17-synthetic-matching-readiness-trace`  
-**Baseline commit:** `2315cf992bc0cec185e8f91453f3b150c44c1e87`  
-**Frozen file allowlist:** `05_DEVELOPMENT/matching-engine/synthetic-matching-readiness-trace/G17_FILE_ALLOWLIST_v1.0.json` (LF-only line endings, UTF-8 no BOM)  
-**Frozen allowlist SHA-256:** `06c8221de4691b7b78371bbc96ec8cc693cf6e266ab28f928ed11433697d49eb` (exact bytes of the LF-only file)  
-**Authorization status:** `DOCUMENTATION_ONLY_AUTHORIZED`  
+**Artifact class:** non-canonical package authorization
+**Authorization date:** `2026-09-24`
+**Package version:** `1.0`
+**Baseline branch:** `development/sprint-7-matching-g17-synthetic-matching-readiness-trace`
+**Baseline commit:** `2315cf992bc0cec185e8f91453f3b150c44c1e87`
+**Frozen file allowlist:** `05_DEVELOPMENT/matching-engine/synthetic-matching-readiness-trace/G17_FILE_ALLOWLIST_v1.0.json` (LF-only line endings, UTF-8 no BOM)
+**Frozen allowlist SHA-256:** `06c8221de4691b7b78371bbc96ec8cc693cf6e266ab28f928ed11433697d49eb` (exact bytes of the LF-only file)
+**Authorization status:** `DOCUMENTATION_ONLY_AUTHORIZED`
 **Code phase status:** `BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION`
 
 ## 1. Authorization boundary
