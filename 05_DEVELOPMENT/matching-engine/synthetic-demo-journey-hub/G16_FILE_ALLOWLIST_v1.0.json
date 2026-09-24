@@ -1,0 +1,270 @@
+{
+  "artifact_type": "G16_SYNTHETIC_DEMO_JOURNEY_HUB_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-24",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g16-synthetic-demo-journey-hub",
+    "git_commit": "9408fbda474ecdb61936956b1f01f9c0d1fa0ec3"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "hub": {
+    "package_name": "G16 Synthetic Demo Journey Hub",
+    "url": "http://127.0.0.1:5173/synthetic-demo-journey-hub.html",
+    "html_title": "SYNTHETIC DEMO JOURNEY HUB — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_g7_g15": "SEPARATE_SIBLING_HUB_LINKING_THE_EIGHT_EXISTING_G8_G15_MANUAL_DEV_ONLY_PAGES_AND_REUSING_UNCHANGED_G7_G8_AND_RE_EXPRESSING_UNCHANGED_G15_BOUNDARY_AND_NON_OCCURRENCE_SEMANTICS",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "SINGLE_PRODUCT_SHAPED_RESPONSIVE_ALL_AT_ONCE_MANUAL_DEV_ONLY_NAVIGATION_HUB_ACCESSIBLE_PAGE_LAYOUT_ONLY",
+    "single_hub": true,
+    "all_regions_simultaneously_visible": true,
+    "stepper_or_progression": "PROHIBITED",
+    "always_visible_lines": [
+      "SYNTHETIC DEMO JOURNEY HUB — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY HUB — NOT AN APPLICATION MENU"
+    ],
+    "chain_warning": "SEQUENCE SHOWN AT ONCE — NOT A STEPPER — NOT PROGRESSION",
+    "regions": {
+      "journey_region": {
+        "accessible_name": "SYNTHETIC DEMO JOURNEY — EIGHT MANUAL DEV-ONLY PAGES",
+        "simultaneously_visible": true,
+        "chain_warning_adjacent": "SEQUENCE SHOWN AT ONCE — NOT A STEPPER — NOT PROGRESSION",
+        "presentation": "ALL_EIGHT_ENTRIES_SHOWN_AT_ONCE_NEVER_A_STEPPER_NEVER_PROGRESSION",
+        "entry_label_pattern": "ENTRY n OF 8",
+        "visible_per_entry": [
+          "ENTRY_LABEL",
+          "FROZEN_EXISTING_PAGE_TITLE",
+          "EXACT_LOCAL_DEV_PATH",
+          "ONE_SAME_TAB_NATIVE_ANCHOR"
+        ],
+        "entries_in_order": [
+          {
+            "entry_label": "ENTRY 1 OF 8",
+            "source_package": "G8",
+            "page_title": "SYNTHETIC SAFE PRESENTATION DEMO — NOT PRODUCTION APPROVED",
+            "dev_path": "/safe-presentation-synthetic-demo.html",
+            "anchor_href": "/safe-presentation-synthetic-demo.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 2 OF 8",
+            "source_package": "G9",
+            "page_title": "SYNTHETIC DEAL STORY DEMO — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-deal-story-demo.html",
+            "anchor_href": "/synthetic-deal-story-demo.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 3 OF 8",
+            "source_package": "G10",
+            "page_title": "SYNTHETIC DEAL STORY WALKTHROUGH — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-deal-story-walkthrough.html",
+            "anchor_href": "/synthetic-deal-story-walkthrough.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 4 OF 8",
+            "source_package": "G11",
+            "page_title": "SYNTHETIC DEAL STORY REHEARSAL — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-deal-story-rehearsal.html",
+            "anchor_href": "/synthetic-deal-story-rehearsal.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 5 OF 8",
+            "source_package": "G12",
+            "page_title": "SYNTHETIC TEST-DEAL FLOW HARNESS — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-test-deal-flow-harness.html",
+            "anchor_href": "/synthetic-test-deal-flow-harness.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 6 OF 8",
+            "source_package": "G13",
+            "page_title": "SYNTHETIC MATCHING FLOW CONSOLE — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-matching-flow-console.html",
+            "anchor_href": "/synthetic-matching-flow-console.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 7 OF 8",
+            "source_package": "G14",
+            "page_title": "SYNTHETIC MATCH REVIEW WORKSPACE — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-match-review-workspace.html",
+            "anchor_href": "/synthetic-match-review-workspace.html",
+            "anchor_target": "_self"
+          },
+          {
+            "entry_label": "ENTRY 8 OF 8",
+            "source_package": "G15",
+            "page_title": "SYNTHETIC DEAL REHEARSAL BOARD — NOT PRODUCTION APPROVED",
+            "dev_path": "/synthetic-deal-rehearsal-board.html",
+            "anchor_href": "/synthetic-deal-rehearsal-board.html",
+            "anchor_target": "_self"
+          }
+        ],
+        "entry_count": 8,
+        "g7_is_foundation_only_not_an_entry": true,
+        "external_url_target_blank_download_query_hash_script_url_dynamic_href_or_router": "PROHIBITED",
+        "production_menu_or_production_entry_point": "PROHIBITED"
+      },
+      "safe_presentation_region": {
+        "accessible_name": "SAFE PRESENTATION — UNCHANGED G7/G8 REUSE",
+        "rendering": "UNCHANGED_G7_SAFE_PRESENTATION_COMPONENT_RENDERING_UNCHANGED_G8_SYNTHETIC_INPUT",
+        "visible_lines": [
+          "SYNTHETIC REFERENCE — NOT PRODUCTION APPROVED",
+          "SYNTHETIC_HEADING",
+          "SYNTHETIC_MESSAGE"
+        ],
+        "g7_blocked_no_echo_output": "SYNTHETIC PRESENTATION BLOCKED"
+      },
+      "boundary_panel_region": {
+        "accessible_name": "WHAT THIS HUB IS NOT",
+        "title": "WHAT THIS HUB IS NOT — FIXTURE COPY",
+        "rows": [
+          "NOT A MATCH",
+          "NOT A SCORE OR CONFIDENCE",
+          "NOT A QUALIFICATION OR RISK DECISION",
+          "NOT A RANKING OR RECOMMENDATION",
+          "NOT A CONTACT, CAMPAIGN LAUNCH, DEAL OR OUTCOME",
+          "NOT PRODUCTION APPROVED"
+        ],
+        "always_adjacent_line": "FIXTURE COPY — NOT A STATUS CLAIM"
+      },
+      "non_occurrence_region": {
+        "accessible_name": "NON-OCCURRENCE RESULT",
+        "token": "SYNTHETIC_NO_DEAL_EXECUTED",
+        "line": "NO MATCH, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, CONTACT, DEAL OR OUTCOME OCCURRED",
+        "always_visible": true,
+        "ledger_or_persistent_treatment": "PROHIBITED"
+      }
+    },
+    "controls": {
+      "interactive_elements": "EXACTLY_EIGHT_SAME_TAB_NATIVE_ANCHORS",
+      "element": "NATIVE_ANCHOR_ONLY",
+      "anchor_count": 8,
+      "anchor_target": "_self",
+      "native_activation": "ENTER_ONLY_NATIVE_LINK_SEMANTICS",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "visible_focus": "REQUIRED",
+      "buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "aria_live": "PROHIBITED",
+      "progression_control": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "use_state": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "region_transition_or_reorder": "PROHIBITED"
+    }
+  },
+  "frozen_data_vocabulary": [
+    "SYNTHETIC_TEST_DEAL_A",
+    "SYNTHETIC_CAMPAIGN_PREVIEW_A",
+    "SYNTHETIC_FIXTURE_PARTY_A",
+    "SYNTHETIC_FIXTURE_PARTY_B",
+    "SYNTHETIC_SAFE_PRESENTATION_A",
+    "SYNTHETIC_HEADING",
+    "SYNTHETIC_MESSAGE",
+    "SYNTHETIC_NO_DEAL_EXECUTED"
+  ],
+  "no_new_scenario_token": true,
+  "no_scenario_line": true,
+  "reuse": {
+    "g7_safe_presentation_component_and_blocked_no_echo_behavior": "REUSE_UNCHANGED",
+    "g8_synthetic_input": "REUSE_UNCHANGED",
+    "g15_boundary_rows": "RE_EXPRESSED_UNCHANGED",
+    "g15_non_occurrence_semantics": "RE_EXPRESSED_UNCHANGED",
+    "g9_g10_g11_g12_g13_g14_g15_page_component_embedding": "PROHIBITED",
+    "g7_g8_g9_g10_g11_g12_g13_g14_g15_bytes": "BYTE_UNCHANGED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY",
+    "PROPERTY",
+    "MONEY",
+    "DATE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "COMPARISON_COMPATIBILITY_OR_MATCH",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_OR_BEST_CLAIMS",
+    "CONTACT_OR_COMMUNICATION",
+    "CAMPAIGN_LAUNCH",
+    "DEAL_EXECUTION_OR_OUTCOME_RECORDING",
+    "STEPPER_PROGRESSION_CURRENT_REGION_HIDING_OR_AUTOMATIC_TRANSITION",
+    "GEOGRAPHY_TENANCY_DEPLOYMENT_SEGMENTATION_OR_ROUTING_SEMANTICS",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "LEDGER_OR_PERSISTENT_TREATMENT_OF_THE_NON_OCCURRENCE_RESULT",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_OR_RANDOMNESS",
+    "URL_QUERY_OR_HASH_STATE",
+    "CUSTOM_KEYBOARD_HANDLERS",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_OR_WIDGETS",
+    "MOTION_OR_ANIMATION",
+    "WORKFLOW_EXECUTION_OR_BUSINESS_COMPUTATION",
+    "G9_G10_G11_G12_G13_G14_G15_PAGE_COMPONENT_IMPORT_OR_EMBEDDING",
+    "EXTERNAL_URL_TARGET_BLANK_DOWNLOAD_QUERY_HASH_SCRIPT_URL_DYNAMIC_HREF_OR_ROUTER_LINK",
+    "PRODUCTION_MENU_OR_PRODUCTION_ENTRY_POINT"
+  ],
+  "result_label": "G16_SYNTHETIC_DEMO_JOURNEY_HUB_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G16_SYNTHETIC_DEMO_JOURNEY_HUB_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-demo-journey-hub/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-demo-journey-hub/G16_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-demo-journey-hub.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDemoJourneyHubScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticDemoJourneyHub.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDemoJourneyHubEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticDemoJourneyHub.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-demo-journey-hub/G16_SYNTHETIC_DEMO_JOURNEY_HUB_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
