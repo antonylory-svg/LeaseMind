@@ -1,0 +1,111 @@
+{
+  "artifact_type": "G20_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_VERIFICATION",
+  "package": "synthetic-entrance-requirement-compatibility-reference",
+  "package_version": "1.0",
+  "phase": "G20_CODE_PHASE",
+  "verification_date": "2026-09-25",
+  "baseline_commit": "185efe1cf5e3258802afb4d56d65b98c87ea16cd",
+  "branch": "development/sprint-7-matching-g20-synthetic-entrance-requirement-compatibility-reference",
+  "result": "VERIFIED",
+  "result_label": "G20_SYNTHETIC_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "f19668d1fa74078ff1fb7a1eae9ed7ad9fe8eadff97e03516d8e08bda3cbbe8e",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-entrance-requirement-compatibility-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_operation_performed_by_code_author": false
+  },
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g20_tests",
+      "command": "node with local os.userInfo ENOMEM preload, --import tsx --test tests/syntheticEntranceRequirementCompatibilityReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with local os.userInfo ENOMEM preload, --import tsx --test tests/*.test.ts (cwd apps/web)",
+      "observed": "267 tests, 267 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "frozen_matrix_contract",
+      "detail": "The page renders the exact title, two permanent boundary lines, five regions in frozen order, exact distinct Property and TenantRequest axes, exact 5 by 4 matrix with totals 13 COMPATIBLE, 1 INCOMPATIBLE_CANDIDATE and 6 NEEDS_VERIFICATION, the exact six open cells, and the exact terminal token and line.",
+      "status": "PASSED"
+    },
+    {
+      "id": "preference_fail_closed_and_non_computation",
+      "detail": "The page preserves separate_preferred as preference-only, keeps its unmet diagnostic concept-level and separate from the hard result, distinguishes explicit none from an absent Property value, preserves NOT_APPLICABLE and UNKNOWN cases, and states that INCOMPATIBLE_CANDIDATE is not FAIL, rejection or automatic INELIGIBLE. No entrance comparison or runtime decision is performed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation",
+      "detail": "The authored modules contain no state, effects, handlers, controls, links, network, storage, cookies, logging, timers, randomness or motion. The standalone HTML loads only the G20 entry; production roots expose no G20 page or component; no prior synthetic component is imported.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The authorized dev-only URL rendered the exact HTML title, permanent lines, one h1, five labelled regions in order, distinct axis lists, semantic 5 by 4 table, preference/fail-closed copy, and NON-COMPUTATION RESULT last. The accessibility tree exposed zero controls or links.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "The page and shell are width-bounded with border-box sizing and overflow protection; the five-column semantic table uses width 100%, fixed layout, responsive font/padding and anywhere word wrapping. Focused tests confirm the static zero-control structure shared at all four frozen widths. Live rendering was verified in the local browser; exact headless width telemetry remains unavailable because the host headless Chromium GPU process terminates before capture.",
+      "status": "PASSED_WITH_ENVIRONMENT_LIMITATION"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 present plus 6 planned, the result label is exact, gate impact remains NONE, and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap can fail before loading tests because Node os.userInfo returns uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    },
+    {
+      "id": "headless_chromium_gpu_unavailable",
+      "description": "The established host limitation prevents exact-width headless Chromium telemetry because the GPU process terminates before capture.",
+      "mitigation": "The authorized URL was verified in the in-app browser, while the four-width no-overflow boundary is enforced by fixed-layout responsive styles and covered by static contract tests.",
+      "test_effect": "No automated test or in-app browser render failed; only exact headless viewport telemetry was unavailable."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-entrance-requirement-compatibility-reference.html": "f894bc6d3689829d8facfd5c4d1432f03c141a18b84fe7a5fdf5b7b8fd379a05",
+    "apps/web/src/synthetic/syntheticEntranceRequirementCompatibilityReferenceScenario.ts": "64d7302b521d840ccae9b68eb24fbcca89b31a5a2b1d1088dabd1e08dae5df4d",
+    "apps/web/src/synthetic/SyntheticEntranceRequirementCompatibilityReference.tsx": "95807b30b20e95ce61d84e071c13f41461ddbab80c6d018ec23394ac18a8993f",
+    "apps/web/src/synthetic/syntheticEntranceRequirementCompatibilityReferenceEntry.tsx": "ca33fafa9a0aca541965a7cfc01befa4ff9d177b2ecf7c4bdcf82263f1754eb7",
+    "apps/web/tests/syntheticEntranceRequirementCompatibilityReference.test.ts": "11e1eb8aeb054a6fdd1480aea7cea215b322549ba8dd6d5dfb7bee01d7cd110f"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "entrance_requirement_comparison_introduced": false,
+    "automatic_ineligible_allowed": "NO"
+  },
+  "conclusion": "G20_SYNTHETIC_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no entrance-requirement comparison or runtime decision occurs, and all three governance gates remain BLOCKED."
+}
