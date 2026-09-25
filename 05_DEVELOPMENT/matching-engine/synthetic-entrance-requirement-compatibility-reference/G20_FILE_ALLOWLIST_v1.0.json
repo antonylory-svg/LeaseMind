@@ -1,0 +1,217 @@
+{
+  "artifact_type": "G20_SYNTHETIC_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-25",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g20-synthetic-entrance-requirement-compatibility-reference",
+    "git_commit": "3da6ddd451ed87b448308b1e6ab20edc8257e41d"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G20 Synthetic Entrance-Requirement Compatibility Reference",
+    "url": "http://127.0.0.1:5173/synthetic-entrance-requirement-compatibility-reference.html",
+    "html_title": "SYNTHETIC ENTRANCE-REQUIREMENT COMPATIBILITY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC ENTRANCE-REQUIREMENT COMPATIBILITY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — PRE-AUTHORED SOURCE COPY ONLY",
+      "NO ENTRANCE-REQUIREMENT COMPARISON EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "ENTRANCE AXES — DISTINCT ENUMS, NO PHYSICAL OR PURPOSE INFERENCE",
+      "PRE-AUTHORED 5 × 4 COMPATIBILITY REFERENCE",
+      "PREFERENCE, FAIL-CLOSED AND PROHIBITED INFERENCES",
+      "NON-COMPUTATION RESULT"
+    ],
+    "feature": {
+      "ordinal": 8,
+      "feature_id": "entrance_requirement_fit",
+      "overall_registry_readiness": "BLOCKED_PENDING_DECISION",
+      "source_decision": "XFR-D-001 v1.0",
+      "source_status": "APPROVED PARTIAL QUALITATIVE COMPATIBILITY — 6 OF 20 PAIRS REMAIN OPEN",
+      "automatic_ineligible_allowed": "NO",
+      "required_evidence_level": "BLOCKED_PENDING_DECISION",
+      "final_legal_verdict": "NOT_APPROVED"
+    },
+    "property_axis_values_in_order": [
+      "separate_street",
+      "separate_yard",
+      "shared",
+      "loading_only",
+      "none"
+    ],
+    "request_axis_values_in_order": [
+      "separate_required",
+      "separate_preferred",
+      "shared_allowed",
+      "no_preference"
+    ],
+    "axis_semantics": "DISTINCT_SOURCE_ENUMS_NO_ORDER_COVERAGE_PHYSICAL_PROPERTY_OR_PURPOSE_INFERENCE",
+    "cell_status_vocabulary": [
+      "COMPATIBLE",
+      "INCOMPATIBLE_CANDIDATE",
+      "NEEDS_VERIFICATION"
+    ],
+    "cell_status_boundary": "PRE_AUTHORED_QUALITATIVE_GOVERNANCE_REFERENCE_COPY_NOT_SOURCE_NORMATIVE_RUNTIME_ENUM_OR_EXECUTED_RESULT",
+    "matrix_rows": [
+      {
+        "property": "separate_street",
+        "request_cells_in_axis_order": ["COMPATIBLE", "COMPATIBLE", "NEEDS_VERIFICATION", "COMPATIBLE"]
+      },
+      {
+        "property": "separate_yard",
+        "request_cells_in_axis_order": ["COMPATIBLE", "COMPATIBLE", "NEEDS_VERIFICATION", "COMPATIBLE"]
+      },
+      {
+        "property": "shared",
+        "request_cells_in_axis_order": ["INCOMPATIBLE_CANDIDATE", "COMPATIBLE", "COMPATIBLE", "COMPATIBLE"]
+      },
+      {
+        "property": "loading_only",
+        "request_cells_in_axis_order": ["NEEDS_VERIFICATION", "COMPATIBLE", "NEEDS_VERIFICATION", "COMPATIBLE"]
+      },
+      {
+        "property": "none",
+        "request_cells_in_axis_order": ["NEEDS_VERIFICATION", "COMPATIBLE", "NEEDS_VERIFICATION", "COMPATIBLE"]
+      }
+    ],
+    "matrix_totals": {
+      "cells": 20,
+      "compatible": 13,
+      "incompatible_candidate": 1,
+      "needs_verification": 6
+    },
+    "open_cells": [
+      "separate_street × shared_allowed",
+      "separate_yard × shared_allowed",
+      "loading_only × separate_required",
+      "loading_only × shared_allowed",
+      "none × separate_required",
+      "none × shared_allowed"
+    ],
+    "preference_boundary": {
+      "request_value": "separate_preferred",
+      "hard_compatibility": "COMPATIBLE_FOR_ALL_FIVE_PROPERTY_VALUES",
+      "diagnostic_condition": "PROPERTY_NOT_SEPARATE_STREET_OR_SEPARATE_YARD",
+      "diagnostic_status": "CONCEPT_LEVEL_SEPARATE_FROM_HARD_RESULT_NOT_RUNTIME_FIELD_NOT_QUALIFICATION_ROUTING"
+    },
+    "missing_value_copy": [
+      "REQUEST entrance_requirement ABSENT — CANDIDATE value_state = NOT_APPLICABLE — NO COMPARISON",
+      "REQUEST entrance_requirement PRESENT AND PROPERTY entrance_type ABSENT — CANDIDATE value_state = UNKNOWN — DISTINCT FROM EXPLICIT none — NO COMPATIBILITY VERDICT"
+    ],
+    "prohibited_inferences": [
+      "NO SEPARATE_COVERS_SHARED ORDERING OR COVERAGE INFERENCE",
+      "NO PHYSICAL ENTRANCE PROPERTY INFERENCE",
+      "NO LOADING_ONLY OR NONE PURPOSE SEMANTICS INFERENCE",
+      "NO PREFERENCE-SATISFIED INFERENCE FROM HARD COMPATIBLE",
+      "NO ACTIVE RUNTIME FEATURE VALUE OR CELL RESULT",
+      "NO PASS, FAIL, REJECTION OR AUTOMATIC INELIGIBLE",
+      "NO SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING",
+      "NO PROPERTY, TENANT REQUEST OR BUSINESS RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "SYNTHETIC_NO_ENTRANCE_REQUIREMENT_COMPARISON_EXECUTED",
+      "line": "NO ENTRANCE-REQUIREMENT COMPARISON EXECUTED — NO FEATURE VALUE, PASS, FAIL, INELIGIBLE, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_ENTRANCE_REQUIREMENT_COMPARISON_OR_FEATURE_VALUE",
+    "ACTIVE_RUNTIME_COMPATIBILITY_PASS_FAIL_OR_INCOMPATIBILITY_RESULT",
+    "ORDER_COVERAGE_PHYSICAL_PROPERTY_OR_PURPOSE_INFERENCE",
+    "PREFERENCE_SATISFACTION_OR_RUNTIME_DIAGNOSTIC_INFERENCE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_FEATURE_SCHEMA_POLICY_DATA_CONTRACT_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "MANIFEST_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G20_SYNTHETIC_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G20_SYNTHETIC_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-entrance-requirement-compatibility-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-entrance-requirement-compatibility-reference/G20_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-entrance-requirement-compatibility-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEntranceRequirementCompatibilityReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticEntranceRequirementCompatibilityReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEntranceRequirementCompatibilityReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticEntranceRequirementCompatibilityReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-entrance-requirement-compatibility-reference/G20_ENTRANCE_REQUIREMENT_COMPATIBILITY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
