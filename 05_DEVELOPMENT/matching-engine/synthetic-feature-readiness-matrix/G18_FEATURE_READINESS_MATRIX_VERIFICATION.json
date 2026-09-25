@@ -1,0 +1,103 @@
+{
+  "artifact_type": "G18_FEATURE_READINESS_MATRIX_VERIFICATION",
+  "package": "synthetic-feature-readiness-matrix",
+  "package_version": "1.0",
+  "phase": "G18_CODE_PHASE",
+  "verification_date": "2026-09-25",
+  "baseline_commit": "77193688099daa3816f8b4078134e142f917f97c",
+  "branch": "development/sprint-7-matching-g18-synthetic-feature-readiness-matrix",
+  "result": "VERIFIED",
+  "result_label": "G18_SYNTHETIC_FEATURE_READINESS_MATRIX_VERIFIED",
+  "allowlist_sha256": "2c71dc9ef7108664c1ccd1f230076621f9b8944b939cae3ae82ac2be99d397da",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-feature-readiness-matrix.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_operation_performed_by_code_author": false
+  },
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck --workspace @leasemind/web",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g18_tests",
+      "command": "node with local os.userInfo ENOMEM preload, --import tsx --test tests/syntheticFeatureReadinessMatrix.test.ts (cwd apps/web)",
+      "observed": "12 tests, 12 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with local os.userInfo ENOMEM preload, --import tsx --test tests/*.test.ts (cwd apps/web)",
+      "observed": "246 tests, 246 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "frozen_matrix_contract",
+      "detail": "The page renders the exact title, two permanent disclaimers, five regions in frozen order, four readiness statuses, the BLOCKED_PENDING_COMPATIBILITY_TABLE readiness_reason subtype, the exact twenty feature IDs in Feature Schema order, all-candidate safeguards, seven named mixed boundaries, prohibited-inference copy, and the terminal token and terminal line. No unspecified per-row readiness status is inferred.",
+      "status": "PASSED"
+    },
+    {
+      "id": "non_computation_and_isolation",
+      "detail": "The authored modules contain no state, effects, handlers, controls, links, network, storage, cookies, logging, timers, randomness or motion. The standalone HTML loads only the G18 entry; production roots expose no G18 page or component; no prior synthetic component is imported.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_console",
+      "observed": "The authorized dev-only URL rendered the exact title and all five regions, with NON-COMPUTATION RESULT last, zero controls or focusable elements, and zero console warnings or errors.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_responsive_360_390_768_1280",
+      "observed": [
+        "360px: client width 360, document scroll width 345, no horizontal overflow, 5 sections, 0 controls",
+        "390px: client width 390, document scroll width 375, no horizontal overflow, 5 sections, 0 controls",
+        "768px: client width 768, document scroll width 753, no horizontal overflow, 5 sections, 0 controls",
+        "1280px: client width 1280, document scroll width 1265, no horizontal overflow, 5 sections, 0 controls"
+      ],
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 present plus 6 planned, the result label is exact, gate impact remains NONE, and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviation": {
+    "id": "node_os_userinfo_enomem",
+    "description": "The ordinary tsx bootstrap failed before loading any test because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+    "mitigation": "The tests were rerun with an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed by the preload.",
+    "test_effect": "After bootstrap, the focused and full suites executed normally and passed in full."
+  },
+  "file_sha256": {
+    "apps/web/synthetic-feature-readiness-matrix.html": "0a08357507e8aac8c94492214251e760bf5cddd6b4291058c7e4d3e6b60857ad",
+    "apps/web/src/synthetic/syntheticFeatureReadinessMatrixScenario.ts": "18766d8702f08fc1886ed851853582894f6f10121ef33e77eb584179fce32540",
+    "apps/web/src/synthetic/SyntheticFeatureReadinessMatrix.tsx": "c507adc35248f4f254b2c1cc07dc9c75b0942a70f42793e077def7cb612318d8",
+    "apps/web/src/synthetic/syntheticFeatureReadinessMatrixEntry.tsx": "a359028cec6cfd013f469872482e61998b11c22d1ccdac2ec452593639366289",
+    "apps/web/tests/syntheticFeatureReadinessMatrix.test.ts": "ff3da1e5179bf59a543ed4031279eb8d5380bc0bb39acfb8b3f59ad957a95238"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "feature_comparison_introduced": false,
+    "automatic_ineligible_allowed": "NO"
+  },
+  "conclusion": "G18_SYNTHETIC_FEATURE_READINESS_MATRIX_VERIFIED. The six planned paths are complete, automated and browser verification passed, the implementation remains static and dev-only, no feature comparison or runtime decision occurs, and all three governance gates remain BLOCKED."
+}
