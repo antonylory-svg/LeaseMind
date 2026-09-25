@@ -1,0 +1,206 @@
+{
+  "artifact_type": "G18_SYNTHETIC_FEATURE_READINESS_MATRIX_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-25",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g18-synthetic-feature-readiness-matrix",
+    "git_commit": "a00cb75c954e0a41d4bd63723573853c40b68e78"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "matrix": {
+    "package_name": "G18 Synthetic Feature Readiness Matrix",
+    "url": "http://127.0.0.1:5173/synthetic-feature-readiness-matrix.html",
+    "html_title": "SYNTHETIC FEATURE READINESS MATRIX — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_DESIGN_TIME_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC FEATURE READINESS MATRIX — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY MATRIX — DESIGN-TIME SOURCE COPY ONLY",
+      "NO FEATURE VALUE, COMPARISON OR MATCH RESULT COMPUTED"
+    ],
+    "regions_in_order": [
+      "READINESS CATEGORIES — SOURCE-BOUND DEFINITIONS",
+      "TWENTY HARD-CONSTRAINT CANDIDATES — INDEX ONLY",
+      "MIXED AND BLOCKED BOUNDARIES — NO STATUS FLATTENING",
+      "PROHIBITED INFERENCES — FIXTURE COPY",
+      "NON-COMPUTATION RESULT"
+    ],
+    "registry_readiness_values": [
+      "READY_FOR_DRAFT",
+      "READY_AS_CANDIDATE_ONLY",
+      "BLOCKED_PENDING_DECISION",
+      "EXCLUDED_FROM_V0_1"
+    ],
+    "readiness_reason": {
+      "value": "BLOCKED_PENDING_COMPATIBILITY_TABLE",
+      "classification": "OPTIONAL_SUBTYPE_OF_BLOCKED_PENDING_DECISION_NOT_A_FIFTH_STATUS"
+    },
+    "hard_constraint_candidate_feature_ids_in_order": [
+      "property_type_membership",
+      "area_range_fit",
+      "budget_fit",
+      "rent_rate_fit",
+      "business_category_allowed",
+      "condition_acceptability",
+      "timing_compatibility",
+      "entrance_requirement_fit",
+      "required_features_present",
+      "excluded_features_absent",
+      "loading_access_required_fit",
+      "power_min_fit",
+      "ceiling_height_min_fit",
+      "parking_min_fit",
+      "access_mode_hard_fit",
+      "country_code_membership",
+      "region_membership",
+      "city_membership",
+      "districts_membership",
+      "floor_option_fit"
+    ],
+    "candidate_universe_copy": [
+      "ALL 20 ARE DESIGN-TIME ELIGIBILITY_HARD_CONSTRAINT_CANDIDATES — NOT APPROVED RUNTIME RULES",
+      "FINAL LEGAL VERDICT IS NOT APPROVED FOR ANY OF THE 20",
+      "required_evidence_level REMAINS BLOCKED_PENDING_DECISION FOR ALL 20",
+      "automatic_ineligible_allowed = NO FOR ALL 20"
+    ],
+    "named_mixed_boundaries": [
+      {
+        "ordinal": 4,
+        "feature_id": "rent_rate_fit",
+        "copy": "QUALITATIVE VERSION/HASH DISCIPLINE ONLY — EXACT NUMERIC REPRESENTATION REMAINS BLOCKED"
+      },
+      {
+        "ordinal": 8,
+        "feature_id": "entrance_requirement_fit",
+        "copy": "OVERALL BLOCKED_PENDING_DECISION — PARTIAL QUALITATIVE PAIRS DO NOT FLATTEN THE ROW TO READY"
+      },
+      {
+        "ordinal": 15,
+        "feature_id": "access_mode_hard_fit",
+        "copy": "OVERALL BLOCKED_PENDING_DECISION — STRICT-EQUALITY BASELINE DOES NOT FLATTEN THE ROW TO READY"
+      },
+      {
+        "ordinal": 17,
+        "feature_id": "region_membership",
+        "copy": "READY_AS_CANDIDATE_ONLY QUALITATIVE LITERAL-MATCH BASELINE — NOT ACTIVE RUNTIME COMPARISON"
+      },
+      {
+        "ordinal": 18,
+        "feature_id": "city_membership",
+        "copy": "READY_AS_CANDIDATE_ONLY QUALITATIVE LITERAL-MATCH BASELINE — NOT ACTIVE RUNTIME COMPARISON"
+      },
+      {
+        "ordinal": 19,
+        "feature_id": "districts_membership",
+        "copy": "READY_AS_CANDIDATE_ONLY QUALITATIVE LITERAL-MATCH BASELINE — NOT ACTIVE RUNTIME COMPARISON"
+      },
+      {
+        "ordinal": 20,
+        "feature_id": "floor_option_fit",
+        "copy": "OVERALL BLOCKED_PENDING_DECISION — WILDCARD/LAND BOUNDARIES DO NOT FLATTEN THE ROW TO READY"
+      }
+    ],
+    "unlisted_row_status_rule": "NO PER-ROW registry_readiness MAY BE INFERRED OR DISPLAYED BEYOND AN EXACT SOURCE-BOUND EXPLICIT STATEMENT",
+    "terminal": {
+      "token": "SYNTHETIC_NO_FEATURE_COMPARISON_COMPUTED",
+      "line": "NO FEATURE COMPARISON COMPUTED — NO FEATURE VALUE, PASS, FAIL, INELIGIBLE, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE",
+    "TENANT_REQUEST_VALUE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "PER_ROW_STATUS_INFERENCE_OR_FLATTENING",
+    "ACTUAL_MATCHING_OR_CANDIDATE_GENERATION",
+    "COMPARISON_COMPATIBILITY_PASS_FAIL_OR_FEATURE_VALUE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_OR_DATA_CONTRACT_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "PROPOSAL_POLICY_DATA_CONTRACT_CARRIER_MANIFEST_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G18_SYNTHETIC_FEATURE_READINESS_MATRIX_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G18_SYNTHETIC_FEATURE_READINESS_MATRIX_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-readiness-matrix/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-readiness-matrix/G18_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-feature-readiness-matrix.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFeatureReadinessMatrixScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticFeatureReadinessMatrix.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFeatureReadinessMatrixEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticFeatureReadinessMatrix.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-readiness-matrix/G18_FEATURE_READINESS_MATRIX_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
