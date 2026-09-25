@@ -1,0 +1,184 @@
+{
+  "artifact_type": "G21_SYNTHETIC_FLOOR_OPTION_BOUNDARY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-25",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g21-synthetic-floor-option-boundary-reference",
+    "git_commit": "d3f2b28740dc612e2ae921fd38979324c8dba7e0"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G21 Synthetic Floor-Option Boundary Reference",
+    "url": "http://127.0.0.1:5173/synthetic-floor-option-boundary-reference.html",
+    "html_title": "SYNTHETIC FLOOR-OPTION BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC FLOOR-OPTION BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — PRE-AUTHORED SOURCE COPY ONLY",
+      "NO FLOOR-OPTION COMPARISON EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "WILDCARD [any] — UNRESTRICTED, VALUE_STATE OPEN",
+      "LAND — NOT_APPLICABLE, NOT PASS",
+      "INDEPENDENT PROPERTY-TYPE AND OPEN NUMERIC BOUNDARY",
+      "NON-COMPUTATION RESULT"
+    ],
+    "feature": {
+      "ordinal": 20,
+      "feature_id": "floor_option_fit",
+      "overall_registry_readiness": "BLOCKED_PENDING_DECISION",
+      "readiness_reason": "BLOCKED_PENDING_COMPATIBILITY_TABLE",
+      "source_decision": "XFR-D-012 v1.0",
+      "source_status": "APPROVED PARTIAL RULE — WILDCARD-UNRESTRICTED BEHAVIOR AND LAND-DERIVED NOT_APPLICABLE RESOLVED; EXACT WILDCARD VALUE_STATE AND NUMERIC CONVENTION REMAIN OPEN",
+      "automatic_ineligible_allowed": "NO",
+      "required_evidence_level": "BLOCKED_PENDING_DECISION",
+      "final_legal_verdict": "NOT_APPROVED"
+    },
+    "approved_cases": [
+      {
+        "condition": "request_floor_options = [any]",
+        "boundary": "RAW_REQUEST_PRESENT_UNRESTRICTED_NO_FLOOR_COMPARISON_FEATURE_DOES_NOT_PREVENT_COMPATIBILITY",
+        "derived_value_state": "OPEN_BLOCKED_PENDING_DECISION",
+        "not_applicable_assignment": "PROHIBITED",
+        "pass_fail_positive_evidence_or_qualification_result": "PROHIBITED"
+      },
+      {
+        "condition": "property_type = land AND structurally_required property_floor = null",
+        "boundary": "FLOOR_FEATURE_VALUE_STATE_NOT_APPLICABLE",
+        "pass_positive_evidence_or_qualification_result": "PROHIBITED",
+        "property_type_membership_replacement_or_suppression": "PROHIBITED"
+      }
+    ],
+    "independent_open_followups": [
+      "NUMERIC_TO_CATEGORY_CONVENTION_FOR_basement_semi_basement_ground_first_upper",
+      "EXACT_DERIVED_WILDCARD_VALUE_STATE_AND_CANDIDATE_RUNTIME_REPRESENTATION"
+    ],
+    "open_boundary": [
+      "REMAINING_COMPARISON_MAPPING_TABLE_AND_EXACT_RUNTIME_OPERATOR",
+      "PUBLIC_API_EVENT_SCHEMA_CARRIER_AND_REASON_CODES",
+      "EVIDENCE_CONTENTS_AND_FINAL_LEGAL_VERDICT",
+      "IMPLEMENTATION_ACTIVATION_AND_OPERATIONAL_CONSEQUENCES"
+    ],
+    "missing_value_copy": [
+      "REQUEST floor_options ABSENT — CANDIDATE value_state = NOT_APPLICABLE — NO COMPARISON",
+      "REQUEST floor_options PRESENT AND NOT [any], PROPERTY floor ABSENT, property_type NOT land — CANDIDATE value_state = UNKNOWN — NO FLOOR VERDICT"
+    ],
+    "prohibited_inferences": [
+      "NO INTEGER_TO_CATEGORY MAPPING THRESHOLD RANGE OR EXAMPLE",
+      "NO CATEGORY INFERENCE FROM property_floor OR property_total_floors",
+      "NO WILDCARD VALUE_STATE OR NOT_APPLICABLE ASSIGNMENT",
+      "NO WILDCARD PASS FAIL POSITIVE EVIDENCE OR QUALIFICATION ROUTE",
+      "NO LAND NOT_APPLICABLE AS PASS OR COMPATIBILITY",
+      "NO FLOOR BOUNDARY AS PROPERTY_TYPE RESULT",
+      "NO ACTIVE RUNTIME FEATURE VALUE OR COMPARISON RESULT",
+      "NO REJECTION OR AUTOMATIC INELIGIBLE",
+      "NO SCORE CONFIDENCE QUALIFICATION RISK RANKING RECOMMENDATION OR ROUTING",
+      "NO PROPERTY TENANT_REQUEST OR BUSINESS_RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "SYNTHETIC_NO_FLOOR_OPTION_COMPARISON_EXECUTED",
+      "line": "NO FLOOR-OPTION COMPARISON EXECUTED — NO NUMERIC MAPPING, FEATURE VALUE, PASS, FAIL, INELIGIBLE, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "FLOOR_NUMBER",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_FLOOR_OPTION_COMPARISON_NUMERIC_INTERPRETATION_OR_FEATURE_VALUE",
+    "NUMERIC_TO_CATEGORY_MAPPING_THRESHOLD_RANGE_OR_EXAMPLE",
+    "WILDCARD_OR_LAND_SEMANTIC_OVERCLAIM",
+    "ACTIVE_RUNTIME_COMPATIBILITY_PASS_FAIL_OR_INCOMPATIBILITY_RESULT",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_FEATURE_SCHEMA_POLICY_DATA_CONTRACT_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "MANIFEST_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G21_SYNTHETIC_FLOOR_OPTION_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G21_SYNTHETIC_FLOOR_OPTION_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-floor-option-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-floor-option-boundary-reference/G21_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-floor-option-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFloorOptionBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticFloorOptionBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFloorOptionBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticFloorOptionBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-floor-option-boundary-reference/G21_FLOOR_OPTION_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
