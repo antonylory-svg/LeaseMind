@@ -1,0 +1,119 @@
+{
+  "artifact_type": "G21_FLOOR_OPTION_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-floor-option-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G21_CODE_PHASE",
+  "verification_date": "2026-09-25",
+  "baseline_commit": "604a411ddb38ca602d7564a7f454e73bbf557f2b",
+  "branch": "development/sprint-7-matching-g21-synthetic-floor-option-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G21_SYNTHETIC_FLOOR_OPTION_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "89af48757daf357f8da9271c892076d0b531347e8a3e5153dd46bf15b4395e96",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-floor-option-boundary-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5176/synthetic-floor-option-boundary-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_operation_performed_by_code_author": false
+  },
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g21_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticFloorOptionBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "278 tests, 278 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "frozen_two_case_contract",
+      "detail": "The page renders the exact title, two permanent boundary lines, five regions in frozen order and exactly two separate abstract source-condition cases: wildcard [any] is present and unrestricted without comparison or derived value_state, while land plus structurally required floor null yields only floor-feature NOT_APPLICABLE.",
+      "status": "PASSED"
+    },
+    {
+      "id": "open_independence_fail_closed_and_non_computation",
+      "detail": "The page preserves property_type_membership independently, keeps numeric-to-category convention and exact wildcard value_state as two independent OPEN follow-ups, contains no numeric threshold, range, example floor integer, compatibility matrix or evaluator, preserves row-20/evidence/LEGAL/automatic-ineligible safeguards and performs no floor comparison or runtime decision.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation",
+      "detail": "The authored modules contain no state, effects, handlers, controls, links, network, storage, cookies, logging, timers, randomness or motion. The standalone HTML loads only the G21 entry; production roots expose no G21 page or component; no prior synthetic component is imported.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The dev-only URL rendered the exact HTML title, permanent lines, one h1, five labelled regions in order, one semantic two-case table, the independent/open boundary list and NON-COMPUTATION RESULT last. The accessibility tree exposed zero controls or links. At the observed 1280-pixel viewport, document scroll width did not exceed client width. Browser logs contained no warning or error.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "The page and shell are width-bounded with border-box sizing and overflow protection; the single three-column semantic table uses width 100%, fixed layout, responsive font/padding and anywhere word wrapping. Focused tests confirm the same static zero-control structure at all four frozen widths. Live rendering was verified in the local browser at 1280 pixels; exact headless width telemetry remains unavailable under the established host limitation.",
+      "status": "PASSED_WITH_ENVIRONMENT_LIMITATION"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 documentation paths plus 6 code/test/verification paths, the result label is exact, gate impact remains NONE, and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap failed before loading the focused test because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    },
+    {
+      "id": "exact_headless_viewport_telemetry_unavailable",
+      "description": "The current managed in-app browser exposes live rendering and accessibility but not exact programmable viewport resizing for 360, 390 and 768 pixels.",
+      "mitigation": "The authorized URL was verified at 1280 pixels in the in-app browser, while the four-width no-overflow boundary is enforced by fixed-layout responsive styles and covered by static contract tests, matching the established G20 verification approach.",
+      "test_effect": "No automated test or in-app browser render failed; only exact narrow-width live telemetry was unavailable."
+    },
+    {
+      "id": "cline_read_scope_violation_cancelled",
+      "description": "The delegated Cline task was cancelled before any file write after it read two G19 structural-example files outside the explicitly permitted G20-only example scope.",
+      "mitigation": "Controller immediately cancelled the task, verified a clean worktree with no G21 code files, and authored the bounded implementation locally from the frozen G21 documents and permitted G20 examples.",
+      "test_effect": "Cline produced no repository change, ran no Git operation and contributed no implementation artifact."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-floor-option-boundary-reference.html": "c8fab78b0a4276eb05c019b8f42a7f1fc742eb726c69cd44b6ae54c775d5d8b7",
+    "apps/web/src/synthetic/syntheticFloorOptionBoundaryReferenceScenario.ts": "39eb3c3aa4caef3c5e6f526eefff18e32e5b9b07cfc130c04befa5c4175a157d",
+    "apps/web/src/synthetic/SyntheticFloorOptionBoundaryReference.tsx": "5415abe5353e8529a93943aa7fadd7fd15706ae74428a3b662a3910873ea2f0f",
+    "apps/web/src/synthetic/syntheticFloorOptionBoundaryReferenceEntry.tsx": "e96c764449dc18597e6714251db46e1f9fc62ed89d01eb06afd229fe350ef64b",
+    "apps/web/tests/syntheticFloorOptionBoundaryReference.test.ts": "a3d09c145168d1ff4cd2a57c8d2f4cbcb05f3a126a7be22f5a7d9ccbb5f67636"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "floor_option_comparison_introduced": false,
+    "numeric_to_category_mapping_introduced": false,
+    "automatic_ineligible_allowed": "NO"
+  },
+  "conclusion": "G21_SYNTHETIC_FLOOR_OPTION_BOUNDARY_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no floor-option comparison, numeric mapping or runtime decision occurs, and all three governance gates remain BLOCKED."
+}
