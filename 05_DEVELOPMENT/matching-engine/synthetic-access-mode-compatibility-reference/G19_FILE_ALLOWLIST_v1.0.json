@@ -1,0 +1,190 @@
+{
+  "artifact_type": "G19_SYNTHETIC_ACCESS_MODE_COMPATIBILITY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-25",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g19-synthetic-access-mode-compatibility-reference",
+    "git_commit": "517fb2cf3d0aa342ce62bcbcc668df673ae3d302"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G19 Synthetic Access-Mode Compatibility Reference",
+    "url": "http://127.0.0.1:5173/synthetic-access-mode-compatibility-reference.html",
+    "html_title": "SYNTHETIC ACCESS-MODE COMPATIBILITY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC ACCESS-MODE COMPATIBILITY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — PRE-AUTHORED SOURCE COPY ONLY",
+      "NO ACCESS-MODE COMPARISON EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "ACCESS-MODE AXES — FLAT ENUM, NO ORDER",
+      "PRE-AUTHORED 4 × 4 COMPATIBILITY REFERENCE",
+      "FAIL-CLOSED AND PROHIBITED INFERENCES",
+      "NON-COMPUTATION RESULT"
+    ],
+    "feature": {
+      "ordinal": 15,
+      "feature_id": "access_mode_hard_fit",
+      "overall_registry_readiness": "BLOCKED_PENDING_DECISION",
+      "source_decision": "XFR-D-002 v1.0",
+      "source_status": "APPROVED PARTIAL QUALITATIVE COMPATIBILITY — 13 of 16 pairs remain OPEN",
+      "automatic_ineligible_allowed": "NO",
+      "required_evidence_level": "BLOCKED_PENDING_DECISION",
+      "final_legal_verdict": "NOT_APPROVED"
+    },
+    "axis_values_in_order": [
+      "business_hours",
+      "extended_hours",
+      "access_24_7",
+      "by_agreement"
+    ],
+    "axis_semantics": "FLAT_ENUM_NO_TOTAL_OR_PARTIAL_ORDER_NO_COVERAGE_STRENGTH_OR_NEGOTIABILITY_INFERENCE",
+    "cell_status_vocabulary": [
+      "COMPATIBLE",
+      "NEEDS_VERIFICATION"
+    ],
+    "cell_status_boundary": "PRE_AUTHORED_QUALITATIVE_REFERENCE_COPY_NOT_ACTIVE_RUNTIME_ENUM_OR_EXECUTED_RESULT",
+    "matrix_rows": [
+      {
+        "property": "business_hours",
+        "request_cells_in_axis_order": ["COMPATIBLE", "NEEDS_VERIFICATION", "NEEDS_VERIFICATION", "NEEDS_VERIFICATION"]
+      },
+      {
+        "property": "extended_hours",
+        "request_cells_in_axis_order": ["NEEDS_VERIFICATION", "COMPATIBLE", "NEEDS_VERIFICATION", "NEEDS_VERIFICATION"]
+      },
+      {
+        "property": "access_24_7",
+        "request_cells_in_axis_order": ["NEEDS_VERIFICATION", "NEEDS_VERIFICATION", "COMPATIBLE", "NEEDS_VERIFICATION"]
+      },
+      {
+        "property": "by_agreement",
+        "request_cells_in_axis_order": ["NEEDS_VERIFICATION", "NEEDS_VERIFICATION", "NEEDS_VERIFICATION", "NEEDS_VERIFICATION"]
+      }
+    ],
+    "matrix_totals": {
+      "cells": 16,
+      "compatible": 3,
+      "needs_verification": 13,
+      "incompatible_candidate": 0
+    },
+    "by_agreement_boundary": "EVERY_CELL_INVOLVING_BY_AGREEMENT_IS_NEEDS_VERIFICATION_INCLUDING_BY_AGREEMENT_X_BY_AGREEMENT",
+    "missing_value_copy": [
+      "REQUEST access_mode ABSENT — CANDIDATE value_state = NOT_APPLICABLE — NO COMPARISON",
+      "REQUEST access_mode PRESENT AND PROPERTY access_mode ABSENT — CANDIDATE value_state = UNKNOWN — NO COMPATIBILITY VERDICT"
+    ],
+    "prohibited_inferences": [
+      "NO TOTAL OR PARTIAL ORDER",
+      "NO BROADER-MODE-COVERS-NARROWER-MODE INFERENCE",
+      "NO BY_AGREEMENT STRENGTH, WEAKNESS OR AUTOMATIC AGREEMENT INFERENCE",
+      "NO ACTIVE RUNTIME FEATURE VALUE OR CELL RESULT",
+      "NO PASS, FAIL, INCOMPATIBILITY OR AUTOMATIC INELIGIBLE",
+      "NO SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING",
+      "NO PROPERTY, TENANT REQUEST OR BUSINESS RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "SYNTHETIC_NO_ACCESS_MODE_COMPARISON_EXECUTED",
+      "line": "NO ACCESS-MODE COMPARISON EXECUTED — NO FEATURE VALUE, PASS, FAIL, INELIGIBLE, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_ACCESS_MODE_COMPARISON_OR_FEATURE_VALUE",
+    "ACTIVE_RUNTIME_COMPATIBILITY_PASS_FAIL_OR_INCOMPATIBILITY_RESULT",
+    "ORDER_COVERAGE_STRENGTH_NEGOTIABILITY_OR_EQUIVALENCE_INFERENCE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_FEATURE_SCHEMA_POLICY_DATA_CONTRACT_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "MANIFEST_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G19_SYNTHETIC_ACCESS_MODE_COMPATIBILITY_REFERENCE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G19_SYNTHETIC_ACCESS_MODE_COMPATIBILITY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-access-mode-compatibility-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-access-mode-compatibility-reference/G19_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-access-mode-compatibility-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticAccessModeCompatibilityReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticAccessModeCompatibilityReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticAccessModeCompatibilityReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticAccessModeCompatibilityReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-access-mode-compatibility-reference/G19_ACCESS_MODE_COMPATIBILITY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
