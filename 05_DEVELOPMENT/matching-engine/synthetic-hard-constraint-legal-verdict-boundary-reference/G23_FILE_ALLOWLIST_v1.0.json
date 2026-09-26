@@ -1,0 +1,197 @@
+{
+  "artifact_type": "G23_SYNTHETIC_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-26",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g23-synthetic-hard-constraint-legal-verdict-boundary-reference",
+    "git_commit": "b8a35cfcbaa119d319db0b3346cb5a49e5acd2ce"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G23 Synthetic Hard-Constraint Legal-Verdict Boundary Reference",
+    "url": "http://127.0.0.1:5173/synthetic-hard-constraint-legal-verdict-boundary-reference.html",
+    "html_title": "SYNTHETIC HARD-CONSTRAINT LEGAL-VERDICT BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_G21_G22_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC HARD-CONSTRAINT LEGAL-VERDICT BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — PRE-AUTHORED SOURCE COPY ONLY",
+      "NO LEGAL VERDICT OR ELIGIBILITY ACTION EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "TWENTY CANDIDATES — NO FINAL LEGAL VERDICT",
+      "CONFIRMED PROTECTED/PROXY — UNCONDITIONAL CANDIDATE EXCLUSION",
+      "MISSING OR CONFLICTING EVIDENCE — PROMOTION BLOCKED ONLY",
+      "NON-DECISION RESULT"
+    ],
+    "source_decision": "XFR-D-014 v1.0",
+    "source_status": "APPROVED PARTIALLY_RESOLVED_BOUNDARY — NO FINAL LEGAL VERDICT FOR ANY CANDIDATE",
+    "canonical_identity": "FS-17 -> XFR-D-014",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "candidate_classification": "ELIGIBILITY_HARD_CONSTRAINT_CANDIDATE",
+    "active_runtime_feature_value": "PROHIBITED",
+    "automatic_ineligible_allowed": "NO",
+    "candidates": [
+      { "ordinal": 1, "feature_id": "property_type_membership" },
+      { "ordinal": 2, "feature_id": "area_range_fit" },
+      { "ordinal": 3, "feature_id": "budget_fit" },
+      { "ordinal": 4, "feature_id": "rent_rate_fit" },
+      { "ordinal": 5, "feature_id": "business_category_allowed" },
+      { "ordinal": 6, "feature_id": "condition_acceptability" },
+      { "ordinal": 7, "feature_id": "timing_compatibility" },
+      { "ordinal": 8, "feature_id": "entrance_requirement_fit" },
+      { "ordinal": 9, "feature_id": "required_features_present" },
+      { "ordinal": 10, "feature_id": "excluded_features_absent" },
+      { "ordinal": 11, "feature_id": "loading_access_required_fit" },
+      { "ordinal": 12, "feature_id": "power_min_fit" },
+      { "ordinal": 13, "feature_id": "ceiling_height_min_fit" },
+      { "ordinal": 14, "feature_id": "parking_min_fit" },
+      { "ordinal": 15, "feature_id": "access_mode_hard_fit" },
+      { "ordinal": 16, "feature_id": "country_code_membership" },
+      { "ordinal": 17, "feature_id": "region_membership" },
+      { "ordinal": 18, "feature_id": "city_membership" },
+      { "ordinal": 19, "feature_id": "districts_membership" },
+      { "ordinal": 20, "feature_id": "floor_option_fit" }
+    ],
+    "boundary_cases": [
+      {
+        "case": "NO_FINAL_LEGAL_VERDICT",
+        "candidate_state": "ELIGIBILITY_HARD_CONSTRAINT_CANDIDATE",
+        "approval_classification_promotion_rejection_or_ineligible": "PROHIBITED"
+      },
+      {
+        "case": "CONFIRMED_PROTECTED_PROXY_OR_DISCRIMINATORY_RESTRICTION",
+        "effect": "UNCONDITIONAL_EXCLUSION_OF_THE_CANDIDATE_OR_USE_FROM_HARD_CONSTRAINT_ELIGIBILITY",
+        "user_rejection_or_ineligible": "PROHIBITED",
+        "lawful_basis_override": "PROHIBITED"
+      },
+      {
+        "case": "MISSING_UNKNOWN_UNCLASSIFIED_STALE_OR_CONFLICTING_EVIDENCE",
+        "effect": "BLOCK_PROMOTION_OF_AFFECTED_CANDIDATE_ONLY",
+        "negative_fact_failure_rejection_exclusion_or_automatic_ineligible": "PROHIBITED"
+      },
+      {
+        "case": "FUTURE_ITEM_SPECIFIC_VERDICT",
+        "requirement": "SEPARATE_VERSION_HASH_BOUND_EVIDENCE_BACKED_DECISION_WITH_FULL_OWNER_APPROVER_SET"
+      }
+    ],
+    "independent_open_boundaries": [
+      "EXACT_ITEM_SPECIFIC_LEGAL_VERDICTS_AND_CLASSIFICATIONS",
+      "PROTECTED_PROXY_AND_DISCRIMINATORY_EFFECT_CLASSIFICATION",
+      "LAWFUL_BASIS",
+      "COMPATIBILITY_AND_EVIDENCE_SUFFICIENCY",
+      "DATASET_POLICY_DATA_CONTRACT_CARRIER_MANIFEST_AND_RUNTIME_CONTENTS",
+      "SCORING_QUALIFICATION_RISK_RANKING_RECOMMENDATION_ROUTING_AND_OPERATIONAL_CONSEQUENCES"
+    ],
+    "prohibited_inferences": [
+      "NO FINAL LEGAL VERDICT",
+      "NO CANDIDATE APPROVAL CLASSIFICATION OR PROMOTION",
+      "NO USER REJECTION OR AUTOMATIC INELIGIBLE",
+      "NO MISSING_EVIDENCE AS NEGATIVE FACT",
+      "NO SCORE CONFIDENCE QUALIFICATION RISK RANKING RECOMMENDATION OR ROUTING",
+      "NO RUNTIME ENUM FEATURE_VALUE POLICY DATA_CONTRACT OR IMPLEMENTATION APPROVAL",
+      "NO PROPERTY TENANT_REQUEST OR BUSINESS_RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "SYNTHETIC_NO_LEGAL_VERDICT_OR_ELIGIBILITY_ACTION_EXECUTED",
+      "line": "NO LEGAL VERDICT OR ELIGIBILITY ACTION EXECUTED — NO CANDIDATE APPROVAL, CLASSIFICATION, PROMOTION, REJECTION, INELIGIBLE, SCORE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "LEGAL_VERDICT_OR_CLASSIFICATION_EXECUTION",
+    "CANDIDATE_APPROVAL_PROMOTION_REJECTION_OR_AUTOMATIC_INELIGIBLE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_FEATURE_SCHEMA_POLICY_DATA_CONTRACT_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "MANIFEST_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G23_SYNTHETIC_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G23_SYNTHETIC_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-hard-constraint-legal-verdict-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-hard-constraint-legal-verdict-boundary-reference/G23_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-hard-constraint-legal-verdict-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticHardConstraintLegalVerdictBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticHardConstraintLegalVerdictBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-hard-constraint-legal-verdict-boundary-reference/G23_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
