@@ -1,0 +1,199 @@
+{
+  "artifact_type": "G22_SYNTHETIC_BUDGET_BASIS_MISMATCH_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-25",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g22-synthetic-budget-basis-mismatch-reference",
+    "git_commit": "2c816f1f4a61159909fb50d7a8f4bfc9e8a082a7"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G22 Synthetic Budget-Basis Mismatch Reference",
+    "url": "http://127.0.0.1:5173/synthetic-budget-basis-mismatch-reference.html",
+    "html_title": "SYNTHETIC BUDGET-BASIS MISMATCH REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_G21_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC BUDGET-BASIS MISMATCH REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — PRE-AUTHORED SOURCE COPY ONLY",
+      "NO RENT/BUDGET COMPARISON EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "PRE-AUTHORED 2 × 2 BASIS REFERENCE",
+      "MISMATCH — UNKNOWN AND CALCULATION BLOCKED",
+      "INDEPENDENT NUMERIC, RUNTIME AND QUALIFICATION BOUNDARIES",
+      "NON-COMPUTATION RESULT"
+    ],
+    "features": [
+      {
+        "ordinal": 3,
+        "feature_id": "budget_fit"
+      },
+      {
+        "ordinal": 4,
+        "feature_id": "rent_rate_fit"
+      }
+    ],
+    "source_decision": "XFR-D-013 v1.0",
+    "source_status": "APPROVED QUALITATIVE MISMATCH RULE — EXACT RUNTIME REPRESENTATION AND FUTURE NUMERIC FIELD REMAIN OPEN",
+    "qualitative_registry_readiness": "READY_AS_CANDIDATE_ONLY",
+    "active_runtime_feature_value": "PROHIBITED",
+    "automatic_ineligible_allowed": "NO",
+    "basis_cases": [
+      {
+        "property_operating_expenses_included": true,
+        "request_budget_includes_operating_expenses": true,
+        "basis_status": "BASIS_ALIGNED",
+        "boundary": "ORDINARY_COMPARISON_REMAINS_GOVERNED_ELSEWHERE",
+        "comparison_on_page": "PROHIBITED"
+      },
+      {
+        "property_operating_expenses_included": false,
+        "request_budget_includes_operating_expenses": false,
+        "basis_status": "BASIS_ALIGNED",
+        "boundary": "ORDINARY_COMPARISON_REMAINS_GOVERNED_ELSEWHERE",
+        "comparison_on_page": "PROHIBITED"
+      },
+      {
+        "property_operating_expenses_included": true,
+        "request_budget_includes_operating_expenses": false,
+        "basis_status": "BASIS_MISMATCH",
+        "candidate_value_state": "UNKNOWN",
+        "calculation": "BLOCKED",
+        "pass_fail_incompatibility_rejection_or_ineligible": "PROHIBITED"
+      },
+      {
+        "property_operating_expenses_included": false,
+        "request_budget_includes_operating_expenses": true,
+        "basis_status": "BASIS_MISMATCH",
+        "candidate_value_state": "UNKNOWN",
+        "calculation": "BLOCKED",
+        "pass_fail_incompatibility_rejection_or_ineligible": "PROHIBITED"
+      }
+    ],
+    "independent_open_boundaries": [
+      "EXACT_RUNTIME_REPRESENTATION_OF_UNKNOWN_FOR_THIS_RULE",
+      "FUTURE_NUMERIC_OPERATING_EXPENSE_AMOUNT_FIELD",
+      "XFR_D_003_EFFECTIVE_RATE_NUMERIC_ROUNDING_AND_SERIALIZATION_CONTRACT",
+      "MATCHING_QUALIFICATION_POLICY_RUNTIME_ROUTING_AND_OPERATIONAL_CONSEQUENCES",
+      "PUBLIC_API_EVENT_DATABASE_SCHEMA_CARRIER_REASON_CODES_AND_EVIDENCE"
+    ],
+    "independent_features_and_policies": [
+      "budget_fit",
+      "rent_rate_fit",
+      "XFR-D-003",
+      "MATCHING_QUALIFICATION_POLICY"
+    ],
+    "prohibited_inferences": [
+      "NO OPERATING_EXPENSE AMOUNT NUMERIC FIELD FORMULA THRESHOLD ROUNDING OR SERIALIZATION",
+      "NO RENT_BUDGET OR EFFECTIVE_RATE COMPARISON",
+      "NO BASIS_MISMATCH AS PASS FAIL INCOMPATIBILITY REJECTION OR INELIGIBLE",
+      "NO UNKNOWN AS NEGATIVE FACT",
+      "NO ACTIVE RUNTIME FEATURE VALUE ENUM OR ROUTE",
+      "NO SCORE CONFIDENCE QUALIFICATION RISK RANKING RECOMMENDATION OR ROUTING",
+      "NO PROPERTY TENANT_REQUEST OR BUSINESS_RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "SYNTHETIC_NO_BUDGET_BASIS_COMPARISON_EXECUTED",
+      "line": "NO RENT/BUDGET COMPARISON EXECUTED — NO EXPENSE AMOUNT, EFFECTIVE RATE, FEATURE VALUE, PASS, FAIL, INELIGIBLE, SCORE, CONFIDENCE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "negative_outcome_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "ACTUAL_RENT_BUDGET_OR_EFFECTIVE_RATE_COMPARISON",
+    "OPERATING_EXPENSE_AMOUNT_OR_NUMERIC_INVENTION",
+    "ACTIVE_RUNTIME_FEATURE_VALUE_PASS_FAIL_OR_INCOMPATIBILITY_RESULT",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "RUNTIME_ENUM_FEATURE_SCHEMA_POLICY_DATA_CONTRACT_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "MANIFEST_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G22_SYNTHETIC_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFIED",
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G22_SYNTHETIC_BUDGET_BASIS_MISMATCH_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-budget-basis-mismatch-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-budget-basis-mismatch-reference/G22_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-budget-basis-mismatch-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticBudgetBasisMismatchReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticBudgetBasisMismatchReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-budget-basis-mismatch-reference/G22_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}

@@ -1,0 +1,133 @@
+{
+  "artifact_type": "G22_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFICATION",
+  "package": "synthetic-budget-basis-mismatch-reference",
+  "package_version": "1.0",
+  "phase": "G22_CODE_PHASE",
+  "verification_date": "2026-09-26",
+  "baseline_commit": "3fe35df28066cc74aa82adc43ab25ecf77ee820a",
+  "branch": "development/sprint-7-matching-g22-synthetic-budget-basis-mismatch-reference",
+  "result": "VERIFIED",
+  "result_label": "G22_SYNTHETIC_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFIED",
+  "allowlist_sha256": "2942de606816d90afb77e77d4856df024ec045a33e8b8775e27ec1556e72842a",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-budget-basis-mismatch-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5177/synthetic-budget-basis-mismatch-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_operation_performed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-budget-basis-mismatch-reference.html",
+    "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticBudgetBasisMismatchReference.tsx",
+    "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceEntry.tsx",
+    "apps/web/tests/syntheticBudgetBasisMismatchReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-budget-basis-mismatch-reference/G22_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g22_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticBudgetBasisMismatchReference.test.ts (cwd apps/web)",
+      "observed": "10 tests, 10 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "288 tests, 288 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "frozen_four_case_contract",
+      "detail": "The page renders exactly four abstract boolean combinations in one semantic table. true/true and false/false are BASIS_ALIGNED with the ordinary comparison governed elsewhere and explicitly not executed here; true/false and false/true are BASIS_MISMATCH with candidate UNKNOWN and calculation blocked, never PASS, FAIL, incompatibility, rejection or INELIGIBLE.",
+      "status": "PASSED"
+    },
+    {
+      "id": "open_independence_and_non_computation",
+      "detail": "budget_fit, rent_rate_fit, XFR-D-003 and Qualification remain independent. Exact UNKNOWN runtime representation, future numeric operating-expense field, carrier, reason codes and evidence remain OPEN. No expense amount, formula, threshold, rounding, serialization, effective-rate calculation, runtime result or business action is introduced.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation",
+      "detail": "The authored modules contain no controls, links, state, effects, handlers, live regions, network, storage, cookies, logging, timers, randomness or motion. The standalone HTML loads only the G22 entry, no prior package is imported and no production entry or configuration is modified.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The dev-only URL rendered the exact title, permanent lines, one h1, five labelled regions in order, one semantic four-case table, explicit OPEN boundaries and NON-COMPUTATION RESULT last. The accessibility tree exposed no controls or links.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "The page and shell are width-bounded with border-box sizing and overflow protection; the four-column semantic table uses width 100%, fixed layout, responsive font/padding and anywhere word wrapping. Live rendering was verified in the local in-app browser; exact programmable multi-width telemetry was unavailable in the current browser bridge.",
+      "status": "PASSED_WITH_ENVIRONMENT_LIMITATION"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 documentation paths plus 6 code/test/verification paths, the result label is exact, gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap failed before loading the focused test because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    },
+    {
+      "id": "exact_headless_viewport_telemetry_unavailable",
+      "description": "The current local browser bridge exposed live rendering and accessibility but not exact programmable resizing for every frozen viewport.",
+      "mitigation": "The page was verified live while the four-width no-overflow boundary is enforced by fixed-layout responsive styles and covered by static contract checks.",
+      "test_effect": "No automated test or live browser render failed."
+    },
+    {
+      "id": "cline_stalled_without_write",
+      "description": "The delegated Cline code-phase task read only the three permitted G22 documentation files, then remained in a thinking state without creating a file.",
+      "mitigation": "The controller cancelled the task, confirmed all six planned files were absent and authored the bounded implementation locally from the frozen G22 documents.",
+      "test_effect": "Cline produced no repository change and ran no Git or shell command."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-budget-basis-mismatch-reference.html": "5cd272a98d87a6e7548d0d8c17baf5691e2ecc5621d5f8baddac3106133c9102",
+    "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceScenario.ts": "8028814d119e168dda68f8fdc2d06643160f56f1ae8e3e2ca6e4a3c91fab8b20",
+    "apps/web/src/synthetic/SyntheticBudgetBasisMismatchReference.tsx": "916d62941b5231e10f30c7564b0cea7da5a10c9b2ad4a1aaa9ee6a8cf1b2b248",
+    "apps/web/src/synthetic/syntheticBudgetBasisMismatchReferenceEntry.tsx": "c09d256cac4e388ae74d1052b80c65363d1b0de24875afa4d6c9e9c751186846",
+    "apps/web/tests/syntheticBudgetBasisMismatchReference.test.ts": "184afebf6cf38e0ef08586ac7f19650a2d0c8dc3723c994105ff2a0f376b744d"
+  },
+  "delegation": {
+    "cline_attempted": true,
+    "cline_files_created": 0,
+    "cline_git_or_shell_commands_run": false,
+    "controller_authored_after_cline_stalled": true
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "budget_basis_comparison_introduced": false,
+    "numeric_operating_expense_field_introduced": false,
+    "automatic_ineligible_allowed": "NO"
+  },
+  "conclusion": "G22_SYNTHETIC_BUDGET_BASIS_MISMATCH_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no budget-basis comparison or numeric operating-expense field is introduced, and all three governance gates remain BLOCKED."
+}
