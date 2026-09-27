@@ -1,0 +1,70 @@
+import type { CSSProperties } from 'react';
+import {
+  SYNTHETIC_LAWFUL_BASIS_ENUM_BOUNDARY,
+  SYNTHETIC_LAWFUL_BASIS_FAIL_CLOSED_BOUNDARY,
+  SYNTHETIC_LAWFUL_BASIS_OPEN_CONTENT,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_DISCLAIMER,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_MATRIX,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_REGIONS_IN_ORDER,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_SCOPE_LINE,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_SOURCE_BOUNDARY,
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_TITLE,
+  SYNTHETIC_LAWFUL_BASIS_STATUS_VALUES,
+  SYNTHETIC_LAWFUL_BASIS_TERMINAL_LINE,
+  SYNTHETIC_LAWFUL_BASIS_TERMINAL_TOKEN
+} from './syntheticLawfulBasisProjectionBoundaryReferenceScenario.js';
+
+const [SOURCE_REGION, MATRIX_REGION, ENUM_REGION, FAIL_CLOSED_REGION, OPEN_REGION, TERMINAL_REGION] =
+  SYNTHETIC_LAWFUL_BASIS_PROJECTION_REGIONS_IN_ORDER;
+
+const styles: Record<string, CSSProperties> = {
+  page: { boxSizing: 'border-box', minHeight: '100vh', width: '100%', overflowX: 'hidden', background: '#101827', color: '#f7fafc', fontFamily: 'system-ui, sans-serif', padding: 'clamp(1rem, 4vw, 3rem)' },
+  shell: { boxSizing: 'border-box', width: 'min(100%, 76rem)', margin: '0 auto', minWidth: 0 },
+  title: { margin: '0 0 1rem', color: '#fff', fontSize: 'clamp(1.3rem, 5vw, 2.55rem)', lineHeight: 1.15, overflowWrap: 'anywhere' },
+  eyebrow: { margin: '0.45rem 0', color: '#8ee7d1', fontWeight: 750, letterSpacing: '0.04em', overflowWrap: 'anywhere' },
+  region: { boxSizing: 'border-box', minWidth: 0, marginTop: '1rem', padding: 'clamp(0.75rem, 3vw, 1.5rem)', border: '2px solid #46bfa7', borderRadius: '0.8rem', background: '#f8fafc', color: '#17243a', overflowWrap: 'anywhere' },
+  warning: { boxSizing: 'border-box', minWidth: 0, marginTop: '1rem', padding: 'clamp(0.75rem, 3vw, 1.5rem)', border: '2px solid #d69e2e', borderRadius: '0.8rem', background: '#fff9e8', color: '#4a3510', overflowWrap: 'anywhere' },
+  regionTitle: { margin: '0 0 1rem', color: '#0b5c68', fontSize: '1.05rem', letterSpacing: '0.03em', lineHeight: 1.4, overflowWrap: 'anywhere' },
+  list: { margin: 0, paddingLeft: '1.25rem' },
+  item: { margin: '0.55rem 0', fontWeight: 650, lineHeight: 1.5, overflowWrap: 'anywhere' },
+  enumList: { display: 'flex', flexWrap: 'wrap', gap: '0.5rem', margin: '0 0 1rem', padding: 0, listStyle: 'none' },
+  enumItem: { padding: '0.4rem 0.65rem', border: '1px solid #0b5c68', borderRadius: '0.4rem', background: '#eef3fb', color: '#23446c', fontWeight: 800, overflowWrap: 'anywhere' },
+  table: { boxSizing: 'border-box', borderCollapse: 'collapse', tableLayout: 'fixed', width: '100%', minWidth: 0, fontSize: 'clamp(0.65rem, 1.7vw, 0.9rem)' },
+  cell: { boxSizing: 'border-box', border: '1px solid #718096', padding: 'clamp(0.25rem, 1vw, 0.65rem)', textAlign: 'left', verticalAlign: 'top', overflowWrap: 'anywhere', wordBreak: 'break-word' },
+  header: { background: '#dff2ed', color: '#0b5c68', fontWeight: 800 },
+  posture: { background: '#eef3fb', color: '#23446c', fontWeight: 700 },
+  terminal: { boxSizing: 'border-box', minWidth: 0, marginTop: '1rem', padding: 'clamp(1rem, 3vw, 1.5rem)', border: '2px solid #f6c453', borderRadius: '0.8rem', background: '#1d2d46', color: '#fff', overflowWrap: 'anywhere' },
+  terminalTitle: { margin: '0 0 1rem', color: '#f6c453', fontSize: '1.05rem' },
+  terminalToken: { margin: 0, color: '#f6c453', fontWeight: 800, overflowWrap: 'anywhere' },
+  terminalLine: { margin: '0.75rem 0 0', fontWeight: 750, lineHeight: 1.5, overflowWrap: 'anywhere' }
+};
+
+function StaticList({ items }: { items: readonly string[] }) {
+  return <ul style={styles.list}>{items.map(item => <li key={item} style={styles.item}>{item}</li>)}</ul>;
+}
+
+function BoundaryMatrix() {
+  return (
+    <table style={styles.table}>
+      <caption>Qualitative source-ownership and future read-only-consumption boundaries — no Matching contract</caption>
+      <thead><tr><th scope="col" style={{ ...styles.cell, ...styles.header }}>Boundary</th><th scope="col" style={{ ...styles.cell, ...styles.header }}>Source authority</th><th scope="col" style={{ ...styles.cell, ...styles.header }}>Permitted future posture</th><th scope="col" style={{ ...styles.cell, ...styles.header }}>Explicit prohibition</th></tr></thead>
+      <tbody>{SYNTHETIC_LAWFUL_BASIS_PROJECTION_MATRIX.map(row => <tr key={row.boundary}><th scope="row" style={{ ...styles.cell, ...styles.header }}>{row.boundary}</th><td style={styles.cell}>{row.sourceAuthority}</td><td style={{ ...styles.cell, ...styles.posture }}>{row.permittedFuturePosture}</td><td style={styles.cell}>{row.explicitProhibition}</td></tr>)}</tbody>
+    </table>
+  );
+}
+
+export default function SyntheticLawfulBasisProjectionBoundaryReference() {
+  return (
+    <main style={styles.page}><div style={styles.shell}>
+      <h1 style={styles.title}>{SYNTHETIC_LAWFUL_BASIS_PROJECTION_TITLE}</h1>
+      <p style={styles.eyebrow}>{SYNTHETIC_LAWFUL_BASIS_PROJECTION_DISCLAIMER}</p>
+      <p style={styles.eyebrow}>{SYNTHETIC_LAWFUL_BASIS_PROJECTION_SCOPE_LINE}</p>
+      <section aria-label={SOURCE_REGION} style={styles.region}><h2 style={styles.regionTitle}>{SOURCE_REGION}</h2><StaticList items={SYNTHETIC_LAWFUL_BASIS_PROJECTION_SOURCE_BOUNDARY} /></section>
+      <section aria-label={MATRIX_REGION} style={styles.region}><h2 style={styles.regionTitle}>{MATRIX_REGION}</h2><BoundaryMatrix /></section>
+      <section aria-label={ENUM_REGION} style={styles.region}><h2 style={styles.regionTitle}>{ENUM_REGION}</h2><ul style={styles.enumList}>{SYNTHETIC_LAWFUL_BASIS_STATUS_VALUES.map(value => <li key={value} style={styles.enumItem}>{value}</li>)}</ul><StaticList items={SYNTHETIC_LAWFUL_BASIS_ENUM_BOUNDARY} /></section>
+      <section aria-label={FAIL_CLOSED_REGION} style={styles.warning}><h2 style={styles.regionTitle}>{FAIL_CLOSED_REGION}</h2><StaticList items={SYNTHETIC_LAWFUL_BASIS_FAIL_CLOSED_BOUNDARY} /></section>
+      <section aria-label={OPEN_REGION} style={styles.region}><h2 style={styles.regionTitle}>{OPEN_REGION}</h2><StaticList items={SYNTHETIC_LAWFUL_BASIS_OPEN_CONTENT} /></section>
+      <section aria-label={TERMINAL_REGION} style={styles.terminal}><h2 style={styles.terminalTitle}>{TERMINAL_REGION}</h2><p style={styles.terminalToken}>{SYNTHETIC_LAWFUL_BASIS_TERMINAL_TOKEN}</p><p style={styles.terminalLine}>{SYNTHETIC_LAWFUL_BASIS_TERMINAL_LINE}</p></section>
+    </div></main>
+  );
+}

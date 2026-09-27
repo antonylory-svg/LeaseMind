@@ -1,0 +1,130 @@
+{
+  "artifact_type": "G25_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-lawful-basis-projection-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G25_CODE_PHASE",
+  "verification_date": "2026-09-27",
+  "baseline_commit": "e07d8e1c67bfcd189ca79546a2ca01002fd82866",
+  "branch": "development/sprint-7-matching-g25-synthetic-lawful-basis-projection-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G25_SYNTHETIC_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "69e7dac2b7306cff5d9a88677e8c3f60c58973b6890b0f84d1a0fb0ce2852231",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-lawful-basis-projection-boundary-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5173/synthetic-lawful-basis-projection-boundary-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_mutation_performed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-lawful-basis-projection-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticLawfulBasisProjectionBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticLawfulBasisProjectionBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-lawful-basis-projection-boundary-reference/G25_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g25_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticLawfulBasisProjectionBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "321 tests, 321 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "sole_writer_and_read_only_matrix",
+      "detail": "The page renders exactly six qualitative rows in one semantic matrix. Lawful Basis/Consent Registry remains the sole writer; future Matching posture is purpose-bound, scope-compatible, versioned and read-only; Matching cannot create, extend, restore, replace, amend, reinterpret or repair source lawful-basis facts.",
+      "status": "PASSED"
+    },
+    {
+      "id": "exact_source_enum_without_contract_mapping",
+      "detail": "The exact Architecture section 11 values ACTIVE, EXPIRED, REVOKED, TERMINATED, SUSPENDED and UNDER_REVIEW are preserved in source order without Mapping, ordering, equivalence, severity, transition, state machine or Matching contract representation.",
+      "status": "PASSED"
+    },
+    {
+      "id": "affected_use_fail_closed_non_adverse",
+      "detail": "Every frozen unusable-projection case fails closed only for the affected governed use. The page creates no negative fact, zero/default, automatic INELIGIBLE, rejection, route, reason, display, unrelated/global block, guessed status, inferred purpose, fallback, consumer repair or silent secondary use.",
+      "status": "PASSED"
+    },
+    {
+      "id": "existing_contract_non_importation_and_open_content",
+      "detail": "Existing Reveal/Participation lawful-basis contracts remain context only and are not imported into Matching by analogy. All twelve exact projection, contract, mapping, carrier, version, TTL, RBAC, recovery, operational, evidence and approval categories remain OPEN.",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_non_decision_and_isolation",
+      "detail": "The authored modules contain no registry write, contract execution, lawful-basis determination, controls, links, state, effects, handlers, live regions, network, storage, logging, timers, randomness or motion. The standalone HTML loads only the G25 entry; no production entry/configuration or prior package is modified.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The exact authorized dev URL rendered the exact title, three permanent lines, one h1, six labelled regions in order, one semantic six-row matrix, six source enum values and NON-DECISION RESULT last. The accessibility tree exposed no controls or links; browser console warnings/errors were empty.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "At explicit browser viewport widths 360, 390, 768 and 1280 px, the document retained six sections, one six-row matrix, one h1 and zero controls; document scroll width equalled client width at each size and horizontal overflow was false.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 unchanged documentation paths plus 6 code/test/verification paths, the result label is exact, gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap is affected by Node os.userInfo returning uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-lawful-basis-projection-boundary-reference.html": "f30e9e89895c0f51a72a4adf5e78b3e830a82b290fe45a276e9c655578970ae2",
+    "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceScenario.ts": "b575ed1c344368ba77c558aaa67442a4dac1859d49ea3b882eb271ee36179219",
+    "apps/web/src/synthetic/SyntheticLawfulBasisProjectionBoundaryReference.tsx": "5f4d5b8adae1b3db75e2bd6e47f374a6efc0b18a4753e9b74306a9698ed89af6",
+    "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceEntry.tsx": "37e6609bd46c340abfad7dc38607e00bac37119f95c6bbb07d491861b2f7a579",
+    "apps/web/tests/syntheticLawfulBasisProjectionBoundaryReference.test.ts": "d7eaeb6123108fbcc2bec59b13a145afc75d7dfcce2707633b932c0c0af19084"
+  },
+  "delegation": {
+    "cline_used_in_code_phase": false,
+    "reason": "Cline stopped during the documentation phase before completing its three-file task. The controller repaired and completed documentation, then authored the frozen six-path G25 code scope locally.",
+    "controller_authored": true
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "matching_contract_approved": false,
+    "lawful_basis_determination_performed": false,
+    "runtime_action_executed": false
+  },
+  "conclusion": "G25_SYNTHETIC_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no registry write, Matching contract, lawful-basis determination, negative fact or runtime action is executed, and all three governance gates remain BLOCKED."
+}
