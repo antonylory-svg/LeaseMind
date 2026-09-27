@@ -1,0 +1,124 @@
+{
+  "artifact_type": "G24_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFICATION",
+  "package": "synthetic-feature-state-axis-separation-reference",
+  "package_version": "1.0",
+  "phase": "G24_CODE_PHASE",
+  "verification_date": "2026-09-27",
+  "baseline_commit": "594204234919007b76c86fedb458ab5e3ea01c0f",
+  "branch": "development/sprint-7-matching-g24-synthetic-feature-state-axis-separation-reference",
+  "result": "VERIFIED",
+  "result_label": "G24_SYNTHETIC_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFIED",
+  "allowlist_sha256": "485c16b2962d3fefd90ce33d202cfc4db8f6887d7558222a5727aac4b684e3db",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-feature-state-axis-separation-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5173/synthetic-feature-state-axis-separation-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_mutation_performed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-feature-state-axis-separation-reference.html",
+    "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticFeatureStateAxisSeparationReference.tsx",
+    "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceEntry.tsx",
+    "apps/web/tests/syntheticFeatureStateAxisSeparationReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-feature-state-axis-separation-reference/G24_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g24_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticFeatureStateAxisSeparationReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "310 tests, 310 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "five_domain_separation",
+      "detail": "The page renders exactly five distinct domains in one semantic table. registry_readiness, value_state and processing_eligibility retain their design-time/internal candidate limits; evidence_status preserves the exact seven-value Architecture section 13 enum; lawful_basis_status preserves the exact six-value Architecture section 11 source-registry enum and is explicitly not a FeatureValue axis.",
+      "status": "PASSED"
+    },
+    {
+      "id": "qualitative_and_exact_status_separation",
+      "detail": "The qualitative axis model READY_FOR_DRAFT and exact Feature Schema row 18 BLOCKED_PENDING_DECISION statements remain simultaneously visible as design-time statements without runtime readiness or exact contract approval. readiness_reason remains supporting text rather than a fifth registry readiness value.",
+      "status": "PASSED"
+    },
+    {
+      "id": "non_coercion_and_affected_use_boundary",
+      "detail": "PRESENT creates no evidence or processing inference; UNKNOWN and NOT_APPLICABLE remain distinct and non-adverse; STALE remains evidence-only; DATA_PROCESSING_BLOCKED fails closed only for the affected governed use. No axis collapse, default mapping, numeric coercion, automatic INELIGIBLE, rejection or global block is authored.",
+      "status": "PASSED"
+    },
+    {
+      "id": "open_contract_and_non_decision",
+      "detail": "All nine frozen open-contract categories remain explicit. The authored modules contain no runtime enum/state-machine execution, decisions, controls, links, state, effects, handlers, live regions, network, storage, logging, timers, randomness or motion.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The exact authorized dev URL rendered the exact title, three permanent lines, one h1, six labelled regions in order, one semantic five-row table and NON-DECISION RESULT last. The accessibility tree exposed no controls or links; browser console warnings/errors were empty.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "At explicit browser viewport widths 360, 390, 768 and 1280 px, the document retained six sections, one five-row table, one h1 and zero controls; document scroll width equalled client width at each size and horizontal overflow was false.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 unchanged documentation paths plus 6 code/test/verification paths, the result label is exact, gate impact remains NONE and IMPLEMENTATION_READINESS_GATE, SYNTHETIC_ACCEPTANCE_GATE and PRODUCTION_LAUNCH_GATE remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap failed before loading the focused test because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-feature-state-axis-separation-reference.html": "8b0d1f34d313e37b2e8be6c4dcd03d5bab8925d4e40f98f57809c90b2627cd62",
+    "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceScenario.ts": "c5332fe8f1becb8221af28b6878b6a0f48122814b9fab2a36d90b672ef7f4b52",
+    "apps/web/src/synthetic/SyntheticFeatureStateAxisSeparationReference.tsx": "b0ce7e2f3462f9730af47ab016cba66437be37c97e73b5b911bd8febbebc2109",
+    "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceEntry.tsx": "a5e0216ac0bec86f2619204d78a505f2418af8616921b293bd76cf1eb6dc5024",
+    "apps/web/tests/syntheticFeatureStateAxisSeparationReference.test.ts": "c84097a77276b44b64db76f6b36368e2de80de70d2b9cbb227537511df1f4274"
+  },
+  "delegation": {
+    "cline_used_in_code_phase": false,
+    "reason": "The delegated Cline task exceeded its approved read scope and was cancelled before any repository write. The controller authored the frozen six-path G24 code scope locally.",
+    "controller_authored": true
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "runtime_enum_or_state_machine_approved": false,
+    "eligibility_action_executed": false
+  },
+  "conclusion": "G24_SYNTHETIC_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no runtime enum, mapping, transition, cascade, value coercion or eligibility action is executed, and all three governance gates remain BLOCKED."
+}
