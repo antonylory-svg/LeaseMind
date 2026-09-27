@@ -1,0 +1,127 @@
+{
+  "artifact_type": "G26_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-mutual-aggregate-qualitative-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G26_CODE_PHASE",
+  "verification_date": "2026-09-27",
+  "baseline_commit": "03b66e28561be9c4f9777068ede6a259dce3e46d",
+  "branch": "development/sprint-7-matching-g26-synthetic-mutual-aggregate-qualitative-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G26_SYNTHETIC_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G26_SYNTHETIC_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "ff2f3196237168e61e96d626835be76ec22722e3ca96dcff0a949d567f1f9341",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-mutual-aggregate-qualitative-boundary-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5176/synthetic-mutual-aggregate-qualitative-boundary-reference.html",
+    "observed_port_note": "The authorized default port and the next two ports were already occupied; the same isolated Vite page was verified on the automatically selected local development port."
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_mutation_performed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-mutual-aggregate-qualitative-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticMutualAggregateQualitativeBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticMutualAggregateQualitativeBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-mutual-aggregate-qualitative-boundary-reference/G26_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g26_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticMutualAggregateQualitativeBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "332 tests, 332 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "qualitative_seven_row_matrix",
+      "detail": "The page renders one semantic seven-row matrix in the frozen order: TENANT_FIT, OWNER_FIT, TWO_INPUT_STRUCTURE, ANTI_MASKING, HARD_CONSTRAINT_PRECEDENCE, EVIDENCE_NON_COMPENSATION and DECISION_MEANING. Tenant Fit and Owner Fit remain separate attributable inputs; critically low remains nonnumeric.",
+      "status": "PASSED"
+    },
+    {
+      "id": "symmetric_unselected_candidates",
+      "detail": "HARMONIC and GEOMETRIC are displayed symmetrically and exactly as DECISION_CANDIDATE_FOR_REVIEW. Neither is selected, recommended, ordered, preferred, defaulted, used as fallback or rejected, and the pair is not declared permanently exhaustive.",
+      "status": "PASSED"
+    },
+    {
+      "id": "evidence_prerequisites_non_compensation_and_fail_closed",
+      "detail": "All twelve qualitative prerequisite categories are explicit. No family, favorable result or business outcome compensates for missing, adverse, incompatible, unevaluable or insufficient evidence. Unusable candidate, evidence or binding blocks only affected function-approval progression and creates no adverse or business outcome.",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_non_decision_and_isolation",
+      "detail": "The authored modules contain no function selection, computation, score generation, controls, links, React state/effects, handlers, live regions, network, storage, logging, timers, randomness or motion. Standalone HTML loads only the G26 entry and no production entry, configuration or prior package changed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_copy_and_accessibility_tree",
+      "observed": "The isolated local page rendered the exact title, three permanent lines, one h1, six labelled regions in order, one semantic seven-row matrix, symmetric HARMONIC and GEOMETRIC candidates, and NON-DECISION RESULT last. The accessibility tree exposed no controls or links.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_console",
+      "observed": "Browser console inspection returned zero warnings and zero errors for the G26 reference page.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "Observed at 360, 390, 768 and 1280 CSS-pixel viewport widths: no horizontal document overflow; one h1, six sections, one table, seven tbody rows, zero interactive controls, and NON-DECISION RESULT remained the final region at every width.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 unchanged documentation paths plus 6 code/test/verification paths, gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap failed before loading tests because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-mutual-aggregate-qualitative-boundary-reference.html": "9a749fdcd1207786a230bab1669306859ef5bfd78d1601250a44c828ffc86fd9",
+    "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceScenario.ts": "79c84d7928a6c2ca4ec3b749b02b540dd42478446530140ef617749e48d9afa4",
+    "apps/web/src/synthetic/SyntheticMutualAggregateQualitativeBoundaryReference.tsx": "b66acc225a313d9f6f5f3aef09b04b9abbb969119c37f8b2870621e5905465a8",
+    "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceEntry.tsx": "e78736aec64b280c310cd25eadf4aec03a238245f0666ecaf40e113010424690",
+    "apps/web/tests/syntheticMutualAggregateQualitativeBoundaryReference.test.ts": "298543369948d19c8e88b91d8eb8bd01dcc0bfb1a6202f1852815a0a8ffd54d1"
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "mutual_aggregate_function_selected": false,
+    "formula_or_score_computed": false,
+    "runtime_action_executed": false
+  },
+  "conclusion": "Automated checks and explicit browser observations at 360, 390, 768 and 1280 CSS-pixel viewport widths passed. The G26 qualitative non-decision reference is verified; no function, formula, score or runtime action was executed. All three governance gates remain BLOCKED."
+}

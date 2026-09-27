@@ -1,0 +1,254 @@
+{
+  "artifact_type": "G26_SYNTHETIC_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-27",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g26-synthetic-mutual-aggregate-qualitative-boundary-reference",
+    "git_commit": "622d77b08f3b6dc39298ee230ccdae46b7f19e5b"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G26 Synthetic Mutual Aggregate Qualitative Boundary Reference",
+    "url": "http://127.0.0.1:5173/synthetic-mutual-aggregate-qualitative-boundary-reference.html",
+    "html_title": "SYNTHETIC MUTUAL AGGREGATE QUALITATIVE BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_G21_G22_G23_G24_G25_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC MUTUAL AGGREGATE QUALITATIVE BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — QUALITATIVE TWO-INPUT, ANTI-MASKING AND EVIDENCE BOUNDARY ONLY",
+      "NO FUNCTION SELECTION, FORMULA, SCORE OR RUNTIME ACTION EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "TWO-INPUT AND ANTI-MASKING MATRIX",
+      "CANDIDATES — NAMED BUT NOT SELECTED",
+      "EVIDENCE PREREQUISITES AND NON-COMPENSATION",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "source_decision": "XFR-D-017 v1.0",
+    "source_status": "APPROVED PARTIALLY_RESOLVED_BOUNDARY — FUNCTION SELECTION AND ALL EXACT CONTENT REMAIN OPEN",
+    "canonical_identity": "MSP-01 -> XFR-D-017",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "source_structure": "Reciprocal Fit = Mutual Aggregate(Tenant Fit, Owner Fit)",
+    "function_selection_formula_score_or_runtime_action": "PROHIBITED",
+    "two_input_and_anti_masking_matrix": [
+      {
+        "row": "TENANT_FIT",
+        "frozen": "SEPARATE_ATTRIBUTABLE_INPUT; MUST_NOT_BE_DERIVED_FROM_REPLACED_BY_DROPPED_FROM_OR_DEFAULTED_USING_OWNER_FIT"
+      },
+      {
+        "row": "OWNER_FIT",
+        "frozen": "SEPARATE_ATTRIBUTABLE_INPUT; MUST_NOT_BE_DERIVED_FROM_REPLACED_BY_DROPPED_FROM_OR_DEFAULTED_USING_TENANT_FIT"
+      },
+      {
+        "row": "TWO_INPUT_STRUCTURE",
+        "frozen": "RECIPROCAL_FIT_EQUALS_MUTUAL_AGGREGATE_OF_TENANT_FIT_AND_OWNER_FIT_AS_SOURCE_STRUCTURE_ONLY; NO FUNCTION_FORMULA_VALUE_OR_COMPUTATION"
+      },
+      {
+        "row": "ANTI_MASKING",
+        "frozen": "HIGH_TENANT_FIT_CANNOT_MASK_CRITICALLY_LOW_OWNER_FIT_AND_HIGH_OWNER_FIT_CANNOT_MASK_CRITICALLY_LOW_TENANT_FIT; CRITICALLY_LOW_REMAINS_QUALITATIVE_WITHOUT_THRESHOLD_TOLERANCE_OR_NUMBER"
+      },
+      {
+        "row": "HARD_CONSTRAINT_PRECEDENCE",
+        "frozen": "INDEPENDENTLY_APPLICABLE_APPROVED_HARD_CONSTRAINT_AND_ELIGIBILITY_RULES_RETAIN_PRE_SCORING_PRECEDENCE; MUTUAL_AGGREGATE_CANNOT_RESTORE_OR_COMPENSATE_AN_EXCLUDED_CANDIDATE"
+      },
+      {
+        "row": "EVIDENCE_NON_COMPENSATION",
+        "frozen": "FAVORABLE_AGGREGATE_BUSINESS_METRIC_OR_SEGMENT_RESULT_CANNOT_HIDE_OR_COMPENSATE_ONE_SIDED_FIT_FAILURE_HARD_CONSTRAINT_FAILURE_OR_MISSING_ADVERSE_INCOMPATIBLE_UNEVALUABLE_OR_INSUFFICIENT_EVIDENCE"
+      },
+      {
+        "row": "DECISION_MEANING",
+        "frozen": "QUALITATIVE_BOUNDARY_IS_NOT_FUNCTION_SELECTION_FORMULA_SCORE_CONFIDENCE_RISK_QUALIFICATION_PRIORITY_RANKING_RECOMMENDATION_ROUTING_POLICY_OR_GATE_APPROVAL"
+      }
+    ],
+    "candidates": [
+      {
+        "name": "HARMONIC",
+        "status": "DECISION_CANDIDATE_FOR_REVIEW",
+        "selected": false,
+        "recommended_ordered_defaulted_or_rejected": "PROHIBITED"
+      },
+      {
+        "name": "GEOMETRIC",
+        "status": "DECISION_CANDIDATE_FOR_REVIEW",
+        "selected": false,
+        "recommended_ordered_defaulted_or_rejected": "PROHIBITED"
+      }
+    ],
+    "candidate_pair_permanently_exhaustive": false,
+    "candidate_formulas_numbers_or_comparisons": "PROHIBITED",
+    "evidence_prerequisites": [
+      "EXACT_IDENTIFIED_CANDIDATE_POLICY_VERSION_HASH_AND_CONFIGURATION_FOR_REVIEW_ONLY",
+      "ELIGIBLE_EVALUATION_OBJECT_INPUT_PROVENANCE_AND_LABEL_ELIGIBILITY_ADJUDICATION",
+      "GROUPING_ENTITY_ISOLATION_AND_CORRECTION_HISTORY",
+      "FALSE_EXCLUSION_FALSE_ELIGIBILITY_AND_COUNTER_EVIDENCE_WITHOUT_CROSS_FAMILY_SUBSTITUTION",
+      "FROZEN_DATASET_ALLOCATION_SPLIT_MANIFEST_SEED_LINEAGE_AND_TUNING_FINAL_ISOLATION",
+      "SAME_POPULATION_INPUT_POLICY_LINEAGE_COMPATIBLE_COMPARISON",
+      "PREREGISTERED_METRICS_COUNTING_AGGREGATION_UNCERTAINTY_AND_STATISTICAL_PROCEDURE",
+      "SEPARATE_FAVORABLE_ADVERSE_NULL_INCOMPATIBLE_UNEVALUABLE_AND_INSUFFICIENT_REPORTING",
+      "SEGMENT_INTERSECTION_PROTECTED_PROXY_AND_FAIRNESS_EVIDENCE",
+      "DRIFT_POST_FREEZE_CORRECTION_AND_DETERMINISTIC_REPLAY_EVIDENCE",
+      "SYNTHETIC_ONLY_VERSUS_PRODUCTION_DATA_APPLICABILITY_STATEMENT",
+      "LIMITATIONS_UNRESOLVED_DEPENDENCIES_AND_FULL_OWNER_APPROVER_VERIFICATION"
+    ],
+    "affected_approval_fail_closed": {
+      "cases": "MISSING_UNKNOWN_STALE_CONFLICTING_INCOMPATIBLE_LEAKAGE_CONTAMINATED_IMPROPERLY_CORRECTED_INCOMPLETE_UNAUTHORIZED_OR_NON_REPRODUCIBLE_CANDIDATE_EVIDENCE_OR_BINDING",
+      "approved_effect": "AFFECTED_FUNCTION_APPROVAL_PROGRESSION_ONLY_FAIL_CLOSED",
+      "zero_negative_pass_fail_winner_rejection_qualification_risk_route_reason_or_display": "PROHIBITED",
+      "fallback_previous_version_library_default_or_hidden_candidate": "PROHIBITED"
+    },
+    "independent_open_boundaries": [
+      "HARMONIC_VERSUS_GEOMETRIC_SELECTION_AND_FUTURE_CANDIDATE_SET_EXHAUSTIVENESS",
+      "EXACT_FORMULA_REPRESENTATION_AND_ZERO_NEAR_ZERO_MISSING_INPUT_OVERFLOW_UNDERFLOW_EDGE_BEHAVIOR",
+      "SCALE_PRECISION_NUMERIC_REPRESENTATION_INTERMEDIATE_OPERATIONS_ROUNDING_AND_SERIALIZATION",
+      "WEIGHTS_THRESHOLDS_TOLERANCES_CANDIDATE_SEARCH_AND_SELECTION_CRITERIA",
+      "METRICS_TARGETS_NUMERATOR_DENOMINATOR_COUNTING_UNIT_AGGREGATION_WEIGHTING_AND_UNCERTAINTY",
+      "HYPOTHESES_TESTS_ESTIMATORS_INTERVALS_SIGNIFICANCE_MULTIPLICITY_AND_DECISION_RULES",
+      "DATASET_SAMPLE_MANIFEST_SPLIT_SEED_LINEAGE_LABELS_ADJUDICATION_SEGMENTS_AND_INTERSECTIONS",
+      "EVIDENCE_SUFFICIENCY_COMPARISON_RESULT_WINNER_VERDICT_AND_PRODUCTION_APPLICABILITY",
+      "POLICY_MANIFEST_VERSION_RELEASE_MONITORING_ROLLBACK_AND_HISTORICAL_BINDING_CONTENT",
+      "API_EVENT_SCHEMA_DATABASE_STORAGE_TRANSPORT_AND_RUNTIME_CARRIER",
+      "ERROR_REASON_RETRY_RECOVERY_ESCALATION_OBSERVABILITY_AND_OPERATIONAL_CONSEQUENCES",
+      "SCORING_POLICY_DATA_CONTRACT_PRODUCTION_RUNTIME_IMPLEMENTATION_AND_GATES"
+    ],
+    "prohibited_surrogates": [
+      "PILOT_CAP_100_CAMPAIGN",
+      "CAMPAIGN_TO_QUALIFIED_40_PERCENT",
+      "CAMPAIGN_TO_QUALIFIED_25_PERCENT"
+    ],
+    "distinct_layers": [
+      "HARD_CONSTRAINT_AND_ELIGIBILITY",
+      "RECIPROCAL_FIT",
+      "MATCH_SCORE",
+      "CONFIDENCE_SCORE",
+      "RISK_SCORE",
+      "QUALIFICATION",
+      "PRIORITY_SCORE",
+      "RANKING_AND_DIVERSIFICATION"
+    ],
+    "prohibited_inferences": [
+      "NO FUNCTION_SELECTION_RECOMMENDATION_ORDER_DEFAULT_FALLBACK_OR_REJECTION",
+      "NO FORMULA_NUMBER_WEIGHT_THRESHOLD_TOLERANCE_OR_COMPUTATION",
+      "NO INPUT_DERIVATION_REPLACEMENT_DROP_OR_DEFAULT",
+      "NO MUTUAL_AGGREGATE_COMPENSATION_FOR_HARD_CONSTRAINT_OR_ELIGIBILITY",
+      "NO CROSS_FAMILY_OR_AGGREGATE_EVIDENCE_COMPENSATION",
+      "NO ZERO_NEGATIVE_PASS_FAIL_WINNER_INELIGIBLE_REJECTION_OR_ROUTE",
+      "NO SCORE_CONFIDENCE_RISK_QUALIFICATION_PRIORITY_RANKING_RECOMMENDATION_OR_ROUTING",
+      "NO DATASET_METRIC_STATISTIC_RESULT_POLICY_PRODUCTION_RUNTIME_IMPLEMENTATION_OR_GATE_APPROVAL",
+      "NO PERSON_ORGANIZATION_PROPERTY_TENANT_REQUEST_UUID_OR_BUSINESS_RECORD_INSTANCE"
+    ],
+    "terminal": {
+      "token": "G26_SYNTHETIC_NO_MUTUAL_AGGREGATE_FUNCTION_OR_SCORE_ACTION_EXECUTED",
+      "line": "NO FUNCTION SELECTION, FORMULA, WEIGHT, THRESHOLD, COMPUTATION, SCORE, PASS, FAIL, INELIGIBLE, QUALIFICATION, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "runtime_result_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "prohibited_behavior": [
+    "FUNCTION_FORMULA_WEIGHT_THRESHOLD_OR_VALUE_SELECTION",
+    "MUTUAL_AGGREGATE_COMPUTATION_OR_SCORE_GENERATION",
+    "INPUT_DERIVATION_REPLACEMENT_DROP_DEFAULT_OR_COERCION",
+    "HARD_CONSTRAINT_OR_ELIGIBILITY_COMPENSATION",
+    "AUTOMATIC_PASS_FAIL_INELIGIBLE_REJECTION_QUALIFICATION_RISK_RANKING_RECOMMENDATION_OR_ROUTING",
+    "SCORING_POLICY_DATA_CONTRACT_MANIFEST_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_STORAGE_TRANSPORT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "DATASET_METRIC_STATISTIC_RESULT_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL",
+    "PRODUCTION_ENTRY_MENU_ROUTER_CONFIG_MANIFEST_OR_LOCKFILE_CHANGE"
+  ],
+  "result_label": "G26_SYNTHETIC_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + DEVELOPMENT + AI",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "substantive_governance_owner": "AI + PRODUCT",
+    "xfr_mandatory_approvers": "Chief AI Architect + LEGAL + DEVELOPMENT",
+    "package_mandatory_approvers": "PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "eventual_function_approval": "ALL_FIVE_FUNCTIONS_SAME_VERSION_HASH",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G26_SYNTHETIC_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-mutual-aggregate-qualitative-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-mutual-aggregate-qualitative-boundary-reference/G26_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-mutual-aggregate-qualitative-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMutualAggregateQualitativeBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMutualAggregateQualitativeBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticMutualAggregateQualitativeBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-mutual-aggregate-qualitative-boundary-reference/G26_MUTUAL_AGGREGATE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
