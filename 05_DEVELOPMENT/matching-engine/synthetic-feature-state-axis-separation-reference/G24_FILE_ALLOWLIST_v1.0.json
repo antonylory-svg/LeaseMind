@@ -1,0 +1,254 @@
+{
+  "artifact_type": "G24_SYNTHETIC_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-27",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g24-synthetic-feature-state-axis-separation-reference",
+    "git_commit": "14acdd80a580b06e23cc332941d2203b45094ece"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G24 Synthetic Feature State-Axis Separation Reference",
+    "url": "http://127.0.0.1:5173/synthetic-feature-state-axis-separation-reference.html",
+    "html_title": "SYNTHETIC FEATURE STATE-AXIS SEPARATION REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_G21_G22_G23_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC FEATURE STATE-AXIS SEPARATION REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — DESIGN-TIME AND CANDIDATE AXES ONLY",
+      "NO RUNTIME ENUM, STATE TRANSITION OR ELIGIBILITY ACTION EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "FIVE DISTINCT STATUS DOMAINS",
+      "EXACT SOURCE ENUMS — PRESERVED WITHOUT MAPPING",
+      "NO COERCION OR SILENT CASCADE",
+      "OPEN CONTRACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "source_decision": "XFR-D-015 v1.0",
+    "source_status": "APPROVED PARTIALLY_RESOLVED_BOUNDARY — FULL RUNTIME CONTRACT REMAINS OPEN",
+    "canonical_identity": "FS-18 -> XFR-D-015",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "active_runtime_feature_value": "PROHIBITED",
+    "runtime_enum_or_state_machine_approval": "PROHIBITED",
+    "status_domains": [
+      {
+        "status_domain": "registry_readiness",
+        "authority": "FEATURE_SCHEMA_DESIGN_TIME_ONLY",
+        "values": [
+          "READY_FOR_DRAFT",
+          "READY_AS_CANDIDATE_ONLY",
+          "BLOCKED_PENDING_DECISION",
+          "EXCLUDED_FROM_V0_1"
+        ],
+        "status": "FOUR_EXISTING_DRAFT_VALUES_NOT_RUNTIME"
+      },
+      {
+        "status_domain": "value_state",
+        "authority": "FEATURE_SCHEMA_INTERNAL_CANDIDATE_ONLY",
+        "values": [
+          "PRESENT",
+          "NOT_APPLICABLE",
+          "UNKNOWN"
+        ],
+        "status": "INCOMPLETE_NON_PUBLIC_RUNTIME_CANDIDATE_SET"
+      },
+      {
+        "status_domain": "evidence_status",
+        "authority": "ARCHITECTURE_SECTION_13_SOURCE_NORMATIVE",
+        "values": [
+          "UNVERIFIED",
+          "SOURCE_CONFIRMED",
+          "CONTENT_VERIFIED",
+          "CONFLICTING",
+          "STALE",
+          "REJECTED",
+          "HUMAN_REVIEW_REQUIRED"
+        ],
+        "status": "EXACT_SEVEN_VALUE_ENUM_PRESERVED_WITHOUT_MAPPING"
+      },
+      {
+        "status_domain": "lawful_basis_status",
+        "authority": "ARCHITECTURE_SECTION_11_SOURCE_NORMATIVE",
+        "values": [
+          "ACTIVE",
+          "EXPIRED",
+          "REVOKED",
+          "TERMINATED",
+          "SUSPENDED",
+          "UNDER_REVIEW"
+        ],
+        "status": "EXACT_SIX_VALUE_ENUM_PRESERVED_WITHOUT_MAPPING"
+      },
+      {
+        "status_domain": "processing_eligibility",
+        "authority": "FEATURE_SCHEMA_INTERNAL_CANDIDATE_ONLY",
+        "values": [
+          "ALLOWED",
+          "DATA_PROCESSING_BLOCKED"
+        ],
+        "status": "INCOMPLETE_NON_PUBLIC_DERIVED_CANDIDATE_SET"
+      }
+    ],
+    "boundary_cases": [
+      {
+        "case": "QUALITATIVE_AXIS_MODEL_READY_FOR_DRAFT_EXACT_ROW_18_CONTENT_BLOCKED_PENDING_DECISION",
+        "approved_effect": "PRESERVE_BOTH_DESIGN_TIME_STATEMENTS_WITHOUT_CONFLATION",
+        "runtime_readiness_or_contract_approval": "PROHIBITED"
+      },
+      {
+        "case": "BLOCKED_PENDING_DECISION",
+        "approved_effect": "DESIGN_TIME_RULE_STATUS_ONLY",
+        "runtime_value_score_route_or_eligibility": "PROHIBITED"
+      },
+      {
+        "case": "PRESENT",
+        "approved_effect": "VALUE_APPLICABILITY_CANDIDATE_ONLY",
+        "evidence_or_processing_inference": "PROHIBITED"
+      },
+      {
+        "case": "UNKNOWN_OR_NOT_APPLICABLE",
+        "approved_effect": "PRESERVE_DISTINCT_NON_ADVERSE_MEANINGS",
+        "zero_negative_pass_fail_or_ineligible": "PROHIBITED"
+      },
+      {
+        "case": "STALE",
+        "approved_effect": "PRESERVE_EVIDENCE_STATE_ONLY",
+        "negative_fact_fail_rejection_or_route": "PROHIBITED"
+      },
+      {
+        "case": "DATA_PROCESSING_BLOCKED",
+        "approved_effect": "AFFECTED_GOVERNED_USE_ONLY_FAIL_CLOSED",
+        "automatic_ineligible_rejection_or_global_block": "PROHIBITED"
+      }
+    ],
+    "independent_open_boundaries": [
+      "FULL_PUBLIC_VALUE_STATE_ENUM",
+      "FULL_PUBLIC_PROCESSING_ELIGIBILITY_ENUM",
+      "SOURCE_TO_STATE_MAPPINGS_AND_PRECEDENCE",
+      "TRANSITIONS_CASCADE_AND_AFFECTED_USE_GRANULARITY",
+      "CONFLICT_MISSING_STALE_BLOCKED_INVALIDATION_AND_RECOVERY_DETAILS",
+      "ERROR_REASON_RETRY_ESCALATION_AND_OBSERVABILITY_TAXONOMY",
+      "SCHEMA_API_EVENT_DATABASE_STORAGE_TRANSPORT_AND_RUNTIME_CARRIER",
+      "COMPATIBILITY_MIGRATION_VERSIONING_DATA_TESTS_METRICS_AND_EVIDENCE",
+      "FEATURE_SCHEMA_POLICY_DATA_CONTRACT_MANIFEST_PRODUCTION_RUNTIME_IMPLEMENTATION_AND_GATES"
+    ],
+    "prohibited_inferences": [
+      "NO AXIS COLLAPSE OR DEFAULT MAPPING",
+      "NO READINESS_REASON SUBTYPE AS A FIFTH TOP_LEVEL_REGISTRY_READINESS VALUE",
+      "NO READY_FOR_DRAFT AS RUNTIME_READINESS OR EXACT_CONTRACT_APPROVAL",
+      "NO DRAFT TOKEN PROMOTION TO COMPLETE OR PUBLIC RUNTIME ENUM",
+      "NO STATE TO ZERO NEUTRAL DEFAULT OR NEGATIVE FACT",
+      "NO PASS FAIL INCOMPATIBILITY OR AUTOMATIC INELIGIBLE",
+      "NO QUALIFICATION RISK CONFIDENCE SCORE RANKING RECOMMENDATION OR ROUTING",
+      "NO EXISTING DATA_CONTRACT IMPORT BY ANALOGY",
+      "NO PROPERTY TENANT_REQUEST OR BUSINESS_RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "G24_SYNTHETIC_NO_RUNTIME_STATE_OR_ELIGIBILITY_ACTION_EXECUTED",
+      "line": "NO RUNTIME ENUM, MAPPING, TRANSITION, CASCADE, VALUE COERCION, PASS, FAIL, INELIGIBLE, QUALIFICATION, RISK, SCORE, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "runtime_result_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD"
+  ],
+  "prohibited_behavior": [
+    "RUNTIME_ENUM_MAPPING_TRANSITION_CASCADE_OR_STATE_MACHINE_EXECUTION",
+    "VALUE_COERCION_NUMERIC_DEFAULT_PASS_FAIL_OR_AUTOMATIC_INELIGIBLE",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "ELIGIBILITY_RECOMMENDATION_ROUTING_OR_BUSINESS_OUTCOME",
+    "FEATURE_SCHEMA_POLICY_DATA_CONTRACT_MANIFEST_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "DATASET_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL"
+  ],
+  "result_label": "G24_SYNTHETIC_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + DEVELOPMENT + AI",
+    "feature_schema_artifact_owner": "PRODUCT + LEGAL + AI",
+    "mandatory_approvers": "PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G24_SYNTHETIC_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-state-axis-separation-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-state-axis-separation-reference/G24_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-feature-state-axis-separation-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticFeatureStateAxisSeparationReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticFeatureStateAxisSeparationReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticFeatureStateAxisSeparationReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-feature-state-axis-separation-reference/G24_FEATURE_STATE_AXIS_SEPARATION_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
