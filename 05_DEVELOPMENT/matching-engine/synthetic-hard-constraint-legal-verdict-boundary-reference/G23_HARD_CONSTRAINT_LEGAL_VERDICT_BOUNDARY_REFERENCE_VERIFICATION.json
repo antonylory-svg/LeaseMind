@@ -1,0 +1,131 @@
+{
+  "artifact_type": "G23_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-hard-constraint-legal-verdict-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G23_CODE_PHASE",
+  "verification_date": "2026-09-27",
+  "baseline_commit": "3675eaf6cc933826042cb01cafdebaf4a7bb6ebc",
+  "branch": "development/sprint-7-matching-g23-synthetic-hard-constraint-legal-verdict-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G23_SYNTHETIC_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "1076ce5cf208ef34074a7541140075fb8291809f5a9f6ce9c8d4f2da5209990c",
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-hard-constraint-legal-verdict-boundary-reference.html",
+    "observed_dev_url": "http://127.0.0.1:5174/synthetic-hard-constraint-legal-verdict-boundary-reference.html"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_modified": false,
+    "package_or_build_configuration_modified": false,
+    "prior_synthetic_components_imported": false,
+    "git_operation_performed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-hard-constraint-legal-verdict-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticHardConstraintLegalVerdictBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticHardConstraintLegalVerdictBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-hard-constraint-legal-verdict-boundary-reference/G23_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g23_tests",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test tests/syntheticHardConstraintLegalVerdictBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_test_suite",
+      "command": "node with process-only os.userInfo ENOMEM preload, --import tsx --test --test-concurrency=1 tests/*.test.ts (cwd apps/web)",
+      "observed": "299 tests, 299 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "frozen_twenty_candidate_contract",
+      "detail": "The page renders exactly the 20 Feature Schema section 5.1 candidate feature identifiers in source order in one semantic table. Every row remains ELIGIBILITY_HARD_CONSTRAINT_CANDIDATE, has no final LEGAL verdict and has automatic_ineligible_allowed = NO.",
+      "status": "PASSED"
+    },
+    {
+      "id": "protected_proxy_candidate_use_boundary",
+      "detail": "A future confirmed protected, proxy or discriminatorily restricted candidate/use is shown as unconditionally excluded from Hard Constraint eligibility only. The static reference never converts that exclusion into rejection or INELIGIBLE for a user, and lawful basis cannot override a prohibition.",
+      "status": "PASSED"
+    },
+    {
+      "id": "missing_evidence_promotion_only_boundary",
+      "detail": "Missing, unknown, unclassified, stale or conflicting evidence blocks promotion of the affected candidate only and creates no negative fact, failure, rejection, exclusion or automatic INELIGIBLE.",
+      "status": "PASSED"
+    },
+    {
+      "id": "non_decision_and_isolation",
+      "detail": "The authored modules contain no verdict/classification/eligibility evaluator, controls, links, state, effects, handlers, live regions, network, storage, cookies, logging, timers, randomness or motion. The standalone HTML loads only the G23 entry, no prior package is imported and no production entry or configuration is modified.",
+      "status": "PASSED"
+    },
+    {
+      "id": "browser_exact_url_and_accessibility_tree",
+      "observed": "The dev-only URL rendered the exact title, three permanent lines, one h1, five labelled regions in order, one semantic 20-row table, explicit protected/proxy and evidence boundaries, and NON-DECISION RESULT last. The accessibility tree exposed no controls or links; browser console warnings/errors were empty.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_layout_contract_360_390_768_1280",
+      "observed": "At explicit browser viewport widths 360, 390, 768 and 1280 px, the document retained five sections, one 20-row table and zero controls; document scroll width equalled client width at each size and horizontal overflow was false.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist hash matches, its 9 paths remain 3 documentation paths plus 6 code/test/verification paths, the result label is exact, gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    }
+  ],
+  "environment_deviations": [
+    {
+      "id": "node_os_userinfo_enomem",
+      "description": "The ordinary tsx bootstrap failed before loading the focused test because Node os.userInfo returned uv_os_get_passwd ENOMEM on this Windows host.",
+      "mitigation": "Tests used an in-memory data-URL preload that only replaces os.userInfo with a fixed non-sensitive username for the process. No repository file, operating-system setting, environment file or dependency was changed.",
+      "test_effect": "Focused and full suites executed normally and passed in full."
+    },
+    {
+      "id": "authorized_port_already_in_use",
+      "description": "Port 5173 was already occupied by another local process when the G23 browser smoke server started.",
+      "mitigation": "Vite selected the next local-only port 5174. The exact G23 path, page title, accessibility tree, responsive behavior and console were verified there without changing repository configuration.",
+      "test_effect": "No automated test or live browser check failed."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-hard-constraint-legal-verdict-boundary-reference.html": "c9a9f7654115af72e22eb3fb8947e8cf216579e1ab50056b3723feb20b4dc802",
+    "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceScenario.ts": "ed4487a789f1a31773a61ef35e74958364050ef3acc11f52387624e1d291f6c3",
+    "apps/web/src/synthetic/SyntheticHardConstraintLegalVerdictBoundaryReference.tsx": "356be4970cc37bc3869d6a91f775b826a4909eab58fb7b4c0dda75b9a5b36def",
+    "apps/web/src/synthetic/syntheticHardConstraintLegalVerdictBoundaryReferenceEntry.tsx": "462ad7976a3876b53d2afdcf39520cd6953d09f9189b79409432e350b43a8d29",
+    "apps/web/tests/syntheticHardConstraintLegalVerdictBoundaryReference.test.ts": "3b365a7e998ee46685be96739ea258ae62c83377bd78be69e23146214ff2937b"
+  },
+  "delegation": {
+    "cline_used_in_code_phase": false,
+    "reason": "The prior documentation-phase Cline task performed prohibited read-only Git commands and was cancelled before any repository write; the controller authored the frozen G23 code scope locally.",
+    "controller_authored": true
+  },
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_claimed": false,
+    "production_data_used": false,
+    "final_legal_verdict_issued": false,
+    "candidate_classification_or_promotion_performed": false,
+    "automatic_ineligible_allowed": "NO"
+  },
+  "conclusion": "G23_SYNTHETIC_HARD_CONSTRAINT_LEGAL_VERDICT_BOUNDARY_REFERENCE_VERIFIED. The six planned paths are complete, automated tests and local browser verification passed, the implementation remains static and dev-only, no legal verdict or eligibility action is executed, and all three governance gates remain BLOCKED."
+}
