@@ -1,0 +1,217 @@
+{
+  "artifact_type": "G25_SYNTHETIC_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_FILE_ALLOWLIST",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-27",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g25-synthetic-lawful-basis-projection-boundary-reference",
+    "git_commit": "fc193c2cb47dde1ff5a08897326c4c6820856a67"
+  },
+  "authorization": {
+    "status": "DOCUMENTATION_ONLY_AUTHORIZED",
+    "code_phase_status": "BLOCKED_PENDING_INDEPENDENT_AUDIT_AND_HUMAN_CONFIRMATION",
+    "new_xfr_id": false,
+    "canonical_inventory_change": false,
+    "canonical": false
+  },
+  "reference": {
+    "package_name": "G25 Synthetic Lawful-Basis Projection Boundary Reference",
+    "url": "http://127.0.0.1:5173/synthetic-lawful-basis-projection-boundary-reference.html",
+    "html_title": "SYNTHETIC LAWFUL-BASIS PROJECTION BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "access": "MANUAL_DEV_ONLY",
+    "relationship_to_prior_packages": "SEPARATE_SIBLING_G14_G15_G16_G17_G18_G19_G20_G21_G22_G23_G24_NOT_MODIFIED_NO_CROSS_LINK",
+    "default_production_build": "EXCLUDED",
+    "menu_link_router_exposure": "PROHIBITED",
+    "layout": "STATIC_RESPONSIVE_ALL_AT_ONCE_PRE_AUTHORED_SOURCE_COPY_ONLY",
+    "always_visible_lines": [
+      "SYNTHETIC LAWFUL-BASIS PROJECTION BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+      "MANUAL DEV-ONLY REFERENCE — QUALITATIVE MECHANISM GOVERNANCE ONLY",
+      "NO MATCHING CONTRACT, LAWFUL-BASIS DETERMINATION OR RUNTIME ACTION EXECUTED"
+    ],
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "SOLE-WRITER AND READ-ONLY CONSUMPTION MATRIX",
+      "EXACT SOURCE ENUM — PRESERVED WITHOUT CONTRACT MAPPING",
+      "AFFECTED-USE FAIL-CLOSED — NO ADVERSE INFERENCE",
+      "OPEN MATCHING CONTRACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "source_decision": "XFR-D-016 v1.0",
+    "source_status": "APPROVED PARTIALLY_RESOLVED_BOUNDARY — FULL MATCHING CONTRACT REMAINS OPEN",
+    "canonical_identity": "FS-19 -> XFR-D-016",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "registry_contract_or_lawful_basis_determination": "PROHIBITED",
+    "matching_integration_contract_approval": "PROHIBITED",
+    "source_enum": {
+      "name": "lawful_basis_status",
+      "authority": "ARCHITECTURE_SECTION_11_SOURCE_NORMATIVE",
+      "values": [
+        "ACTIVE",
+        "EXPIRED",
+        "REVOKED",
+        "TERMINATED",
+        "SUSPENDED",
+        "UNDER_REVIEW"
+      ],
+      "status": "EXACT_SIX_VALUE_ENUM_PRESERVED_WITHOUT_MAPPING_ORDERING_TRANSITION_OR_INTERPRETATION"
+    },
+    "sole_writer_and_read_only_consumption_matrix": [
+      {
+        "row": "SOURCE_OWNERSHIP",
+        "frozen": "LAWFUL_BASIS_CONSENT_REGISTRY_REMAINS_SOLE_WRITER_OF_LAWFUL_BASIS_ID_PURPOSE_VERSION_VALIDITY_REVOCATION_AND_TERMINATION; MATCHING_CANNOT_CREATE_EXTEND_RESTORE_REPLACE_AMEND_OR_REINTERPRET_LAWFUL_BASIS"
+      },
+      {
+        "row": "PURPOSE_AND_SCOPE",
+        "frozen": "FUTURE_MATCHING_CONSUMPTION_IS_ONLY_A_PURPOSE_BOUND_SCOPE_COMPATIBLE_VERSIONED_READ_ONLY_PROJECTION_REF; CONSUMPTION_CANNOT_EXTEND_PURPOSE_WIDEN_SCOPE_REVIVE_EXPIRED_OR_TERMINATED_BASIS_ALTER_VERSION_HASH_REPAIR_REVOCATION_OR_REINTERPRET_PURPOSE"
+      },
+      {
+        "row": "VERSION",
+        "frozen": "THE_PROJECTION_REF_IS_VERSION_BOUND; NO_VERSION_HASH_SIGNATURE_SCHEME_IS_APPROVED_HERE; VERSION_OR_PURPOSE_MISMATCHED_PROJECTION_FAILS_CLOSED_ONLY_FOR_THE_AFFECTED_GOVERNED_USE"
+      },
+      {
+        "row": "INVALIDATION",
+        "frozen": "INVALIDATION_REMAINS_SOURCE_OWNED; ONLY_APPLICABLE_SOURCE_OWNED_INVALIDATION_APPLIES; MATCHING_PERFORMS_NO_REGISTRY_WRITE_ECHO_OR_OVERRIDE"
+      },
+      {
+        "row": "EXISTING_CONTRACTS",
+        "frozen": "EXISTING_REVEAL_PARTICIPATION_LAWFUL_BASIS_FIELDS_AND_EVENTS_ARE_CONTEXT_ONLY; THEY_DO_NOT_CONSTITUTE_OR_APPROVE_THE_MATCHING_INTEGRATION_CONTRACT_AND_ARE_NOT_IMPORTABLE_BY_ANALOGY"
+      },
+      {
+        "row": "DECISION_MEANING",
+        "frozen": "PROJECTION_PRESENCE_IS_NOT_A_LAWFUL_BASIS_DETERMINATION; READ_ONLY_CONSUMPTION_IS_NOT_REGISTRY_FINALITY_A_MATCHING_DECISION_SCORE_RISK_HARD_CONSTRAINT_OR_ELIGIBILITY_RESULT"
+      }
+    ],
+    "affected_use_fail_closed": {
+      "cases": "MISSING_UNKNOWN_STALE_EXPIRED_REVOKED_TERMINATED_SUSPENDED_UNDER_REVIEW_INVALIDATED_VERSION_OR_PURPOSE_MISMATCHED_PROJECTION",
+      "approved_effect": "AFFECTED_GOVERNED_USE_ONLY_FAIL_CLOSED",
+      "negative_coercion_automatic_ineligible_rejection_route_reason_display_unrelated_or_global_block": "PROHIBITED",
+      "fallback_guessed_status_inferred_purpose_invented_default_or_silent_secondary_use": "PROHIBITED"
+    },
+    "independent_open_boundaries": [
+      "EXACT_PROJECTION_AND_REPRESENTATION",
+      "ENUM_MAPPING",
+      "API_EVENT_SCHEMA_DATABASE_STORAGE_TRANSPORT_AND_RUNTIME_CARRIER",
+      "VERSION_HASH_AND_SIGNATURE",
+      "TTL_CACHE_REFRESH_AND_INVALIDATION_DELIVERY",
+      "RBAC_APPOINTMENT_AND_ROLES",
+      "RETRY_RECOVERY_AND_OPERATIONAL_CONSEQUENCES",
+      "ERROR_REASON_ESCALATION_AND_OBSERVABILITY",
+      "DATA_CONTRACT_EXTENSION_AND_NEW_MATCHING_EVENT",
+      "LAWFUL_BASIS_DETERMINATION_PURPOSE_EVIDENCE_AND_PROTECTED_PROXY_CLASSIFICATION_PER_USE",
+      "COMPATIBILITY_MIGRATION_DATASET_TESTS_AND_EVIDENCE",
+      "FEATURE_SCHEMA_POLICY_MANIFEST_PRODUCTION_RUNTIME_IMPLEMENTATION_AND_GATES"
+    ],
+    "prohibited_inferences": [
+      "NO REGISTRY WRITE ECHO OR OVERRIDE",
+      "NO CONTRACT MAPPING OR ENUM MAPPING",
+      "NO PURPOSE OR SCOPE EXTENSION",
+      "NO STATUS TRANSITION OR ENUM REINTERPRETATION",
+      "NO PROJECTION PRESENCE READ AS A LAWFUL-BASIS DETERMINATION",
+      "NO NEGATIVE FACT ZERO DEFAULT OR GUESSED STATUS",
+      "NO AUTOMATIC INELIGIBLE REJECTION ROUTE REASON DISPLAY OR UNRELATED OR GLOBAL BLOCK",
+      "NO SCORE RISK CONFIDENCE RANKING RECOMMENDATION OR ROUTING",
+      "NO EXISTING DATA_CONTRACT IMPORT BY ANALOGY",
+      "NO PERSON ORGANIZATION PROPERTY TENANT_REQUEST UUID OR BUSINESS_RECORD INSTANCE"
+    ],
+    "terminal": {
+      "token": "G25_SYNTHETIC_NO_MATCHING_CONTRACT_OR_LAWFUL_BASIS_ACTION_EXECUTED",
+      "line": "NO REGISTRY WRITE, CONTRACT MAPPING, PURPOSE INFERENCE, STATUS TRANSITION, LAWFUL-BASIS DETERMINATION, NEGATIVE FACT, INELIGIBLE, REJECTION, SCORE, RISK, RANKING, RECOMMENDATION OR ROUTING OCCURRED",
+      "last_region": true,
+      "runtime_result_or_evidence": "PROHIBITED"
+    },
+    "controls": {
+      "interactive_elements": "ZERO",
+      "anchors_buttons_forms_inputs_selectors_widgets": "PROHIBITED",
+      "custom_keyboard_handlers": "PROHIBITED",
+      "aria_live": "PROHIBITED"
+    },
+    "mutable_state": {
+      "persistent_state": "NONE",
+      "transient_state": "NONE",
+      "react_state_or_effects": "PROHIBITED",
+      "event_handlers": "PROHIBITED",
+      "url_query_or_hash_state": "PROHIBITED"
+    }
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "GEOGRAPHY_VALUE",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "prohibited_behavior": [
+    "REGISTRY_WRITE_ECHO_OVERRIDE_OR_CALLER_SUPPLIED_LAWFUL_BASIS_ACCEPTANCE",
+    "CONTRACT_MAPPING_ENUM_MAPPING_OR_PROJECTION_REPRESENTATION_CREATION",
+    "PURPOSE_SCOPE_OR_VERSION_EXTENSION_AND_STATUS_TRANSITION",
+    "LAWFUL_BASIS_DETERMINATION_PURPOSE_EVIDENCE_OR_PROTECTED_PROXY_CLASSIFICATION",
+    "AUTOMATIC_INELIGIBLE_REJECTION_NEGATIVE_FACT_OR_UNRELATED_OR_GLOBAL_BLOCK",
+    "SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_OR_THRESHOLDS",
+    "FEATURE_SCHEMA_POLICY_DATA_CONTRACT_MANIFEST_OR_IMPLEMENTATION_APPROVAL",
+    "NETWORK_API_DATABASE_EVENT_STORAGE_TRANSPORT_OR_ROUTER_INTEGRATION",
+    "PERSISTENCE_STORAGE_COOKIES_CACHE_LOGGING_DIAGNOSTICS_OR_TELEMETRY",
+    "MENU_OR_DEFAULT_PRODUCTION_BUILD_EXPOSURE",
+    "AUTOPLAY_TIMERS_RANDOMNESS_MOTION_OR_ANIMATION",
+    "FORMS_EDITABLE_INPUTS_SELECTORS_BUTTONS_ANCHORS_OR_WIDGETS",
+    "DATASET_EVIDENCE_PRODUCTION_OR_GATE_APPROVAL",
+    "PRODUCTION_ENTRY_MENU_ROUTER_CONFIG_MANIFEST_OR_LOCKFILE_CHANGE"
+  ],
+  "result_label": "G25_SYNTHETIC_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + DEVELOPMENT + LEGAL",
+    "feature_schema_artifact_owner": "PRODUCT + LEGAL + AI",
+    "mandatory_approvers": "PRODUCT + AI",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G25_SYNTHETIC_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-lawful-basis-projection-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-lawful-basis-projection-boundary-reference/G25_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-lawful-basis-projection-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticLawfulBasisProjectionBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticLawfulBasisProjectionBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticLawfulBasisProjectionBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-lawful-basis-projection-boundary-reference/G25_LAWFUL_BASIS_PROJECTION_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ]
+}
