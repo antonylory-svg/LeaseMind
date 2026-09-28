@@ -1,0 +1,179 @@
+{
+  "artifact_type": "G28_EVIDENCE_CONFIDENCE_MAPPING_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-evidence-confidence-mapping-qualitative-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G28_CODE_PHASE",
+  "verification_date": "2026-09-28",
+  "baseline_commit": "be341fda92424f2f63fa072311d4c760c628baae",
+  "head_commit_at_verification": "c6912a10fc6501a7a9273cc58d5b0d7429883956",
+  "branch": "development/sprint-7-matching-g28-synthetic-evidence-confidence-mapping-qualitative-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G28_SYNTHETIC_EVIDENCE_CONFIDENCE_MAPPING_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G28_SYNTHETIC_EVIDENCE_CONFIDENCE_MAPPING_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "all_checks_passed": true,
+  "required_checks": [
+    "web_typecheck",
+    "focused_g28_tests",
+    "existing_g14_g27_regression",
+    "static_source_scan",
+    "presence_and_order_scan",
+    "isolation_and_path_scan",
+    "lf_utf8_no_bom",
+    "no_any_typescript",
+    "dependency_scan",
+    "allowlist_and_governance",
+    "terminal_token_and_line_non_decision"
+  ],
+  "allowlist_sha256": "6a7d2a7de939e10fc276bc3666c120be777611dfc41e4f14ed1d5ddef91be766",
+  "allowlist_sha256_matches_authorized_value": true,
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "tsx": "4.23.1",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-evidence-confidence-mapping-qualitative-boundary-reference.html",
+    "live_browser_render_status": "NOT_PERFORMED",
+    "live_browser_render_note": "No browser automation tool is available in this environment and dependency installation is not permitted for this phase. Verification therefore relies on rendered-markup assertions (renderToStaticMarkup), static source scanning and static responsive-style inspection; no viewport observation is claimed."
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "no_git_mutation_performed_by_code_author": true
+  },
+  "authored_paths": [
+    "apps/web/synthetic-evidence-confidence-mapping-qualitative-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticEvidenceConfidenceMappingQualitativeBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticEvidenceConfidenceMappingQualitativeBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-evidence-confidence-mapping-qualitative-boundary-reference/G28_EVIDENCE_CONFIDENCE_MAPPING_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck --workspace apps/web (tsc -p tsconfig.json --noEmit)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g28_tests",
+      "command": "node --import tsx --test tests/syntheticEvidenceConfidenceMappingQualitativeBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "14 tests, 14 pass, 0 fail, 0 cancelled, 0 skipped, 0 todo",
+      "status": "PASSED"
+    },
+    {
+      "id": "existing_g14_g27_regression",
+      "command": "npm test (node --import tsx --test tests/*.test.ts, cwd apps/web)",
+      "observed": "357 tests, 357 pass, 0 fail, 0 skipped across the 31 .test.ts files matched by the configured tests/*.test.ts glob, including the pre-existing G14 through G27 .test.ts synthetic suites selected by that glob; the separately present .test.tsx file is not selected by this command; 357 minus the 14 focused G28 tests reproduces the 343 tests recorded by the G27 verification record",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_source_scan",
+      "detail": "The authored scenario, component and entry modules contain no evidence-status mapping selection and no mapping table, function, numeric value, range, direction, order, hierarchy, default, calibration, dataset or Confidence Score computation; no React state, effects or reducers; no event or keyboard handlers; no controls, forms, editable inputs, selectors, buttons, anchors, links or aria-live regions; no network, API, database, WebSocket, storage, cookies, cache, logging, diagnostics, telemetry, timers or randomness; and no CSS animation or transition. The single standalone HTML file loads exactly one module script, the G28 entry. Scoped scans of the authored sources and of the G28 test returned zero any-type hits, zero runtime or interaction hits in the three authored source modules, zero parent-traversal or cross-package references and zero cross-module leakage tokens; the only matches returned when the G28 test file is added to that scan are the three forbidden-token assertions declared inside the test file itself.",
+      "status": "PASSED"
+    },
+    {
+      "id": "presence_and_order_scan",
+      "detail": "The rendered page exposes exactly one h1 carrying the frozen title, the frozen disclaimer and scope lines as the next two visible lines, one labelled section per frozen region in the frozen order SOURCE AND STATUS BOUNDARY, EVIDENCE-CONFIDENCE MAPPING GOVERNANCE MATRIX, ROLE AND APPROVAL SEPARATION, EVIDENCE PREREQUISITES AND NON-COMPENSATION, OPEN EXACT CONTENT and NON-DECISION RESULT, exactly one table whose tbody carries the nine frozen governance rows in order EVIDENCE_CONFIDENCE_MAPPING_SCOPE, CANONICAL_ENUM_SOLE_AUTHORITY, SEMANTIC_LAYER_SEPARATION_NO_CONFLATION, NO_VALIDATION_OR_INFERENCE_PROMOTION, AFFECTED_USE_FAIL_CLOSED, NON_COMPENSATION_SEPARATE_SLICE_REPORTING, MINIMUM_EVIDENCE_PREREQUISITES, NO_AUTOMATIC_ACTION and DECISION_MEANING, the exact seven-value canonical evidence_status enum in the architecture section 13 order, the eight role and approval separation items and the twelve evidence prerequisites.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation_and_path_scan",
+      "detail": "The entry module imports only react-dom/client and the G28 component; the component imports only the G28 scenario plus a react type-only import; no G14 through G27 component, production entry, router, menu, manifest, index or build configuration was imported, referenced or modified. A recursive scan of apps/web outside the authored set found zero references to the G28 component name and zero references to the G28 package path slug. The allowlist remains closed with exactly nine unique repository-relative paths in the frozen order: three present documentation artifacts plus six planned artifacts, of which five were created in this phase and the sixth is this verification record.",
+      "status": "PASSED"
+    },
+    {
+      "id": "lf_utf8_no_bom",
+      "observed": "Byte inspection of the five authored artifacts and of this record returned CR byte count 0 and no BOM for each: standalone HTML 12 lines, scenario 172 lines, component 74 lines, entry 8 lines, G28 test 228 lines, and this record is written LF-only UTF-8 without a BOM.",
+      "status": "PASSED"
+    },
+    {
+      "id": "no_any_typescript",
+      "observed": "A whole-file scan of the three authored TypeScript/TSX modules and the G28 test file for type annotation any, as any, angle-bracket any, any array and Record<string, any> returned zero hits, and npm run typecheck exited 0 without diagnostics.",
+      "status": "PASSED"
+    },
+    {
+      "id": "dependency_scan",
+      "observed": "git status --porcelain listed only the new untracked G28 artifacts and no tracked file was modified; no package.json, lockfile, tsconfig, Vite or workspace configuration was created or modified and no dependency was added, removed, upgraded or reinstalled.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist raw SHA-256 is 6a7d2a7de939e10fc276bc3666c120be777611dfc41e4f14ed1d5ddef91be766 and equals the value recorded in the G28 authorization and package README; closed is true; the nine unique paths are three present documentation artifacts plus six planned artifacts; the allowlist parses with closed set to true and nine unique allowed paths, the result label equals the allowlist result_label value, the frozen reference title, the three always-visible lines, the six regions in frozen order, the nine governance matrix rows, the seven-value canonical enum in order and the twelve evidence prerequisites declared by the allowlist match the scenario exports and the rendered page; gate impact remains NONE and the implementation readiness, synthetic acceptance and production launch gates remain BLOCKED.",
+      "status": "PASSED"
+    },
+    {
+      "id": "terminal_token_and_line_non_decision",
+      "observed": "G28_SYNTHETIC_NO_EVIDENCE_STATUS_MAPPING_NUMERIC_VALUE_ORDER_CALIBRATION_OR_CONFIDENCE_SCORE_ACTION_EXECUTED and NO EVIDENCE-STATUS MAPPING, TABLE, FUNCTION, NUMERIC VALUE, RANGE, DIRECTION, ORDER, HIERARCHY, DEFAULT, CALIBRATION, DATASET, STATISTIC, POLICY, PRODUCTION, RUNTIME OR GATE ACTION OCCURRED each appear exactly once on the page, inside NON-DECISION RESULT, which is the final labelled region.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_static_layout_contract",
+      "observed": "Static style inspection only: the page declares no media query and relies on a single-column flow with hidden horizontal overflow, a min(100%, 78rem) shell with min-width 0, clamp-based spacing and clamp-scaled typography, a fixed-layout full-width table with overflow-wrap and word-break on every cell, and overflow-wrap on every text block, so long frozen strings wrap instead of forcing document-level horizontal overflow at 360, 390, 768 and 1280 CSS pixels.",
+      "status": "PASSED_STATIC_INSPECTION_ONLY"
+    },
+    {
+      "id": "live_browser_observation",
+      "observed": "Not performed in this environment.",
+      "reason": "No browser automation tool is available here and dependency installation is not permitted in this phase, so no viewport, console or accessibility-tree observation is claimed.",
+      "status": "NOT_PERFORMED"
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-evidence-confidence-mapping-qualitative-boundary-reference.html": "d8067a7cb88078bc05c7a989a85556b4bc46c56227a4eac2ee3abf5e458466ef",
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceScenario.ts": "88d9453720a73c34d50a88dba1e1dbd7926d80ee1037632621d5b1de0b1082ed",
+    "apps/web/src/synthetic/SyntheticEvidenceConfidenceMappingQualitativeBoundaryReference.tsx": "e589125118a614b5919a9e38dbacf8e929e673e013f1c863d3e1445acf246804",
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceEntry.tsx": "f02230d2af30773d958d2dce2fd48492df1eb3a8aec9bb09a9a7568074d2487b",
+    "apps/web/tests/syntheticEvidenceConfidenceMappingQualitativeBoundaryReference.test.ts": "f2be48b4dc0021a04e45f2be5ff2f496522baab3f18d7669217a02648174c4b6"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-evidence-confidence-mapping-qualitative-boundary-reference.html": 12,
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceScenario.ts": 172,
+    "apps/web/src/synthetic/SyntheticEvidenceConfidenceMappingQualitativeBoundaryReference.tsx": 74,
+    "apps/web/src/synthetic/syntheticEvidenceConfidenceMappingQualitativeBoundaryReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticEvidenceConfidenceMappingQualitativeBoundaryReference.test.ts": 228
+  },
+  "governance": {
+    "package_governance_owner": "Chief AI Architect + DEVELOPMENT + AI",
+    "source_decision_governance_owner": "Chief AI Architect + AI",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "source_decision_mandatory_approvers": "PRODUCT + LEGAL + DEVELOPMENT",
+    "package_mandatory_approvers": "PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "package_roles_versus_source_decision_roles": "SEPARATE_NOT_CONFLATED",
+    "eventual_evidence_confidence_mapping_approval": "ALL_FIVE_FUNCTIONS_CHIEF_AI_ARCHITECT_AI_PRODUCT_LEGAL_DEVELOPMENT_SAME_VERSION_HASH",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_not_claimed": true,
+    "production_data_not_used": true,
+    "no_evidence_status_mapping_numeric_value_range_order_or_calibration_selected": true,
+    "no_required_evidence_level_or_xfr_d_m6_calibration_approved": true,
+    "no_confidence_score_feature_fit_or_downstream_effect_computed": true,
+    "no_runtime_or_gate_action_executed": true
+  },
+  "limitations": [
+    {
+      "id": "no_live_browser_viewport_observation",
+      "description": "The authorized dev URL was not opened in a browser in this environment, so exact-copy rendering, console cleanliness and 360, 390, 768 and 1280 CSS-pixel viewport behaviour were not observed directly.",
+      "mitigation": "Rendered-markup assertions exercise the real React component through renderToStaticMarkup, and the responsive contract is verified by static inspection of the component style map."
+    },
+    {
+      "id": "verification_record_self_hash_excluded",
+      "description": "This verification record contains no SHA-256 of itself, in line with the G27 precedent and the rule that a package verification record cannot hash its own contents."
+    },
+    {
+      "id": "package_result_scope",
+      "description": "This result is package-local verification of a static dev-only qualitative boundary reference. It is not an evidence-status mapping, numeric value, calibration, dataset result, evidence verdict, Confidence Score, policy approval, synthetic acceptance or production-readiness claim."
+    }
+  ],
+  "conclusion": "All required G28 checks passed: web typecheck, the fourteen focused static reference tests, and the configured 357-test .test.ts web suite selected by tests/*.test.ts, plus presence and order of the frozen title, the three always-visible lines, the six labelled regions, the nine governance matrix rows, the seven-value canonical evidence_status enum, the eight role and approval separation items and the twelve evidence prerequisites, static non-decision and isolation scanning, LF and UTF-8 without BOM, no any TypeScript, and an unchanged dependency and configuration surface. The separately present .test.tsx file is outside the configured npm test glob and is not claimed as executed by that run. The G28 qualitative evidence-confidence mapping boundary reference is verified as a static, dev-only, non-decision page in which no evidence_status to Evidence Confidence mapping, table, function, numeric value, range, direction, order, hierarchy, monotonicity, default, calibration, dataset, statistic, required_evidence_level, XFR-D-M6 calibration, policy, production, runtime or gate decision was selected, approved, applied, computed or executed, and all three governance gates remain BLOCKED. Live browser viewport, console and accessibility-tree observation was not performed in this environment and is recorded as a limitation rather than as a passed observation."
+}
