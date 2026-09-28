@@ -1,0 +1,177 @@
+{
+  "artifact_type": "G27_SCORING_SEGMENT_OVERRIDE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-scoring-segment-override-qualitative-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G27_CODE_PHASE",
+  "verification_date": "2026-09-28",
+  "baseline_commit": "dc5fc27299d8567521467a047e04f5e7a8b93aa6",
+  "head_commit_at_verification": "b0d8f47779649cf35b05c1ca1b9be5a54ec5b301",
+  "branch": "development/sprint-7-matching-g27-synthetic-scoring-segment-override-qualitative-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G27_SYNTHETIC_SCORING_SEGMENT_OVERRIDE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G27_SYNTHETIC_SCORING_SEGMENT_OVERRIDE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "all_checks_passed": true,
+  "required_checks": [
+    "web_typecheck",
+    "focused_g27_tests",
+    "existing_g14_g26_regression",
+    "static_source_scan",
+    "presence_and_order_scan",
+    "isolation_and_path_scan",
+    "lf_utf8_no_bom",
+    "no_any_typescript",
+    "dependency_scan",
+    "allowlist_and_governance",
+    "terminal_token_and_line_non_decision"
+  ],
+  "allowlist_sha256": "2318fe4eaa3283d011d1c5f1bcdffdca1d8ea39268aa8466f24c94d42406e3f4",
+  "allowlist_sha256_matches_authorized_value": true,
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-scoring-segment-override-qualitative-boundary-reference.html",
+    "live_browser_render_status": "NOT_PERFORMED",
+    "live_browser_render_note": "No browser automation tool is available in this environment and dependency installation is not permitted for this phase. Verification therefore relies on rendered-markup assertions (renderToStaticMarkup), static source scanning and static responsive-style inspection; no viewport observation is claimed."
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "no_git_mutation_performed_by_code_author": true
+  },
+  "authored_paths": [
+    "apps/web/synthetic-scoring-segment-override-qualitative-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticScoringSegmentOverrideQualitativeBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticScoringSegmentOverrideQualitativeBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-scoring-segment-override-qualitative-boundary-reference/G27_SCORING_SEGMENT_OVERRIDE_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g27_tests",
+      "command": "node --import tsx --test tests/syntheticScoringSegmentOverrideQualitativeBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "11 tests, 11 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "existing_g14_g26_regression",
+      "command": "npm test (node --import tsx --test tests/*.test.ts, cwd apps/web)",
+      "observed": "343 tests, 343 pass, 0 fail, 0 skipped across 31 test files, including the 21 pre-existing synthetic reference suites (G14 through G26)",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_source_scan",
+      "detail": "The authored scenario, component and entry modules contain no computation, segment or membership selection, override, baseline, weight, threshold or formula application, score generation, React state/effects/reducers, event or keyboard handlers, controls, forms, inputs, anchors, links, aria-live regions, network access, WebSocket, storage, cookies, logging, timers, randomness or CSS animation/transition. The single standalone HTML file loads exactly one module script, the G27 entry.",
+      "status": "PASSED"
+    },
+    {
+      "id": "presence_and_order_scan",
+      "detail": "The rendered page exposes exactly one h1 carrying the frozen title, the frozen disclaimer and scope lines as the next two visible lines, one labelled section per frozen region in the frozen order, and exactly one table whose tbody carries the eight frozen governance rows in order: SEGMENT_OVERRIDE_SCOPE, GLOBAL_BASELINE_SOLE_AUTHORITY, EXPLICIT_LAWFUL_MEMBERSHIP_NO_INFERENCE, NON_WEAKENING_NON_DISCRIMINATION_NON_COMPENSATION, MINIMUM_EVIDENCE_CATEGORIES, AFFECTED_USE_FAIL_CLOSED, NO_AUTOMATIC_ACTION and DECISION_MEANING.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation_and_path_scan",
+      "detail": "The entry module imports only the G27 component and the component imports only the G27 scenario; no G14 through G26 component, production entry, router, menu, manifest, index or build configuration was imported, referenced or modified. The allowlist remains closed with exactly nine unique repository-relative paths in the frozen order: three present documentation artifacts plus six planned code/test/verification artifacts, five created in this phase and the sixth being this verification record.",
+      "status": "PASSED"
+    },
+    {
+      "id": "lf_utf8_no_bom",
+      "observed": "All six authored files, including this verification record, are LF-only UTF-8 without a BOM and contain no CR byte; byte inspection returned hasCR false and hasBOM false for each file.",
+      "status": "PASSED"
+    },
+    {
+      "id": "no_any_typescript",
+      "observed": "A whole-token scan of the three authored TypeScript/TSX modules and the G27 test file found no any type, no any cast and no implicit-any escape, and npm run typecheck exited 0 without diagnostics.",
+      "status": "PASSED"
+    },
+    {
+      "id": "dependency_scan",
+      "observed": "git status --porcelain listed only the five new untracked G27 artifacts before this record was written: no package.json, lockfile, tsconfig, Vite or workspace configuration was created or modified, and no dependency was added, removed, upgraded or reinstalled.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist raw SHA-256 is 2318fe4eaa3283d011d1c5f1bcdffdca1d8ea39268aa8466f24c94d42406e3f4 and matches the authorized value; closed is true; the result label matches; the frozen reference title, the three always-visible lines, the six regions in order, the eight governance matrix rows and the fourteen evidence prerequisites match the scenario exports; gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    },
+    {
+      "id": "terminal_token_and_line_non_decision",
+      "observed": "G27_SYNTHETIC_NO_SEGMENT_OVERRIDE_MEMBERSHIP_LAWFUL_BASIS_WEIGHT_THRESHOLD_OR_SCORE_ACTION_EXECUTED and the terminal non-decision line each appear exactly once, inside NON-DECISION RESULT, which is the final labelled region of the page.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_static_layout_contract",
+      "detail": "Static style inspection only: the page declares no media query and relies on a single-column flow with overflowX hidden, a min(100%, 78rem) shell with minWidth 0, clamp()-based spacing and clamp()-scaled typography, a fixed-layout 100%-wide table with overflowWrap and wordBreak on every cell, and overflowWrap on every text block, so long frozen strings wrap instead of forcing horizontal document overflow at 360, 390, 768 and 1280 CSS pixels.",
+      "status": "PASSED_STATIC_INSPECTION_ONLY"
+    },
+    {
+      "id": "live_browser_observation",
+      "observed": "Not performed in this environment.",
+      "reason": "No browser automation tool is available here and dependency installation is not permitted in this phase, so no viewport, console or accessibility-tree observation is claimed.",
+      "status": "NOT_PERFORMED"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "no_live_browser_viewport_observation",
+      "description": "The authorized dev URL was not opened in a browser in this environment, so exact-copy rendering, console cleanliness and 360, 390, 768 and 1280 CSS-pixel viewport behaviour were not observed directly.",
+      "mitigation": "Rendered-markup assertions exercise the real React component through renderToStaticMarkup, and the responsive contract is verified by static inspection of the component style map."
+    },
+    {
+      "id": "verification_record_self_hash_excluded",
+      "description": "This verification record contains no SHA-256 of itself, in line with the G26 precedent and the rule that the package verification record cannot hash its own contents."
+    },
+    {
+      "id": "package_result_scope",
+      "description": "This result is package-local verification of a static dev-only qualitative boundary reference. It is not a segment, membership, lawful-basis, override, baseline, evidence verdict, score, synthetic acceptance or production-readiness claim."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-scoring-segment-override-qualitative-boundary-reference.html": "b2a7fa6c1b12ac08df94a949d3f08e8166145a5b4af01df9d05bbd26e372b846",
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceScenario.ts": "cbd2c1918bdbd40b7f2dfd6b4d7b377f16770e1b68db60d2589235c57ec68ec9",
+    "apps/web/src/synthetic/SyntheticScoringSegmentOverrideQualitativeBoundaryReference.tsx": "5d35b6c88d6598bd9452c75b29c0f9d1a42d8fc501e9000a0b5271860102a575",
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceEntry.tsx": "6f195d024a85c7a137f2553da5ed03ce2e6d04d6baebc40b7f8aa923d094f969",
+    "apps/web/tests/syntheticScoringSegmentOverrideQualitativeBoundaryReference.test.ts": "bc4edd3e46c095654727fd1d3d9501f141a6519145cfddeb902484135a857934"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-scoring-segment-override-qualitative-boundary-reference.html": 12,
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceScenario.ts": 152,
+    "apps/web/src/synthetic/SyntheticScoringSegmentOverrideQualitativeBoundaryReference.tsx": 73,
+    "apps/web/src/synthetic/syntheticScoringSegmentOverrideQualitativeBoundaryReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticScoringSegmentOverrideQualitativeBoundaryReference.test.ts": 184
+  },
+  "governance": {
+    "governance_owner": "Chief AI Architect + DEVELOPMENT + AI",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "substantive_governance_owner": "AI + PRODUCT",
+    "xfr_mandatory_approvers": "Chief AI Architect + LEGAL + DEVELOPMENT",
+    "package_mandatory_approvers": "PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "eventual_segment_override_approval": "ALL_FIVE_FUNCTIONS_SAME_VERSION_HASH",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_not_claimed": true,
+    "production_data_not_used": true,
+    "no_segment_universe_membership_or_lawful_basis_selected": true,
+    "no_baseline_or_override_approved": true,
+    "no_weight_threshold_formula_or_score_computed": true,
+    "no_runtime_action_executed": true
+  },
+  "conclusion": "All required G27 checks passed: web typecheck, the eleven focused static reference tests, the full 343-test web suite including the twenty-one pre-existing synthetic suites (G14 through G26), presence and order of the frozen title, the three always-visible lines, the six labelled regions and the eight governance matrix rows, static non-decision and isolation scanning, LF and UTF-8 without BOM, no any TypeScript, and an unchanged dependency and configuration surface. The G27 qualitative segment-override boundary reference is verified as a static, dev-only, non-decision page in which no segment universe, membership, lawful basis, baseline, override, weight, threshold, formula, score or runtime action was selected, approved, applied, computed or executed, and all three governance gates remain BLOCKED. Live browser viewport, console and accessibility-tree observation was not performed in this environment and is recorded as a limitation rather than as a passed observation."
+}
