@@ -1,0 +1,178 @@
+{
+  "artifact_type": "G29_SCORING_NUMERIC_REPRESENTATION_DETERMINISTIC_REPLAY_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G29_CODE_PHASE",
+  "verification_date": "2026-09-29",
+  "documentation_commit": "df3c886a4849c6ca269e1c78d598b711a1713dcb",
+  "head_commit_at_verification": "df3c886a4849c6ca269e1c78d598b711a1713dcb",
+  "branch": "development/sprint-7-matching-g29-synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference",
+  "result": "VERIFIED",
+  "result_label": "G29_SYNTHETIC_SCORING_NUMERIC_REPRESENTATION_DETERMINISTIC_REPLAY_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G29_SYNTHETIC_SCORING_NUMERIC_REPRESENTATION_DETERMINISTIC_REPLAY_QUALITATIVE_BOUNDARY_REFERENCE_VERIFIED",
+  "all_checks_passed": true,
+  "allowlist_sha256": "5dfaaad6dc2d30b35504098a27c01ec608ba3795bea5f4e87d62edae1e902a70",
+  "allowlist_sha256_matches_authorized_value": true,
+  "required_checks": [
+    "web_typecheck",
+    "focused_g29_tests",
+    "full_web_regression",
+    "static_source_scan",
+    "presence_and_order_scan",
+    "isolation_and_path_scan",
+    "lf_utf8_no_bom",
+    "no_any_typescript",
+    "dependency_scan",
+    "allowlist_and_governance",
+    "terminal_token_and_line_non_decision"
+  ],
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference.html",
+    "live_browser_render_status": "NOT_PERFORMED",
+    "node_test_bootstrap_note": "The host Node os.userInfo call returned uv_os_get_passwd ENOMEM before tsx loaded. Tests were run with a temporary out-of-repository bootstrap that supplies process.geteuid only; project source, dependencies and configuration were unchanged."
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "no_git_mutation_performed_by_code_author": true
+  },
+  "authored_paths": [
+    "apps/web/synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference.html",
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.tsx",
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceEntry.tsx",
+    "apps/web/tests/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference/G29_SCORING_NUMERIC_REPRESENTATION_DETERMINISTIC_REPLAY_QUALITATIVE_BOUNDARY_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g29_tests",
+      "command": "node --require <temporary geteuid bootstrap> --import tsx --test tests/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.test.ts (cwd apps/web)",
+      "observed": "8 tests, 8 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_regression",
+      "command": "npm test with temporary NODE_OPTIONS geteuid bootstrap (cwd apps/web)",
+      "observed": "365 tests, 365 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_source_scan",
+      "detail": "The authored scenario, component and entry contain no score computation, representation selection, numeric example, React state/effects/reducers, event handlers, controls, links, forms, network access, WebSocket, storage, cookies, logging, timers, randomness or CSS animation/transition.",
+      "status": "PASSED"
+    },
+    {
+      "id": "presence_and_order_scan",
+      "detail": "Rendered static markup contains exactly one h1, the three frozen permanent lines, six labelled semantic regions in order, one table and the nine governance rows in the frozen order.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation_and_path_scan",
+      "detail": "The entry imports only the G29 component and the component imports only the G29 scenario. No production entry, router, menu, manifest, index, dependency or build configuration was imported, referenced or modified. Exactly the six planned allowlisted paths were created.",
+      "status": "PASSED"
+    },
+    {
+      "id": "lf_utf8_no_bom",
+      "observed": "All five executable/test files and this verification record are LF-only UTF-8 without BOM and contain no CR byte.",
+      "status": "PASSED"
+    },
+    {
+      "id": "no_any_typescript",
+      "observed": "Whole-token and cast scans found no any type in the authored TypeScript/TSX/test files; TypeScript typecheck passed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "dependency_scan",
+      "observed": "No package.json, lockfile, tsconfig, Vite or workspace configuration was created or modified; no dependency was added, removed, upgraded or installed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist SHA-256 matches; closed is true; the title, three lines, six regions, all nine matrix row identifiers and their complete immutable frozen strings, eleven evidence prerequisites and result label match the scenario; gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    },
+    {
+      "id": "terminal_token_and_line_non_decision",
+      "observed": "The frozen terminal token and non-decision line each appear exactly once inside NON-DECISION RESULT, the final labelled region.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_static_layout_contract",
+      "detail": "Static inspection confirms a single-column min(100%, 78rem) shell, overflow containment, clamp-based spacing and typography, fixed-layout 100%-wide table and wrapping on cells and long tokens for 360, 390, 768 and 1280 CSS-pixel widths.",
+      "status": "PASSED_STATIC_INSPECTION_ONLY"
+    },
+    {
+      "id": "live_browser_observation",
+      "observed": "Not performed in this code phase.",
+      "status": "NOT_PERFORMED"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "no_live_browser_viewport_observation",
+      "description": "The manual dev URL was not opened in a browser, so viewport, console and accessibility-tree behaviour were not observed directly.",
+      "mitigation": "The real React component was exercised through renderToStaticMarkup; semantic structure and responsive style constraints were verified by focused tests and static inspection."
+    },
+    {
+      "id": "host_node_userinfo_failure",
+      "description": "The host Node v22.23.1 os.userInfo call failed with uv_os_get_passwd ENOMEM before tsx initialization.",
+      "mitigation": "A temporary out-of-repository bootstrap supplied process.geteuid only. The focused and full test suites then passed without modifying repository files, dependencies or configuration."
+    },
+    {
+      "id": "verification_record_self_hash_excluded",
+      "description": "This verification record contains no hash of itself."
+    },
+    {
+      "id": "package_result_scope",
+      "description": "The result is package-local verification of a static dev-only qualitative reference, not a numeric representation, precision, rounding, serialization, tolerance, replay, policy, synthetic-acceptance or production-readiness claim."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference.html": "3a4e7cc417d727019397927a5016055712f48de8864bb184f12412466660a801",
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceScenario.ts": "4c4f37692ab564e2a6e26f782e2144fccfce60ae2e88438e7c3ebdde6e65d795",
+    "apps/web/src/synthetic/SyntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.tsx": "f5c14d8ed8c1301616d6425e4b40d0f20340ecb339df68d2e024c0d6ab33fffc",
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceEntry.tsx": "21a05c027b638094a173d7099680ca97e5c392795f1f2853e5aa87576defe40b",
+    "apps/web/tests/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.test.ts": "ba8e7169a76b741a6f9d902c1e5bdb631b13fa3b5c7f76b882bd59b526902db1"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-scoring-numeric-representation-deterministic-replay-qualitative-boundary-reference.html": 12,
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceScenario.ts": 146,
+    "apps/web/src/synthetic/SyntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.tsx": 69,
+    "apps/web/src/synthetic/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticScoringNumericRepresentationDeterministicReplayQualitativeBoundaryReference.test.ts": 160
+  },
+  "governance": {
+    "package_governance_owner": "Chief AI Architect + DEVELOPMENT + AI",
+    "source_decision_governance_owner": "DEVELOPMENT + AI",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "source_decision_mandatory_approvers": "Chief AI Architect + PRODUCT + LEGAL",
+    "package_mandatory_approvers": "PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "DEVELOPMENT + AI",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_not_claimed": true,
+    "production_data_not_used": true,
+    "no_numeric_representation_precision_rounding_serialization_or_tolerance_selected": true,
+    "no_replay_runtime_or_gate_action_executed": true
+  },
+  "conclusion": "All required G29 code-phase checks passed. The package is an isolated, static, manually opened, development-only qualitative boundary reference. It selects no numeric representation, precision, rounding, serialization, carrier or tolerance; executes no replay or score action; authorizes no policy, runtime, production use or implementation; and leaves all three governance gates BLOCKED."
+}
