@@ -1,0 +1,198 @@
+{
+  "artifact_type": "G31_SENSITIVITY_CALIBRATION_EVIDENCE_GOVERNANCE_REFERENCE_VERIFICATION",
+  "package": "synthetic-sensitivity-calibration-evidence-governance-reference",
+  "package_version": "1.0",
+  "phase": "G31_CODE_PHASE",
+  "verification_date": "2026-09-29",
+  "branch": "development/sprint-7-matching-g31-synthetic-sensitivity-calibration-evidence-governance-reference",
+  "documentation_baseline_documented": "2e2fe7c32a5f8391d4595fdaa07f8cf805f32cd5",
+  "source_decision": "XFR-D-022 v1.0",
+  "source_status": "APPROVED / PARTIALLY_RESOLVED_BOUNDARY",
+  "canonical_identity": "MSP-09 -> XFR-D-022",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "RECORDED_STATIC_CREATION_TIME_VERIFICATION_ONLY",
+  "result_label": "G31_SYNTHETIC_SENSITIVITY_CALIBRATION_EVIDENCE_GOVERNANCE_REFERENCE_VERIFIED",
+  "expected_result_label": "G31_SYNTHETIC_SENSITIVITY_CALIBRATION_EVIDENCE_GOVERNANCE_REFERENCE_VERIFIED",
+  "allowlist_sha256": "88223e5452b64d3cc6a04365e3284e5fdd5daeea7c28b7e2d122edbcc49c46d4",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_ONLY",
+  "tests_executed_by_code_author": false,
+  "test_command_executed_by_code_author": false,
+  "typecheck_command_executed_by_code_author": false,
+  "git_command_executed_by_code_author": false,
+  "browser_rendering_performed_by_code_author": false,
+  "network_access_performed_by_code_author": false,
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The G31 allowlist file was read and its raw SHA-256 was computed at creation time; it equals 88223e5452b64d3cc6a04365e3284e5fdd5daeea7c28b7e2d122edbcc49c46d4. Both this record and the focused test hard-bind that value."
+    },
+    {
+      "id": "authorized_source_read",
+      "status": "CONFIRMED_STATIC",
+      "description": "Only the three G31 documentation artifacts, XFR-D-022 and the six named G30 structural examples were read. No package.json, configuration, index, router, manifest or other unlisted file was read."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The allowlist declares exactly nine paths: three present documentation artifacts and six planned artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing file was modified and no path outside the allowlist was created."
+    },
+    {
+      "id": "frozen_string_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist html_title, the three always-visible lines, the six regions in order, all ten matrix row identifiers and their frozen boundary strings, the terminal token and the terminal line as byte-identical strings. The eleven evidence prerequisites and the eleven open exact-content categories are rendered as readable statements that are one-to-one content-aligned with the condensed allowlist identifiers. The evidence boundary, fail-closed rule, distinct layers, prohibited inferences and independence-preserved lists carry the asserted content."
+    },
+    {
+      "id": "static_surface_contract",
+      "status": "CONFIRMED_STATIC",
+      "description": "The component is static and rendered all at once; it declares no React state, effect, reducer, event handler, control, link, form, live region, network call, storage, cookie, logging, telemetry, timer, randomness, animation or transition."
+    },
+    {
+      "id": "terminal_and_non_decision",
+      "status": "CONFIRMED_STATIC",
+      "description": "The NON-DECISION RESULT region renders the XFR-D-022 PARTIALLY_RESOLVED_BOUNDARY statement, the frozen terminal token G31_SYNTHETIC_NO_DATASET_SPLIT_SEED_SENSITIVITY_CALIBRATION_TARGET_STATISTIC_OR_TUNING_ACTION_EXECUTED and the frozen terminal line; the terminal token is a negative assertion and not a dataset, split, seed, sensitivity, metric, calibration, target, threshold, statistic, result or tuning action."
+    },
+    {
+      "id": "encoding_and_line_endings",
+      "status": "CONFIRMED_STATIC",
+      "description": "All six created files are UTF-8 without BOM and contain LF line endings only (zero CR bytes)."
+    },
+    {
+      "id": "governance_state",
+      "status": "CONFIRMED_STATIC",
+      "description": "Gate impact is NONE; IMPLEMENTATION_READINESS_GATE, SYNTHETIC_ACCEPTANCE_GATE and PRODUCTION_LAUNCH_GATE remain BLOCKED. XFR-D-022 remains APPROVED / PARTIALLY_RESOLVED_BOUNDARY and architecture section 34.1 unknown-as-negative and process-failure-as-negative rules remain separate, inviolable and non-compensable."
+    },
+    {
+      "id": "isolation",
+      "status": "CONFIRMED_STATIC",
+      "description": "The HTML page references only the G31 entry module; the entry imports only the G31 component; the component imports only the G31 scenario. No production entry point, router, menu, manifest, dependency or build configuration was created, modified or imported."
+    }
+  ],
+  "frozen_string_comparison": {
+    "html_title_equals_scenario_title": true,
+    "always_visible_lines_equal_scenario_constants": true,
+    "regions_in_order_equal_scenario_regions": true,
+    "matrix_row_identifiers_equal_scenario_rows": true,
+    "matrix_frozen_boundaries_equal_scenario_boundaries": true,
+    "terminal_token_equals_scenario_token": true,
+    "terminal_line_equals_scenario_line": true,
+    "evidence_prerequisites_count": 11,
+    "open_exact_content_count": 11,
+    "note": "Regression artefacts in the allowlist store the evidence prerequisites and the open exact-content categories as condensed identifiers while the visible reference renders readable statements. The focused test asserts count equality for those two categories and exact string equality for the remaining frozen strings."
+  },
+  "checks_not_performed_by_code_author": [
+    "npm run typecheck (TypeScript typecheck) at the time of authoring",
+    "node --test focused G31 test execution at the time of authoring",
+    "full web regression test suite at the time of authoring",
+    "live browser render at the manual dev URL",
+    "any Git command"
+  ],
+  "environment": {
+    "platform": "win32",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-sensitivity-calibration-evidence-governance-reference.html",
+    "node_runtime_invoked_by_code_author": false,
+    "typescript_invoked_by_code_author": false,
+    "live_browser_render_status": "NOT_PERFORMED"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "git_mutation_performed_by_code_author": false,
+    "tests_executed_by_code_author": false
+  },
+  "authored_paths": [
+    "apps/web/synthetic-sensitivity-calibration-evidence-governance-reference.html",
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticSensitivityCalibrationEvidenceGovernanceReference.tsx",
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceEntry.tsx",
+    "apps/web/tests/syntheticSensitivityCalibrationEvidenceGovernanceReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-sensitivity-calibration-evidence-governance-reference/G31_SENSITIVITY_CALIBRATION_EVIDENCE_GOVERNANCE_REFERENCE_VERIFICATION.json"
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-sensitivity-calibration-evidence-governance-reference.html": "e5faaeaeff3f9899d9166261e2540d59cdac8d8a3b770c0552d732faed242b86",
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceScenario.ts": "3c67d5ae9e21b05fc85ef02af63ca53513f3b9199bbcc7714042bce9f9eee76a",
+    "apps/web/src/synthetic/SyntheticSensitivityCalibrationEvidenceGovernanceReference.tsx": "5cd2aad1e80237c9a8e3eb7a7546c1fd91874d459a9bf2a96b6469675abe77cb",
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceEntry.tsx": "cee6f61419855f437bc65361946f8a6032d82b94e2566262572ceb4902ad7543",
+    "apps/web/tests/syntheticSensitivityCalibrationEvidenceGovernanceReference.test.ts": "4d906d6af5953636b083a4bbf2f48b7b4823a502e28c575ed6e675ef0b958269"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-sensitivity-calibration-evidence-governance-reference.html": 12,
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceScenario.ts": 208,
+    "apps/web/src/synthetic/SyntheticSensitivityCalibrationEvidenceGovernanceReference.tsx": 73,
+    "apps/web/src/synthetic/syntheticSensitivityCalibrationEvidenceGovernanceReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticSensitivityCalibrationEvidenceGovernanceReference.test.ts": 199
+  },
+  "governance": {
+    "package_governance_owner": "AI + DEVELOPMENT",
+    "scoring_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "Chief AI Architect + PRODUCT + LEGAL",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_not_claimed": true,
+    "production_data_not_used": true,
+    "no_dataset_split_seed_sensitivity_metric_calibration_target_threshold_statistic_result_or_tuning_action_selected": true,
+    "no_sensitivity_calibration_runtime_or_gate_action_executed": true
+  },
+  "controller_verification": {
+    "verification_date": "2026-09-29",
+    "ordinary_node_bootstrap": {
+      "command": "node --import tsx --test tests/syntheticSensitivityCalibrationEvidenceGovernanceReference.test.ts",
+      "status": "HOST_BOOTSTRAP_FAILURE_BEFORE_TEST_LOAD",
+      "observed": "node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM before tsx initialized"
+    },
+    "host_workaround": "The passing Node test runs used an inline process-only data-URL preload that supplies process.geteuid only; repository files, dependencies and configuration were unchanged and no temporary file was created.",
+    "focused_g31_tests": {
+      "command": "node --import <inline process.geteuid data-URL preload> --import tsx --test tests/syntheticSensitivityCalibrationEvidenceGovernanceReference.test.ts",
+      "status": "PASSED",
+      "observed": "8 tests, 8 pass, 0 fail, 0 skipped"
+    },
+    "web_typecheck": {
+      "command": "npm run typecheck",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit completed successfully"
+    },
+    "full_web_regression": {
+      "command": "node --import <inline process.geteuid data-URL preload> --import tsx --test tests/*.test.ts",
+      "status": "PASSED",
+      "observed": "381 tests, 381 pass, 0 fail, 0 skipped"
+    },
+    "live_browser_render": "NOT_PERFORMED"
+  },
+  "limitations": [
+    {
+      "id": "no_test_execution_by_code_author",
+      "description": "The focused G31 test, the TypeScript typecheck and the full web regression suite were not executed by this code author.",
+      "mitigation": "Satisfied by the separate controller verification recorded above: focused G31 tests, TypeScript typecheck and full web regression all passed."
+    },
+    {
+      "id": "no_live_browser_viewport_observation",
+      "description": "The manual dev URL was not opened, so viewport, console and accessibility-tree behaviour were not observed directly.",
+      "mitigation": "The component is static and follows the G30 structural precedent; responsive and accessibility behaviour require separate browser observation."
+    },
+    {
+      "id": "verification_record_self_hash_excluded",
+      "description": "This verification record contains no hash of itself."
+    },
+    {
+      "id": "package_result_scope",
+      "description": "The result is package-local static verification of a static dev-only qualitative sensitivity/calibration evidence-governance reference, not a dataset, split, seed, sensitivity design, metric, calibration, target, threshold, statistic, result, policy, synthetic-acceptance or production-readiness claim."
+    }
+  ],
+  "conclusion": "The G31 code phase created exactly the six allowlisted code, test and verification paths bound to allowlist SHA-256 88223e5452b64d3cc6a04365e3284e5fdd5daeea7c28b7e2d122edbcc49c46d4. The package is an isolated, static, manually opened, development-only qualitative sensitivity/calibration evidence-governance reference. It selects or executes no dataset, split, seed, sensitivity design, metric, calibration, target, threshold, statistic, result or tuning action; authorizes no policy, runtime, production data use or implementation; preserves XFR-D-022 as APPROVED / PARTIALLY_RESOLVED_BOUNDARY; and leaves all three governance gates BLOCKED. The checks recorded here are creation-time static checks only; no test, typecheck, browser or Git command was executed by this code author."
+}
