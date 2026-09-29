@@ -1,0 +1,189 @@
+{
+  "artifact_type": "G30_RANKING_DIVERSIFICATION_QUALITATIVE_SAFEGUARD_REFERENCE_VERIFICATION",
+  "package": "synthetic-ranking-diversification-qualitative-safeguard-reference",
+  "package_version": "1.0",
+  "phase": "G30_CODE_PHASE",
+  "verification_date": "2026-09-29",
+  "documentation_commit": "799c2105e97bab24a513f7fd26b6853c8c203aec",
+  "head_commit_at_verification": "799c2105e97bab24a513f7fd26b6853c8c203aec",
+  "branch": "development/sprint-7-matching-g30-synthetic-ranking-diversification-qualitative-safeguard-reference",
+  "result": "VERIFIED",
+  "result_label": "G30_SYNTHETIC_RANKING_DIVERSIFICATION_QUALITATIVE_SAFEGUARD_REFERENCE_VERIFIED",
+  "expected_result_label": "G30_SYNTHETIC_RANKING_DIVERSIFICATION_QUALITATIVE_SAFEGUARD_REFERENCE_VERIFIED",
+  "all_checks_passed": true,
+  "allowlist_sha256": "acdc15195f914dfa8c35d25541597ede2243118a3b4144de1067ccdc8be2175b",
+  "allowlist_sha256_matches_authorized_value": true,
+  "required_checks": [
+    "web_typecheck",
+    "focused_g30_tests",
+    "full_web_regression",
+    "static_source_scan",
+    "presence_and_order_scan",
+    "isolation_and_path_scan",
+    "lf_utf8_no_bom",
+    "no_any_typescript",
+    "dependency_scan",
+    "allowlist_and_governance",
+    "terminal_token_and_line_non_decision"
+  ],
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.1",
+    "typescript": "5.9.3",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-ranking-diversification-qualitative-safeguard-reference.html",
+    "live_browser_render_status": "NOT_PERFORMED",
+    "node_test_bootstrap_note": "The ordinary Node+tsx invocation failed before test loading because node:os uv_os_get_passwd returned ERR_SYSTEM_ERROR/ENOMEM. The passing focused and full runs used an inline process-only data-URL preload that supplies process.geteuid only; project source, dependencies and configuration were unchanged and no temporary file was created."
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "git_mutation_performed_by_code_author": false,
+    "controller_git_mutation_performed": false
+  },
+  "delegated_author_boundary": {
+    "initial_run_stopped_before_write": true,
+    "initial_run_read_only_git_and_broad_listing_violation_observed": true,
+    "retry_run_created_only_allowlisted_code_and_test_paths": true,
+    "retry_run_unapproved_read_of_apps_web_package_json_observed": true,
+    "retry_run_stopped_after_boundary_violation": true,
+    "secrets_or_personal_data_read": false,
+    "existing_repository_file_modified": false,
+    "controller_completed_normalization_and_verification": true
+  },
+  "authored_paths": [
+    "apps/web/synthetic-ranking-diversification-qualitative-safeguard-reference.html",
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticRankingDiversificationQualitativeSafeguardReference.tsx",
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceEntry.tsx",
+    "apps/web/tests/syntheticRankingDiversificationQualitativeSafeguardReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-ranking-diversification-qualitative-safeguard-reference/G30_RANKING_DIVERSIFICATION_QUALITATIVE_SAFEGUARD_REFERENCE_VERIFICATION.json"
+  ],
+  "checks": [
+    {
+      "id": "web_typecheck",
+      "command": "npm run typecheck (cwd apps/web)",
+      "observed": "exit code 0; no TypeScript diagnostics",
+      "status": "PASSED"
+    },
+    {
+      "id": "focused_g30_tests",
+      "command": "node --import <inline process.geteuid data-URL preload> --import tsx --test tests/syntheticRankingDiversificationQualitativeSafeguardReference.test.ts (cwd apps/web)",
+      "observed": "8 tests, 8 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "full_web_regression",
+      "command": "node --import <inline process.geteuid data-URL preload> --import tsx --test tests/*.test.ts (cwd apps/web)",
+      "observed": "373 tests, 373 pass, 0 fail, 0 skipped",
+      "status": "PASSED"
+    },
+    {
+      "id": "static_source_scan",
+      "detail": "The authored scenario, component and entry contain no ranking or diversity computation, React state/effects/reducers, event handlers, controls, links, forms, network access, WebSocket, storage, cookies, logging, timers, randomness or CSS animation/transition.",
+      "status": "PASSED"
+    },
+    {
+      "id": "presence_and_order_scan",
+      "detail": "Rendered static markup contains exactly one h1, the three frozen permanent lines, six labelled semantic regions in order, one table and the ten governance rows in the frozen order.",
+      "status": "PASSED"
+    },
+    {
+      "id": "isolation_and_path_scan",
+      "detail": "The entry imports only the G30 component and the component imports only the G30 scenario. No production entry, router, menu, manifest, index, dependency or build configuration was imported or modified. Exactly the six planned allowlisted paths were created.",
+      "status": "PASSED"
+    },
+    {
+      "id": "lf_utf8_no_bom",
+      "observed": "All five executable/test files and this verification record are LF-only UTF-8 without BOM and contain no CR byte.",
+      "status": "PASSED"
+    },
+    {
+      "id": "no_any_typescript",
+      "observed": "Whole-token and cast scans found no any type in the authored TypeScript/TSX/test files; TypeScript typecheck passed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "dependency_scan",
+      "observed": "No package.json, lockfile, tsconfig, Vite or workspace configuration was created or modified; no dependency was added, removed, upgraded or installed.",
+      "status": "PASSED"
+    },
+    {
+      "id": "allowlist_and_governance",
+      "detail": "The frozen allowlist SHA-256 matches; closed is true; the title, three lines, six regions, all ten matrix row identifiers and complete immutable frozen strings, eleven evidence prerequisites and result label match the scenario; gate impact remains NONE and all three governance gates remain BLOCKED.",
+      "status": "PASSED"
+    },
+    {
+      "id": "terminal_token_and_line_non_decision",
+      "observed": "The frozen terminal token and non-decision line each appear exactly once inside NON-DECISION RESULT, the final labelled region.",
+      "status": "PASSED"
+    },
+    {
+      "id": "responsive_static_layout_contract",
+      "detail": "Static inspection confirms a single-column min(100%, 78rem) shell, overflow containment, clamp-based spacing and typography, fixed-layout 100%-wide table and wrapping on cells and long tokens for 360, 390, 768 and 1280 CSS-pixel widths.",
+      "status": "PASSED_STATIC_INSPECTION_ONLY"
+    },
+    {
+      "id": "live_browser_observation",
+      "observed": "Not performed in this code phase.",
+      "status": "NOT_PERFORMED"
+    }
+  ],
+  "limitations": [
+    {
+      "id": "no_live_browser_viewport_observation",
+      "description": "The manual dev URL was not opened in a browser, so viewport, console and accessibility-tree behaviour were not observed directly.",
+      "mitigation": "The real React component was exercised through renderToStaticMarkup; semantic structure and responsive style constraints were verified by focused tests and static inspection."
+    },
+    {
+      "id": "host_node_userinfo_failure",
+      "description": "The host Node v22.23.1 os.userInfo call failed with uv_os_get_passwd ENOMEM before tsx initialization.",
+      "mitigation": "An inline process-only data-URL preload supplied process.geteuid. The focused and full test suites then passed without modifying repository files, dependencies or configuration."
+    },
+    {
+      "id": "verification_record_self_hash_excluded",
+      "description": "This verification record contains no hash of itself."
+    },
+    {
+      "id": "package_result_scope",
+      "description": "The result is package-local verification of a static dev-only qualitative safeguard reference, not a ranking/diversification algorithm, order, tie-break, metric, weight, threshold, minimum-quality, policy, synthetic-acceptance or production-readiness claim."
+    }
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-ranking-diversification-qualitative-safeguard-reference.html": "bd30334588f180d920b2a7c3bef596b6e334b3c92c0f9096d1d651026f08ee44",
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceScenario.ts": "aeb5e336d5648a553959a84a312b21f6f948a0056a278ae8b84c64d57c9353b4",
+    "apps/web/src/synthetic/SyntheticRankingDiversificationQualitativeSafeguardReference.tsx": "a42bc24c1b08f4332ee5665f30574acf1e31ca29b57681535a5105988a1f7a20",
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceEntry.tsx": "1d3edb64494079d337a556ff45e067fcf60d5e89be636632911ea313010af48a",
+    "apps/web/tests/syntheticRankingDiversificationQualitativeSafeguardReference.test.ts": "c8b62989df045dcf2136d0495a897eec990ebda3e6e60b2d1ebe3f4cfa135bfc"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-ranking-diversification-qualitative-safeguard-reference.html": 12,
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceScenario.ts": 213,
+    "apps/web/src/synthetic/SyntheticRankingDiversificationQualitativeSafeguardReference.tsx": 73,
+    "apps/web/src/synthetic/syntheticRankingDiversificationQualitativeSafeguardReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticRankingDiversificationQualitativeSafeguardReference.test.ts": 183
+  },
+  "governance": {
+    "package_governance_owner": "Chief AI Architect + PRODUCT",
+    "source_decision_governance_owner": "Chief AI Architect + PRODUCT",
+    "source_decision_mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "package_mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_readiness_not_claimed": true,
+    "production_data_not_used": true,
+    "no_ranking_diversification_algorithm_order_tie_break_metric_weight_threshold_or_minimum_quality_selected": true,
+    "no_ranking_diversification_runtime_or_gate_action_executed": true
+  },
+  "conclusion": "All required G30 code-phase checks passed. The package is an isolated, static, manually opened, development-only qualitative safeguard reference. It selects no ranking/diversification algorithm, ordering, tie-break, candidate-set rule, K, metric, formula, weight, threshold, minimum-quality rule/value or diversity/distance/similarity definition; executes no ranking or diversification action; authorizes no policy, runtime, production use or implementation; and leaves all three governance gates BLOCKED."
+}
