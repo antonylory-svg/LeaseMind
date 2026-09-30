@@ -1,0 +1,123 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G35_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-bounded-probabilistic-replay-qualitative-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-30",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g35-synthetic-bounded-probabilistic-replay-qualitative-governance-reference",
+    "commit": "86c662d55b032d96b95ff99bbea57ffe079dcea9"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-M4 v1.0",
+    "resolution_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "EP-10 + MRP-11 + MQP-15 + MSP-14 -> XFR-D-M4",
+    "canonical_relationship": "PRIMARY_MERGED_MEMBER",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "approved_boundary_only": "QUALITATIVE_REPLAY_GOVERNANCE_DETERMINISTIC_EXACT_PROTECTION_RECORDED_VS_BOUNDED_SEPARATION_ADVISORY_ONLY_FAIL_CLOSED_NON_COMPENSATION_HISTORICAL_INTEGRITY_AND_NO_AUTOMATIC_ACTION",
+    "matrix": [
+      { "row": 1, "frozen": "MERGED_IDENTITY_FOUR_PRIMARY_MEMBERS_PRESERVED_WITHOUT_ARTIFACT_OWNER_CONFLATION" },
+      { "row": 2, "frozen": "DETERMINISTIC_EXACT_REPLAY_INVIOLABLE_NO_EPSILON_TOLERANCE_ROUNDING_ALLOWANCE_OR_COMPENSATION" },
+      { "row": 3, "frozen": "DETERMINISTIC_MISMATCH_REMAINS_SEVERITY_1_AND_BLOCKS_AFFECTED_RULE_VERSION" },
+      { "row": 4, "frozen": "RECORDED_REPLAY_USES_EXACT_SAVED_NON_PERSONAL_RESPONSE_ARTIFACT_WITH_IMMUTABLE_PROVENANCE_AND_REMAINS_DISTINCT_FROM_BOUNDED_REPLAY" },
+      { "row": 5, "frozen": "PROBABILISTIC_COMPONENT_REMAINS_ADVISORY_ONLY_WITHOUT_QUALIFICATION_GATE_AUTHORITY" },
+      { "row": 6, "frozen": "CLOSED_EXPLICIT_IMMUTABLE_VERSION_HASH_BOUND_FUTURE_CANDIDATE_DISCIPLINE" },
+      { "row": 7, "frozen": "AFFECTED_USE_FAIL_CLOSED_WITHOUT_DEFAULT_PASS_NEGATIVE_FACT_ROUTE_OR_PRESENTATION_AUTHORITY" },
+      { "row": 8, "frozen": "PER_COMPONENT_AND_REASON_INVARIANT_NON_COMPENSATION_AND_NO_MASKING" },
+      { "row": 9, "frozen": "IMMUTABLE_FROZEN_PREREGISTERED_EVIDENCE_PREREQUISITES_DO_NOT_APPROVE_EXACT_CONTENT" },
+      { "row": 10, "frozen": "REPLAY_CREATES_NEW_AUDIT_EVENT_AND_NEVER_MUTATES_HISTORICAL_MATCH_RESULT" },
+      { "row": 11, "frozen": "SYNTHETIC_OR_REPLAY_SUCCESS_CREATES_NO_PRODUCTION_POLICY_RUNTIME_OR_AUTOMATIC_ACTION" },
+      { "row": 12, "frozen": "PARTIALLY_RESOLVED_BOUNDARY_EXACT_TOLERANCE_INVARIANT_DATA_POLICY_RUNTIME_CONTENT_OPEN" }
+    ],
+    "open_exact_content": [
+      "TOLERANCE_VALUE_RANGE_UNIT_DIRECTION_COMPARATOR_INCLUSIVITY_AND_EDGE_RULES",
+      "ABSOLUTE_RELATIVE_DISTRIBUTIONAL_PER_COMPONENT_PER_OUTPUT_AND_AGGREGATE_ERROR_METRICS",
+      "REASON_CODE_INVARIANT_CATALOG_NAMESPACE_VALUE_ORDER_AND_COMPATIBILITY_RULES",
+      "COMPONENT_ELIGIBILITY_ADVISORY_SCOPE_AND_RECORDED_VS_BOUNDED_SELECTION_FALLBACK",
+      "AGGREGATION_WEIGHTING_MASKING_PREVENTION_AND_MULTI_COMPONENT_TREATMENT",
+      "RECORDED_ARTIFACT_SCHEMA_PROVENANCE_RETENTION_ACCESS_COMPATIBILITY_AND_LAWFUL_HANDLING",
+      "DATASET_SAMPLE_ALLOCATION_SPLIT_SEED_LABELS_ADJUDICATION_CORRECTIONS_AND_FROZEN_MANIFEST",
+      "METRIC_TARGET_UNCERTAINTY_INTERVAL_WINDOW_HYPOTHESIS_TEST_STATISTIC_RESULT_AND_VERDICT",
+      "REPRESENTATION_PRECISION_ROUNDING_SERIALIZATION_AND_NUMERIC_EDGE_BEHAVIOR",
+      "POLICY_MANIFEST_PRODUCTION_DATA_SCHEMA_CARRIER_API_DB_EVENTS_RUNTIME_MONITORING_ROLLBACK_MIGRATION_IMPLEMENTATION_AND_GATES"
+    ],
+    "terminal_token": "G35_SYNTHETIC_NO_REPLAY_TOLERANCE_ERROR_METRIC_REASON_INVARIANT_MODE_SELECTION_POLICY_PRODUCTION_OR_RUNTIME_USE_SELECTED",
+    "terminal_line": "NO REPLAY TOLERANCE, ERROR METRIC, REASON INVARIANT, MODE SELECTION, DATA, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G35_SYNTHETIC_BOUNDED_PROBABILISTIC_REPLAY_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "DEVELOPMENT + AI",
+    "governance_owner_basis": "HUMAN_APPROVED_CANDIDATE_DERIVED_NOT_SOURCE_NORMATIVE",
+    "evaluation_artifact_owner": "AI + DEVELOPMENT",
+    "risk_artifact_owner": "Chief AI Architect + LEGAL",
+    "qualification_artifact_owner": "Chief AI Architect + PRODUCT",
+    "scoring_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "Chief AI Architect + PRODUCT + LEGAL",
+    "evidence_technical_owner": "DEVELOPMENT + AI",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G35_SYNTHETIC_BOUNDED_PROBABILISTIC_REPLAY_QUALITATIVE_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-bounded-probabilistic-replay-qualitative-governance-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-bounded-probabilistic-replay-qualitative-governance-reference/G35_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-bounded-probabilistic-replay-qualitative-governance-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticBoundedProbabilisticReplayQualitativeGovernanceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticBoundedProbabilisticReplayQualitativeGovernanceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticBoundedProbabilisticReplayQualitativeGovernanceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticBoundedProbabilisticReplayQualitativeGovernanceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-bounded-probabilistic-replay-qualitative-governance-reference/G35_BOUNDED_PROBABILISTIC_REPLAY_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE_SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
