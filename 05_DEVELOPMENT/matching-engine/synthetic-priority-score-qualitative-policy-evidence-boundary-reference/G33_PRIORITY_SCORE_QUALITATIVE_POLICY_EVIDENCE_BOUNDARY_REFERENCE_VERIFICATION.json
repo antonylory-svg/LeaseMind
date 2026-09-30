@@ -1,0 +1,161 @@
+{
+  "artifact_type": "G33_PRIORITY_SCORE_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-priority-score-qualitative-policy-evidence-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G33_CODE_PHASE",
+  "verification_date": "2026-09-30",
+  "branch": "development/sprint-7-matching-g33-synthetic-priority-score-qualitative-policy-evidence-boundary-reference",
+  "code_phase_baseline_head": "05f8e21420b4cddfe11198816ea343a23163bd9d",
+  "documentation_baseline_recorded_in_authorization": "29a82756a3dbaf70f9fc7fe52346f715211e8933",
+  "source_decision": "XFR-D-024 v1.1",
+  "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+  "canonical_identity": "MSP-11 -> XFR-D-024",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G33_SYNTHETIC_PRIORITY_SCORE_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G33_SYNTHETIC_PRIORITY_SCORE_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "92a8e111f277be8bb35f2f67944306e20365ef65d17544e55c073a9b0ffbbdd1",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The G33 allowlist file was read and its raw SHA-256 was computed with a non-Git tool; it equals 92a8e111f277be8bb35f2f67944306e20365ef65d17544e55c073a9b0ffbbdd1. The focused test hard-binds that value, and the allowlist was not modified."
+    },
+    {
+      "id": "authorized_source_read",
+      "status": "CONFIRMED_STATIC",
+      "description": "Only the three G33 documentation artifacts, XFR-D-024 v1.1 and the six named G32 structural examples were content-reviewed as implementation sources. No unlisted production source file was content-reviewed or modified. The existing package metadata was used only by npm to invoke the authorized typecheck and was not manually inspected or modified."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The allowlist declares exactly nine paths: three present documentation artifacts and six planned code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created: the standalone HTML page, the scenario module, the component, the entry module, the focused test and this verification record. Each path was confirmed absent immediately before creation (non-Git path-existence check). No pre-existing file was modified and no path outside the allowlist was created."
+    },
+    {
+      "id": "frozen_string_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist html_title, the three always-visible lines, the six regions in order, all twelve matrix row identifiers and their frozen boundary strings, the terminal token and the terminal line as byte-identical strings. The eleven open exact-content categories are rendered as readable statements that are one-to-one content-aligned with the condensed allowlist identifiers; the focused test asserts the count is 11. The ordering/input-separation, non-compensation, fail-closed/evidence and independence-preserved lists carry the asserted content."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "The static markup contains exactly one main, one h1, six sections and one twelve-row table, with zero controls, links, live regions, mutable state, network, persistence, telemetry, timers, randomness, person/property/business data, automatic action or menu/router exposure. The authored modules contain no state hooks, event handlers, fetch, storage, cookies, console logging, timers, Math.random, animation or transition."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "PRIORITY SCORE QUALITATIVE POLICY MATRIX",
+      "ROLE AND APPROVAL SEPARATION",
+      "OPTIONAL INTERNAL-ORDERING, INPUT-SEPARATION AND NON-COMPENSATION BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 11,
+    "terminal_token": "G33_SYNTHETIC_NO_PRIORITY_SCORE_FORMULA_WEIGHT_DIRECTION_SCALE_NORMALIZATION_THRESHOLD_ACTIVATION_FALLBACK_OR_RANKING_USE_SELECTED",
+    "terminal_line": "NO FORMULA, WEIGHT, SIGN/DIRECTION, SCALE, NORMALIZATION, THRESHOLD, ACTIVATION, FALLBACK, RANKING USE, DATA, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_024_version": "v1.1",
+    "xfr_d_024_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MSP-11 -> XFR-D-024",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "priority_score_purpose": "OPTIONAL_INTERNAL_ORDERING_ONLY",
+    "input_allowlist": "MATCH_SCORE_CONFIDENCE_SCORE_RISK_SCORE_ONLY_WITH_SEPARATE_AUTHORITY_VERSION_HASH_PROVENANCE_AND_AUDIT_VISIBILITY",
+    "three_input_separation": "PRESERVED",
+    "no_derivation_substitution_or_rewrite": "PRESERVED",
+    "non_compensation": "PRESERVED",
+    "authority_preservation": "PRESERVED",
+    "affected_use": "FAIL_CLOSED_WITHOUT_DEFAULTS_OR_NEGATIVE_FACTS",
+    "open_categories": 11,
+    "formula_weight_sign_direction_scale_normalization_threshold_activation_fallback_ranking_use": "NOT_SELECTED",
+    "metric_dataset_production_runtime_policy_implementation_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "scoring_register_rows": "18_UNCHANGED",
+    "evaluation_register_rows": "17_UNCHANGED"
+  },
+  "governance": {
+    "package_governance_owner": "Chief AI Architect + PRODUCT",
+    "scoring_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "evidence_technical_owner": "AI + DEVELOPMENT",
+    "unilateral_authority": "PROHIBITED",
+    "new_owner_assigned": false,
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+
+  "observed_command_results": [
+    {
+      "command": "node --import tsx --test tests/syntheticPriorityScoreQualitativePolicyEvidenceBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": { "tests": 8, "pass": 8, "fail": 0, "cancelled": 0, "skipped": 0, "todo": 0 },
+      "test_names": [
+        "frozen title, permanent lines and six regions render in exact order",
+        "surface has exactly one semantic twelve-row policy matrix",
+        "source and role boundaries preserve XFR-D-024 v1.1 status and authority",
+        "ordering, input separation, non-compensation, fail-closed and open content remain explicit",
+        "terminal region is last and reports only non-occurrence",
+        "surface has semantic content and zero controls, links or live regions",
+        "authored modules contain no computation, interaction, network, storage, logging or motion",
+        "standalone html and closed allowlist bind only the isolated G33 scope"
+      ]
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path-existence checks and allowlist SHA-256 check",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "All six planned allowlisted paths were absent before creation; the allowlist raw SHA-256 equals 92a8e111f277be8bb35f2f67944306e20365ef65d17544e55c073a9b0ffbbdd1. No Git command was executed."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G33 test file and the web typecheck were executed.",
+    "No live browser render at the authorized dev URL was performed, so layout beyond the asserted static markup is unverified.",
+    "The verification record does not contain its own SHA-256 because a file cannot contain its own hash.",
+    "The focused test compares the open exact-content categories by count rather than exact sentence text, because the allowlist records them as condensed identifiers.",
+    "No Git command of any kind was executed in this code phase; path existence, allowlist hash binding and file creation were confirmed with non-Git tooling only.",
+    "This record asserts creation-time static facts only; it makes no mathematical, statistical, production, runtime or implementation claim."
+  ],
+  "conclusion": {
+    "result_label": "G33_SYNTHETIC_PRIORITY_SCORE_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "92a8e111f277be8bb35f2f67944306e20365ef65d17544e55c073a9b0ffbbdd1",
+    "code_phase_baseline_head": "05f8e21420b4cddfe11198816ea343a23163bd9d",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "The G33 synthetic Priority Score qualitative policy and evidence boundary reference was created and statically verified against the frozen allowlist. XFR-D-024 remains PARTIALLY_RESOLVED_BOUNDARY and MSP-11 -> XFR-D-024 PRIMARY_STANDALONE is preserved. No formula, weight, sign/direction, scale, normalization, threshold, activation, fallback, ranking use, data, production, runtime or policy content was selected, calculated or approved. Governance gates remain BLOCKED with gate impact NONE, and no production, runtime or implementation action occurred."
+  }
+}
