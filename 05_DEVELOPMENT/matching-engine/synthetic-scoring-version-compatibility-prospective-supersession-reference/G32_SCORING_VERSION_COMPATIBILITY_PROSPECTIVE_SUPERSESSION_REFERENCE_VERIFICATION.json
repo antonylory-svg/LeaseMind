@@ -1,0 +1,219 @@
+{
+  "artifact_type": "G32_SCORING_VERSION_COMPATIBILITY_PROSPECTIVE_SUPERSESSION_REFERENCE_VERIFICATION",
+  "package": "synthetic-scoring-version-compatibility-prospective-supersession-reference",
+  "package_version": "1.0",
+  "phase": "G32_CODE_PHASE",
+  "verification_date": "2026-09-30",
+  "branch": "development/sprint-7-matching-g32-synthetic-scoring-version-compatibility-prospective-supersession-reference",
+  "code_phase_baseline_head": "acc7d2cdec98ba0840923fcf9bf309a8622a6a53",
+  "documentation_baseline_recorded_in_authorization": "aacd6445d4115b38451f195224b664c9db111188",
+  "source_decision": "XFR-D-023 v1.0",
+  "source_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+  "canonical_identity": "MSP-10 -> XFR-D-023",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G32_SYNTHETIC_SCORING_VERSION_COMPATIBILITY_PROSPECTIVE_SUPERSESSION_REFERENCE_VERIFIED",
+  "expected_result_label": "G32_SYNTHETIC_SCORING_VERSION_COMPATIBILITY_PROSPECTIVE_SUPERSESSION_REFERENCE_VERIFIED",
+  "allowlist_sha256": "fc444155fdea210d6d92f23ef01e1edae2a482be7066d71e421c28f89397b45e",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_read_only_commands_executed": true,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The G32 allowlist file was read and its raw SHA-256 was computed; it equals fc444155fdea210d6d92f23ef01e1edae2a482be7066d71e421c28f89397b45e. The focused test hard-binds that value, and the allowlist was not modified."
+    },
+    {
+      "id": "authorized_source_read",
+      "status": "CONFIRMED_STATIC",
+      "description": "Only the three G32 documentation artifacts, XFR-D-023 v1.0 and the six named G31 structural examples were content-reviewed as implementation sources. No unlisted production source file was content-reviewed or modified. The existing package metadata was used only by npm to invoke the authorized typecheck and was not manually inspected or modified."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The allowlist declares exactly nine paths: three present documentation artifacts and six planned code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. Git status reports only these five code/test files as new untracked files plus this verification record; no pre-existing file was modified and no path outside the allowlist was created."
+    },
+    {
+      "id": "frozen_string_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist html_title, the three always-visible lines, the six regions in order, all ten matrix row identifiers and their frozen boundary strings, the terminal token and the terminal line as byte-identical strings. The eleven open exact-content categories are rendered as readable statements that are one-to-one content-aligned with the condensed allowlist identifiers. The breaking baseline, fail-closed rule and independence-preserved lists carry the asserted content."
+    },
+    {
+      "id": "static_surface_contract",
+      "status": "CONFIRMED_STATIC",
+      "description": "The component is static and rendered all at once; it declares no React state, effect, reducer, event handler, control, link, form, live region, network call, storage, cookie, logging, telemetry, timer, randomness, animation or transition."
+    },
+    {
+      "id": "terminal_and_non_decision",
+      "status": "CONFIRMED_STATIC",
+      "description": "The NON-DECISION RESULT region renders the XFR-D-023 RESOLVED_QUALITATIVE_BOUNDARY statement, the frozen terminal token G32_SYNTHETIC_NO_FUNCTION_DIMENSION_WEIGHT_THRESHOLD_VALUE_SEMVER_TOLERANCE_SERIALIZATION_OR_RUNTIME_REPRESENTATION_SELECTED and the frozen terminal line; the terminal token is a negative assertion and not a function, dimension, weight, threshold, numeric value, semver scheme, tolerance, serialization or runtime representation. The terminal token and terminal line each appear exactly once and are last in the rendered reference."
+    },
+    {
+      "id": "encoding_and_line_endings",
+      "status": "CONFIRMED_STATIC",
+      "description": "All six created files are UTF-8 without BOM and contain LF line endings only (zero CR bytes)."
+    },
+    {
+      "id": "governance_state",
+      "status": "CONFIRMED_STATIC",
+      "description": "Gate impact is NONE; IMPLEMENTATION_READINESS_GATE, SYNTHETIC_ACCEPTANCE_GATE and PRODUCTION_LAUNCH_GATE remain BLOCKED. XFR-D-023 remains RESOLVED_QUALITATIVE_BOUNDARY with canonical identity MSP-10 -> XFR-D-023 PRIMARY_STANDALONE; supersession is prospective-only, historical Match Results are immutable, the breaking baseline is non-exhaustive with fail-closed classification of everything else, breaking changes require a new scoring_policy_version with a consistent actual-version/hash bundle snapshot, unchanged component versions remain independent, and inactive-candidate activation always requires explicit review."
+    },
+    {
+      "id": "isolation",
+      "status": "CONFIRMED_STATIC",
+      "description": "The HTML page references only the G32 entry module; the entry imports only the G32 component; the component imports only the G32 scenario. No production entry point, router, menu, manifest, dependency or build configuration was created, modified or imported."
+    }
+  ],
+  "frozen_string_comparison": {
+    "html_title_equals_scenario_title": true,
+    "always_visible_lines_equal_scenario_constants": true,
+    "regions_in_order_equal_scenario_regions": true,
+    "matrix_row_identifiers_equal_scenario_rows": true,
+    "matrix_frozen_boundaries_equal_scenario_boundaries": true,
+    "terminal_token_equals_scenario_token": true,
+    "terminal_line_equals_scenario_line": true,
+    "matrix_row_count": 10,
+    "open_exact_content_count": 11,
+    "note": "The allowlist stores the open exact-content categories as condensed identifiers while the visible reference renders readable statements. The focused test asserts count equality for that category and exact string equality for the title, the three always-visible lines, the six regions, the ten matrix row identifiers and frozen boundaries, and the terminal token and terminal line."
+  },
+  "checks_planned_not_executed": [
+    "full web regression test suite",
+    "live browser render at the manual dev URL"
+  ],
+  "environment": {
+    "platform": "win32",
+    "repository_root": "C:\\Projects\\LeaseMind",
+    "authorized_dev_url": "http://127.0.0.1:5173/synthetic-scoring-version-compatibility-prospective-supersession-reference.html",
+    "node_runtime_version": "v22.23.1",
+    "web_typecheck_invoked": true,
+    "focused_test_invoked": true,
+    "full_regression_invoked": false,
+    "live_browser_render_status": "NOT_PERFORMED"
+  },
+  "scope": {
+    "allowlist_paths": 9,
+    "documentation_paths_unchanged": 3,
+    "planned_paths_created": 6,
+    "paths_changed_outside_allowlist": 0,
+    "production_entry_points_unchanged": true,
+    "package_and_build_configuration_unchanged": true,
+    "prior_synthetic_components_not_imported": true,
+    "git_mutation_performed": false,
+    "focused_tests_executed": true,
+    "typecheck_executed": true
+  },
+  "authored_paths": [
+    "apps/web/synthetic-scoring-version-compatibility-prospective-supersession-reference.html",
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceScenario.ts",
+    "apps/web/src/synthetic/SyntheticScoringVersionCompatibilityProspectiveSupersessionReference.tsx",
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceEntry.tsx",
+    "apps/web/tests/syntheticScoringVersionCompatibilityProspectiveSupersessionReference.test.ts",
+    "05_DEVELOPMENT/matching-engine/synthetic-scoring-version-compatibility-prospective-supersession-reference/G32_SCORING_VERSION_COMPATIBILITY_PROSPECTIVE_SUPERSESSION_REFERENCE_VERIFICATION.json"
+  ],
+  "file_sha256": {
+    "apps/web/synthetic-scoring-version-compatibility-prospective-supersession-reference.html": "16dfc6825f4d48a17a54c767737bd33b38d20aed0ee9ab11b672d8f641815502",
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceScenario.ts": "b6d0d32c7e3e2c0f2580c7ce9682a508f36822772531356f750e793ec2aa3506",
+    "apps/web/src/synthetic/SyntheticScoringVersionCompatibilityProspectiveSupersessionReference.tsx": "53d93374c35fa2e65ea9b5468b2f9c020ffa1d017e9d9d994aaaa99bd5889140",
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceEntry.tsx": "3dfba5a47adfc51a92cdefecd8ec61a078e08dccee6d6f06e86516094c232435",
+    "apps/web/tests/syntheticScoringVersionCompatibilityProspectiveSupersessionReference.test.ts": "a4de1dd9dc93fce168a7d6d9a1542165473a6fbbb46f34109c66e005dc62b0db"
+  },
+  "file_line_counts": {
+    "apps/web/synthetic-scoring-version-compatibility-prospective-supersession-reference.html": 12,
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceScenario.ts": 152,
+    "apps/web/src/synthetic/SyntheticScoringVersionCompatibilityProspectiveSupersessionReference.tsx": 70,
+    "apps/web/src/synthetic/syntheticScoringVersionCompatibilityProspectiveSupersessionReferenceEntry.tsx": 8,
+    "apps/web/tests/syntheticScoringVersionCompatibilityProspectiveSupersessionReference.test.ts": 190
+  },
+  "file_encoding": {
+    "charset": "UTF-8",
+    "bom": false,
+    "line_endings": "LF_ONLY",
+    "cr_byte_count": 0
+  },
+  "self_hash_excluded": true,
+  "governance": {
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED",
+    "production_integration": "BLOCKED",
+    "runtime_activation": "BLOCKED",
+    "decision_outcome": "UNCHANGED",
+    "xfr_d_023_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+    "supersession_mode": "PROSPECTIVE_ONLY",
+    "prior_match_results": "IMMUTABLE",
+    "fallback_classification": "FAIL_CLOSED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node --import tsx --test tests/syntheticScoringVersionCompatibilityProspectiveSupersessionReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 8,
+        "pass": 8,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0,
+        "duration_ms": 3473.2742
+      },
+      "test_names": [
+        "frozen title, permanent lines and six regions render in exact order",
+        "surface has exactly one semantic ten-row compatibility matrix",
+        "source and role boundaries preserve XFR-D-023 status and authority",
+        "breaking baseline, fail-closed classification and open content remain explicit",
+        "terminal region is last and reports only non-occurrence",
+        "surface has semantic content and zero controls, links or live regions",
+        "authored modules contain no computation, interaction, network, storage, logging or motion",
+        "standalone html and closed allowlist bind only the isolated G32 scope"
+      ]
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "git status --porcelain",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "READ_ONLY_OBSERVED",
+      "observed": "Only the six intended new allowlisted files appear; no tracked file is modified and no path outside the allowlist is created"
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G32 test file and the web typecheck were executed.",
+    "No live browser render at the authorized dev URL was performed, so layout beyond the asserted static markup is unverified.",
+    "The verification record does not contain its own SHA-256 because a file cannot contain its own hash.",
+    "The focused test compares the open exact-content categories by count rather than exact sentence text, because the allowlist records them as condensed identifiers.",
+    "This record asserts creation-time static facts only; it makes no mathematical, statistical, production, runtime or implementation claim."
+  ],
+  "conclusion": {
+    "result_label": "G32_SYNTHETIC_SCORING_VERSION_COMPATIBILITY_PROSPECTIVE_SUPERSESSION_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "fc444155fdea210d6d92f23ef01e1edae2a482be7066d71e421c28f89397b45e",
+    "code_phase_baseline_head": "acc7d2cdec98ba0840923fcf9bf309a8622a6a53",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "The G32 synthetic scoring version-compatibility and prospective-supersession reference was created and statically verified against the frozen allowlist. XFR-D-023 remains RESOLVED_QUALITATIVE_BOUNDARY and MSP-10 -> XFR-D-023 PRIMARY_STANDALONE is preserved. Governance gates remain BLOCKED with gate impact NONE, and no production, runtime, serialization or implementation action occurred."
+  }
+}
