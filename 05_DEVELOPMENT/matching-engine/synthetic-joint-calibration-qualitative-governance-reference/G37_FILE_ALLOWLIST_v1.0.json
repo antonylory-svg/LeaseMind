@@ -1,0 +1,122 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G37_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-joint-calibration-qualitative-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-30",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g37-synthetic-joint-calibration-qualitative-governance-reference",
+    "commit": "7b72604f10d83fba2c9137aca673e889da95f2ea"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-M6 v1.0",
+    "resolution_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "FS-12 + MSP-12 -> XFR-D-M6",
+    "canonical_relationship": "PRIMARY_MERGED_MEMBER",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "approved_boundary_only": "QUALITATIVE_FEATURE_FIT_EVIDENCE_CONFIDENCE_JOINT_CALIBRATION_GOVERNANCE_SEMANTIC_SEPARATION_ENUM_PRESERVATION_CLOSED_CANDIDATE_FAIL_CLOSED_NON_COMPENSATION_EVIDENCE_HISTORICAL_INTEGRITY_AND_NO_AUTOMATIC_ACTION",
+    "matrix": [
+      { "row": 1, "frozen": "MERGED_IDENTITY_TWO_PRIMARY_MEMBERS_PRESERVED_WITHOUT_ARTIFACT_OWNER_OR_SEMANTIC_COLLAPSE" },
+      { "row": 2, "frozen": "CANDIDATE_DERIVED_GOVERNANCE_OWNER_THREE_ARTIFACT_OWNERS_APPROVERS_AND_EVIDENCE_ROLE_REMAIN_SEPARATE" },
+      { "row": 3, "frozen": "FEATURE_FIT_FEATURE_WEIGHT_EVIDENCE_STATUS_EVIDENCE_CONFIDENCE_REQUIRED_EVIDENCE_OVERALL_CONFIDENCE_ELIGIBILITY_RISK_AND_QUALIFICATION_REMAIN_DISTINCT" },
+      { "row": 4, "frozen": "EXACT_SEVEN_VALUE_EVIDENCE_STATUS_ENUM_REMAINS_CATEGORICAL_WITHOUT_NUMERIC_ORDER_HIERARCHY_RANK_DIRECTION_OR_DEFAULT" },
+      { "row": 5, "frozen": "FUTURE_JOINT_CALIBRATION_CANDIDATE_MUST_BE_CLOSED_EXPLICIT_IMMUTABLE_VERSIONED_HASH_BOUND_AUDITABLE_AND_REPRODUCIBLE" },
+      { "row": 6, "frozen": "AFFECTED_USE_FAIL_CLOSED_WITHOUT_NUMERIC_DEFAULT_NEGATIVE_FIT_EVIDENCE_PROMOTION_BUSINESS_VERDICT_ROUTE_REASON_OR_PRESENTATION_AUTHORITY" },
+      { "row": 7, "frozen": "DOUBLE_COUNTING_ANALYSIS_NON_COMPENSATION_AND_SEPARATE_ADVERSE_NULL_INCOMPATIBLE_UNEVALUABLE_REPORTING_REQUIRED" },
+      { "row": 8, "frozen": "IMMUTABLE_FROZEN_PREREGISTERED_EVIDENCE_PREREQUISITES_DO_NOT_APPROVE_EXACT_CALIBRATION_CONTENT" },
+      { "row": 9, "frozen": "HISTORICAL_RESULTS_REMAIN_BOUND_TO_ACTUAL_SCHEMA_POLICY_EVIDENCE_AND_IMPLEMENTATION_VERSION_HASH" },
+      { "row": 10, "frozen": "INDEPENDENT_SCORING_EVALUATION_RISK_QUALIFICATION_AND_SIBLING_DECISIONS_SUPPLY_NO_MAPPING_FUNCTION_VALUE_OR_RANGE" },
+      { "row": 11, "frozen": "SYNTHETIC_REPLAY_EVALUATION_OR_TECHNICAL_SUCCESS_CREATES_NO_PRODUCTION_POLICY_RUNTIME_OR_AUTOMATIC_ACTION" },
+      { "row": 12, "frozen": "PARTIALLY_RESOLVED_BOUNDARY_EXACT_MAPPING_FUNCTION_ORDER_VALUE_RANGE_DATA_POLICY_RUNTIME_CONTENT_OPEN" }
+    ],
+    "open_exact_content": [
+      "FEATURE_FIT_AND_EVIDENCE_CONFIDENCE_MAPPING_TABLE_FUNCTION_AND_JOINT_FUNCTIONAL_FORM",
+      "NUMERIC_ORDER_HIERARCHY_VALUE_RANGE_DIRECTION_MONOTONICITY_DEFAULT_AND_FALLBACK",
+      "FEATURE_SOURCE_STATUS_PURPOSE_USE_SPECIFIC_CALIBRATION_APPLICABILITY_AND_EXCEPTIONS",
+      "PROPOSAL_ZERO_ONE_OR_ANY_RANGE_AS_APPROVED_INTERFACE_OR_RUNTIME_CONTRACT",
+      "MULTIPLICATION_NORMALIZATION_NUMERATOR_DENOMINATOR_MISSING_ARITHMETIC_ZERO_ACTIVE_WEIGHT_AND_DOUBLE_COUNTING_TREATMENT",
+      "FEATURE_WEIGHT_CRITERION_CLASS_GLOBAL_SEGMENT_WEIGHT_POLICY_REQUIRED_EVIDENCE_AND_SUFFICIENCY_RULES",
+      "DATASET_SOURCE_SAMPLE_ALLOCATION_SPLIT_SEED_LABEL_ADJUDICATION_CORRECTION_AND_FROZEN_MANIFEST",
+      "METRIC_TARGET_OBJECTIVE_LOSS_UNCERTAINTY_AGGREGATION_TOLERANCE_INTERVAL_WINDOW_TEST_STATISTIC_RESULT_AND_VERDICT",
+      "PRECISION_ROUNDING_SERIALIZATION_REPLAY_PRODUCTION_DATA_AUTHORITY_LAWFUL_APPLICABILITY_CALIBRATION_AND_READINESS",
+      "POLICY_MANIFEST_SCHEMA_CARRIER_API_DB_EVENT_STORAGE_REASON_CODE_RBAC_RUNTIME_MONITORING_ROLLBACK_MIGRATION_IMPLEMENTATION_AND_GATES"
+    ],
+    "terminal_token": "G37_SYNTHETIC_NO_MAPPING_FUNCTION_ORDER_VALUE_RANGE_CALIBRATION_POLICY_PRODUCTION_OR_RUNTIME_USE_SELECTED",
+    "terminal_line": "NO MAPPING, FUNCTION, ORDER, VALUE, RANGE, CALIBRATION, DATA, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G37_SYNTHETIC_JOINT_CALIBRATION_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + AI",
+    "governance_owner_basis": "HUMAN_APPROVED_CANDIDATE_DERIVED_NOT_SOURCE_NORMATIVE",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "feature_schema_artifact_owner": "PRODUCT + LEGAL + AI",
+    "evaluation_evidence_artifact_owner": "AI + DEVELOPMENT",
+    "mandatory_approvers": "PRODUCT + LEGAL + DEVELOPMENT",
+    "evidence_technical_owner": "AI + DEVELOPMENT",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G37_SYNTHETIC_JOINT_CALIBRATION_QUALITATIVE_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-joint-calibration-qualitative-governance-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-joint-calibration-qualitative-governance-reference/G37_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-joint-calibration-qualitative-governance-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticJointCalibrationQualitativeGovernanceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticJointCalibrationQualitativeGovernanceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticJointCalibrationQualitativeGovernanceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticJointCalibrationQualitativeGovernanceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-joint-calibration-qualitative-governance-reference/G37_JOINT_CALIBRATION_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE_SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
