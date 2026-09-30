@@ -1,0 +1,121 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G36_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-weight-policy-qualitative-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-30",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g36-synthetic-weight-policy-qualitative-governance-reference",
+    "commit": "432ac50b166180ae6be474e613ca51ab53f06c17"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-M5 v1.0",
+    "resolution_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MSP-02 + MSP-03 -> XFR-D-M5",
+    "canonical_relationship": "PRIMARY_MERGED_MEMBER",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "approved_boundary_only": "QUALITATIVE_WEIGHT_POLICY_GOVERNANCE_PARAMETER_FAMILY_SEPARATION_GLOBAL_BASELINE_SEGMENT_OVERRIDE_HARD_CONSTRAINT_PRECEDENCE_FAIL_CLOSED_EVIDENCE_HISTORICAL_INTEGRITY_AND_NO_AUTOMATIC_ACTION",
+    "matrix": [
+      { "row": 1, "frozen": "MERGED_IDENTITY_TWO_PRIMARY_MEMBERS_PRESERVED_WITHOUT_PARAMETER_FAMILY_COLLAPSE" },
+      { "row": 2, "frozen": "SOURCE_NORMATIVE_DECISION_OWNER_ARTIFACT_OWNER_APPROVER_AND_EVIDENCE_ROLE_SEPARATION" },
+      { "row": 3, "frozen": "GLOBAL_STARTING_SEGMENT_MINIMUM_THRESHOLD_AND_MATCH_COMPONENT_PARAMETER_FAMILIES_REMAIN_DISTINCT" },
+      { "row": 4, "frozen": "SEPARATELY_APPROVED_GLOBAL_BASELINE_IS_SOLE_AUTHORITY_ABSENT_APPROVED_VERSION_HASH_BOUND_LAWFUL_OVERRIDE" },
+      { "row": 5, "frozen": "SEGMENT_MEMBERSHIP_MUST_BE_EXPLICIT_SOURCE_AUTHORITATIVE_LAWFUL_APPLICABLE_AND_NEVER_INFERRED_PROXY_OR_DEFAULTED" },
+      { "row": 6, "frozen": "CONFIRMED_HARD_CONSTRAINT_PRE_SCORING_PRECEDENCE_AND_NON_COMPENSATION" },
+      { "row": 7, "frozen": "AFFECTED_USE_FAIL_CLOSED_WITHOUT_ZERO_EQUAL_NEUTRAL_PREVIOUS_NEAREST_HEURISTIC_AI_DEFAULT_OR_NEGATIVE_FACT" },
+      { "row": 8, "frozen": "IMMUTABLE_VERSION_HASH_BOUND_FROZEN_PREREGISTERED_EVIDENCE_PREREQUISITES_DO_NOT_APPROVE_EXACT_CONTENT" },
+      { "row": 9, "frozen": "HISTORICAL_RESULTS_REMAIN_BOUND_TO_ACTUAL_POLICY_VERSION_HASH_AND_ARE_NEVER_SILENTLY_RECALCULATED_OR_RELABELED" },
+      { "row": 10, "frozen": "INDEPENDENT_SCORING_CONFIDENCE_QUALIFICATION_RISK_RANKING_AND_EVALUATION_BOUNDARIES_SUPPLY_NO_WEIGHT_OR_THRESHOLD" },
+      { "row": 11, "frozen": "SYNTHETIC_EVALUATION_OR_TECHNICAL_SUCCESS_CREATES_NO_PRODUCTION_POLICY_RUNTIME_OR_AUTOMATIC_ACTION" },
+      { "row": 12, "frozen": "PARTIALLY_RESOLVED_BOUNDARY_EXACT_WEIGHT_THRESHOLD_FORMULA_SEGMENT_DATA_POLICY_RUNTIME_CONTENT_OPEN" }
+    ],
+    "open_exact_content": [
+      "GLOBAL_STARTING_PER_FEATURE_PER_DIMENSION_PER_SIDE_PER_SEGMENT_AND_PER_INTERSECTION_WEIGHTS",
+      "RECIPROCAL_FIT_DEAL_FEASIBILITY_RATIO_SIGN_SCALE_FORMULA_NORMALIZATION_NUMERATOR_DENOMINATOR_AND_ARITHMETIC_TREATMENT",
+      "MINIMUM_THRESHOLD_VALUE_TARGET_COMPONENT_COMPARATOR_INCLUSIVITY_SCOPE_DENOMINATOR_AGGREGATION_APPLICABILITY_AND_FALLBACK",
+      "SEGMENT_UNIVERSE_INTERSECTIONS_MEMBERSHIP_SOURCE_RULES_PROTECTED_PROXY_CLASSIFICATION_AND_LAWFUL_BASIS",
+      "GLOBAL_BASELINE_SEGMENT_OVERRIDE_AND_APPLICABILITY_CONTENT",
+      "MUTUAL_AGGREGATE_CRITERION_CLASS_WEIGHTING_EVIDENCE_CONFIDENCE_CALIBRATION_QUALIFICATION_AND_RANKING_CONTENT",
+      "NUMERIC_REPRESENTATION_PRECISION_ROUNDING_EQUALITY_SERIALIZATION_AND_REPLAY_MECHANICS",
+      "DATASET_SAMPLE_SOURCE_ALLOCATION_SPLIT_SEED_LABEL_ADJUDICATION_CORRECTION_METRIC_TARGET_UNCERTAINTY_STATISTIC_RESULT_AND_VERDICT",
+      "ACTUAL_EVIDENCE_PACKAGE_EVALUATION_RUN_PRODUCTION_DATA_AUTHORITY_APPLICABILITY_AND_READINESS",
+      "POLICY_MANIFEST_SCHEMA_CARRIER_API_DB_EVENT_REASON_CODE_RBAC_RUNTIME_MONITORING_ROLLBACK_MIGRATION_IMPLEMENTATION_AND_GATES"
+    ],
+    "terminal_token": "G36_SYNTHETIC_NO_WEIGHT_RATIO_FORMULA_NORMALIZATION_THRESHOLD_SEGMENT_OVERRIDE_POLICY_PRODUCTION_OR_RUNTIME_USE_SELECTED",
+    "terminal_line": "NO WEIGHT, RATIO, FORMULA, NORMALIZATION, THRESHOLD, SEGMENT OVERRIDE, DATA, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G36_SYNTHETIC_WEIGHT_POLICY_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "substantive_governance_owner": "AI + PRODUCT",
+    "substantive_governance_owner_basis": "SOURCE_NORMATIVE_ARCHITECTURE_SECTION_37_QUESTION_3",
+    "scoring_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "scoring_policy_artifact_owner_basis": "SOURCE_NORMATIVE_ARCHITECTURE_SECTION_52",
+    "mandatory_approvers": "Chief AI Architect + LEGAL + DEVELOPMENT",
+    "evidence_technical_owner": "AI + DEVELOPMENT",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G36_SYNTHETIC_WEIGHT_POLICY_QUALITATIVE_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-weight-policy-qualitative-governance-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-weight-policy-qualitative-governance-reference/G36_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-weight-policy-qualitative-governance-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticWeightPolicyQualitativeGovernanceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticWeightPolicyQualitativeGovernanceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticWeightPolicyQualitativeGovernanceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticWeightPolicyQualitativeGovernanceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-weight-policy-qualitative-governance-reference/G36_WEIGHT_POLICY_QUALITATIVE_GOVERNANCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE_SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
