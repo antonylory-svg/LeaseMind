@@ -1,0 +1,121 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G34_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-09-30",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g34-synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference",
+    "commit": "816dcb8fc1e34b855dc7154bd7eb36c0c9d6ca15"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-025 v1.0",
+    "resolution_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MSP-13 -> XFR-D-025",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "scoring_register_rows": 18,
+    "evaluation_register_rows": 17,
+    "approved_boundary_only": "QUALITATIVE_CRITERION_CLASS_SEMANTICS_LAYER_SEPARATION_HARD_CONSTRAINT_NON_SOFTENING_FAIL_CLOSED_GLOBAL_VS_SEGMENT_SEPARATION_FROZEN_EVIDENCE_NON_COMPENSATION_AND_NO_AUTOMATIC_ACTION",
+    "matrix": [
+      { "row": 1, "frozen": "MANDATORY_DESIRABLE_NEGOTIABLE_INFORMATIONAL_SEMANTIC_PRESERVATION" },
+      { "row": 2, "frozen": "CRITERION_CLASS_IS_NOT_FEATURE_WEIGHT_HARD_CONSTRAINT_EVIDENCE_CONFIDENCE_RISK_QUALIFICATION_OR_PRIORITY_LAYER" },
+      { "row": 3, "frozen": "CONFIRMED_HARD_CONSTRAINT_PRE_SCORING_PRECEDENCE_AND_NON_SOFTENING" },
+      { "row": 4, "frozen": "MANDATORY_LABEL_ALONE_CREATES_NO_HARD_CONSTRAINT_INELIGIBLE_OR_REJECTION" },
+      { "row": 5, "frozen": "DESIRABLE_ABSENCE_CREATES_NO_AUTOMATIC_REJECTION" },
+      { "row": 6, "frozen": "NEGOTIABLE_REMAINS_SCENARIO_ONLY_UNTIL_HUMAN_CONFIRMATION" },
+      { "row": 7, "frozen": "INFORMATIONAL_CLASS_IDENTITY_PRESERVED_WEIGHTING_APPLICABILITY_OPEN" },
+      { "row": 8, "frozen": "AFFECTED_USE_FAIL_CLOSED_WITHOUT_DEFAULTS_OR_NEGATIVE_FACTS" },
+      { "row": 9, "frozen": "GLOBAL_VS_SEGMENT_SPECIFIC_WEIGHTING_SEPARATION_XFR_D_018_AND_XFR_D_M5_INDEPENDENT" },
+      { "row": 10, "frozen": "IMMUTABLE_VERSION_HASH_FROZEN_EVIDENCE_NON_COMPENSATION_AND_REPRODUCIBILITY_PREREQUISITES" },
+      { "row": 11, "frozen": "SYNTHETIC_ONLY_EVIDENCE_CREATES_NO_PRODUCTION_CLAIM" },
+      { "row": 12, "frozen": "PARTIALLY_RESOLVED_BOUNDARY_EXACT_CONTENT_OPEN_AND_NO_FULL_RESOLUTION" }
+    ],
+    "open_exact_content": [
+      "CRITERION_CLASS_ASSIGNMENTS_PARTICIPATION_HIERARCHY_AND_APPLICABILITY",
+      "WEIGHTS_RATIOS_SIGNS_SCALES_BOUNDS_DEFAULTS_MINIMUMS_MAXIMUMS_AND_THRESHOLDS",
+      "FORMULA_NORMALIZATION_NUMERATOR_DENOMINATOR_ACTIVE_WEIGHT_MISSING_VALUE_AND_DOUBLE_COUNTING_TREATMENT",
+      "GLOBAL_PER_DIMENSION_PER_FEATURE_PER_CLASS_PER_SIDE_PER_SEGMENT_AND_PER_INTERSECTION_WEIGHTING",
+      "SEGMENT_UNIVERSE_INTERSECTIONS_MEMBERSHIP_PROTECTED_PROXY_CLASSIFICATION_AND_LAWFUL_BASIS",
+      "PRECISION_ROUNDING_EQUALITY_TOLERANCE_SERIALIZATION_AND_REPLAY_MECHANICS",
+      "DATASET_SAMPLE_SPLIT_SEED_LABELS_ADJUDICATION_METRICS_TARGETS_BASELINES_INTERVALS_WINDOWS_TESTS_RESULTS_AND_VERDICT",
+      "POLICY_MANIFEST_PRODUCTION_DATA_SCHEMA_CARRIER_RBAC_RUNTIME_MONITORING_ROLLBACK_IMPLEMENTATION_AND_GATES"
+    ],
+    "terminal_token": "G34_SYNTHETIC_NO_CRITERION_CLASS_ASSIGNMENT_WEIGHT_RATIO_FORMULA_NORMALIZATION_THRESHOLD_SEGMENT_OVERRIDE_OR_RUNTIME_USE_SELECTED",
+    "terminal_line": "NO CRITERION-CLASS ASSIGNMENT, WEIGHT, RATIO, FORMULA, NORMALIZATION, THRESHOLD, SEGMENT OVERRIDE, DATA, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G34_SYNTHETIC_CRITERION_CLASS_WEIGHTING_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "AI + PRODUCT",
+    "governance_owner_basis": "HUMAN_APPROVED_CANDIDATE_DERIVED_NOT_SOURCE_NORMATIVE",
+    "scoring_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "Chief AI Architect + LEGAL + DEVELOPMENT",
+    "evidence_technical_owner": "AI + DEVELOPMENT",
+    "unilateral_authority": "PROHIBITED",
+    "preserved_substantive_authority": "XFR-D-M5_REMAINS_INDEPENDENT_AND_SOURCE_NORMATIVE_FOR_ARCHITECTURE_SECTION_37_QUESTION_3",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G34_SYNTHETIC_CRITERION_CLASS_WEIGHTING_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference/G34_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriterionClassWeightingQualitativePolicyEvidenceBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticCriterionClassWeightingQualitativePolicyEvidenceBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriterionClassWeightingQualitativePolicyEvidenceBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticCriterionClassWeightingQualitativePolicyEvidenceBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-criterion-class-weighting-qualitative-policy-evidence-boundary-reference/G34_CRITERION_CLASS_WEIGHTING_QUALITATIVE_POLICY_EVIDENCE_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE_SIX_PLANNED_PATHS_ARE_RESERVED_ONLY_FOR_A_SEPARATELY_APPROVED_CODE_PHASE; THEY_ARE_NOT_CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
