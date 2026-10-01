@@ -1,0 +1,186 @@
+{
+  "artifact_type": "G40_DIMENSION_SCORE_INTERNAL_OWNERSHIP_EXTERNAL_DISCLOSURE_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-dimension-score-internal-ownership-external-disclosure-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G40_CODE_PHASE",
+  "verification_date": "2026-10-01",
+  "branch": "development/sprint-7-matching-g40-synthetic-dimension-score-internal-ownership-external-disclosure-boundary-reference",
+  "code_phase_baseline_head": "0705ecce61a77c3aac67c0e64cba2cd62e3c28cf",
+  "documentation_baseline_recorded_in_authorization": "d8da210c02f67641c6172076edb5f041a838755c",
+  "source_decision": "XFR-D-028 v1.0",
+  "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+  "canonical_identity": "MSP-17 -> XFR-D-028",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G40_SYNTHETIC_DIMENSION_SCORE_INTERNAL_OWNERSHIP_EXTERNAL_DISCLOSURE_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G40_SYNTHETIC_DIMENSION_SCORE_INTERNAL_OWNERSHIP_EXTERNAL_DISCLOSURE_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "d63e979f00afc85691e6658f214e078ad3d6f3a0e2b15847cae3254eba657993",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-dimension-score-internal-ownership-external-disclosure-boundary-reference.html",
+      "sha256": "b7ce713332807b9f207056a5fd635d2092e2c3c6cc383202df7ff5cbc0252301",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReferenceScenario.ts",
+      "sha256": "141fa6db24448f242f186be14e6527e1d3a283b028e49494cbc3f75af9cae347",
+      "line_count": 91
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReference.tsx",
+      "sha256": "d9740192817cfb5abe4674159ddf68af5f62c6ed86785789c1c1420d052cc398",
+      "line_count": 69
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReferenceEntry.tsx",
+      "sha256": "e8ba76807bb894d62c3079271753dc229d99a7c1eeeabea40f49cd41374a1ca6",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReference.test.ts",
+      "sha256": "6ceea9a5d9ba315a5c6dca91bc79c15b66bd64302dbeebe5a78f30c372d2b156",
+      "line_count": 156
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G40 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, terminal token and terminal line."
+    },
+    {
+      "id": "internal_external_authority_separation",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes the internal Scoring ownership role, Safe Presentation authority, current sibling boundaries and the prohibition on deriving external disclosure permission from internal component existence."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, network, persistence, telemetry, timers, randomness, field selection or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC DIMENSION SCORE INTERNAL-OWNERSHIP / EXTERNAL-DISCLOSURE BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "INTERNAL OWNERSHIP / EXTERNAL DISCLOSURE MATRIX",
+      "SCORING AND SAFE PRESENTATION AUTHORITY SEPARATION",
+      "DIMENSION COMPONENT NON-DISCLOSURE BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 10,
+    "terminal_token": "G40_SYNTHETIC_NO_FIELD_SCORE_GRANULARITY_WORDING_DISCLOSURE_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO FIELD, SCORE VALUE, GRANULARITY, WORDING, DISCLOSURE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_028_version": "v1.0",
+    "xfr_d_028_status": "PARTIALLY_RESOLVED_BOUNDARY_NEVER_FULLY_RESOLVED",
+    "canonical_identity": "MSP-17 -> XFR-D-028",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "internal_dimension_components": "TENANT_FIT_OWNER_FIT_DEAL_FEASIBILITY_EXISTENCE_SEPARATENESS_AND_INTERNAL_AUDIT_INTERPRETATION_SCORING_OWNED",
+    "internal_ownership_to_external_disclosure": "NO_AUTHORITY_TRANSFER_OR_INFERENCE",
+    "xfr_d_072_v1_1": "INDEPENDENT_CURRENT_SAFE_PRESENTATION_FIELD_ROW_AND_ALLOWLIST_BOUNDARY",
+    "xfr_d_077_v1_1": "INDEPENDENT_CURRENT_SAFE_EXPLANATION_CATALOG_AND_CROSSWALK_BOUNDARY",
+    "xfr_d_078_v1_1": "INDEPENDENT_CURRENT_PRESENTATION_WORDING_AND_MAPPING_BOUNDARY",
+    "xfr_d_044_and_xfr_d_073": "INDEPENDENT_AND_UNCHANGED",
+    "exact_fields_values_granularity_wording_catalog_mapping_disclosure_policy_runtime_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED"
+  },
+  "governance": {
+    "internal_scoring_governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "safe_presentation_content_legal_authority": "PRODUCT + LEGAL",
+    "evidence_procedure_owner_assigned_by_xfr_d_028": false,
+    "named_appointment_or_rbac_created": false,
+    "authority_transfer": "PROHIBITED",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "npm exec -- tsx --test tests/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "ENVIRONMENT_FAILURE_BEFORE_TEST_LOADING",
+      "observed": "node:os userInfo returned uv_os_get_passwd ENOMEM before tsx initialized"
+    },
+    {
+      "command": "initial node run with an in-memory node:os userInfo shim, then --import tsx --test tests/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "AUTHORING_ASSERTION_FAILURE_CORRECTED",
+      "observed": "Eight tests passed and one exact-text assertion failed because the scenario said NAMED INDIVIDUAL without the frozen NO NAMED INDIVIDUAL phrase; the single scenario line was corrected before final verification."
+    },
+    {
+      "command": "final node run with an in-memory node:os userInfo shim, then --import tsx --test tests/syntheticDimensionScoreInternalOwnershipExternalDisclosureBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": { "tests": 9, "pass": 9, "fail": 0, "cancelled": 0, "skipped": 0, "todo": 0 }
+    },
+    {
+      "command": "npm run typecheck after the final scenario correction",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G40 test file and web typecheck were executed.",
+    "The host node:os userInfo call returned ENOMEM, so the focused test used an in-memory process-only userInfo shim that changed no project file or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command was used during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no field, score value, disclosure, Policy, dataset, evidence-verdict, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G40_SYNTHETIC_DIMENSION_SCORE_INTERNAL_OWNERSHIP_EXTERNAL_DISCLOSURE_BOUNDARY_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "d63e979f00afc85691e6658f214e078ad3d6f3a0e2b15847cae3254eba657993",
+    "code_phase_baseline_head": "0705ecce61a77c3aac67c0e64cba2cd62e3c28cf",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G40 creates only an isolated synthetic Dimension Score internal-ownership/external-disclosure boundary reference. XFR-D-028 remains PARTIALLY_RESOLVED_BOUNDARY and MSP-17 remains PRIMARY_STANDALONE. Internal Scoring ownership creates no external presentation authority; current Safe Presentation sibling boundaries remain independent. No field, score value, transformation, granularity, wording, catalog entry, mapping, disclosure, Policy, dataset, production, runtime or implementation content was selected or approved."
+  }
+}
