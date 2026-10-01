@@ -1,0 +1,125 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G39_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-scoring-operational-owner-boundary-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-01",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g39-synthetic-scoring-operational-owner-boundary-reference",
+    "commit": "be49bb9807b8fd0ed15da27df60ff47635e9d702"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-027 v1.0",
+    "resolution_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+    "canonical_identity": "MSP-16 -> XFR-D-027",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "approved_boundary_only": "ARCHITECTURE_SECTION_30_3_STEPS_1_THROUGH_3_OPERATIONAL_AND_GOVERNANCE_ROLE_SEPARATION",
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_RESOLVED_QUALITATIVE_OWNER_BOUNDARY_PRESERVED_WITHOUT_PROCEDURE_OR_IMPLEMENTATION_APPROVAL" },
+      { "row": 2, "frozen": "DECISION_RECORD_GOVERNANCE_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_REMAINS_DISTINCT_FROM_OPERATIONAL_EXECUTION" },
+      { "row": 3, "frozen": "ARCHITECTURE_SECTION_30_3_STEPS_1_THROUGH_3_OPERATIONAL_EVIDENCE_OWNER_AI_PLUS_DEVELOPMENT_WITH_DEVELOPMENT_AS_TECHNICAL_EXECUTOR" },
+      { "row": 4, "frozen": "CHIEF_AI_ARCHITECT_REMAINS_SOURCE_NORMATIVE_STEP_6_REVIEWER_NOT_OPERATIONAL_PREPARER_OR_SELF_REVIEWER" },
+      { "row": 5, "frozen": "PRODUCT_PLUS_LEGAL_REMAIN_SOURCE_NORMATIVE_STEP_7_AFFECTED_RULE_APPROVERS_NOT_RECORD_LEVEL_APPROVERS" },
+      { "row": 6, "frozen": "RECORD_LEVEL_MANDATORY_APPROVERS_LEGAL_PLUS_DEVELOPMENT_REMAIN_DISTINCT_FROM_STEP_7_APPROVAL" },
+      { "row": 7, "frozen": "CONSULTED_AI_REMAINS_DISTINCT_FROM_AI_OPERATIONAL_CO_OWNERSHIP_AND_RECEIVES_NO_UNILATERAL_AUTHORITY" },
+      { "row": 8, "frozen": "SIX_ROLE_BOUNDARIES_DO_NOT_REPLACE_ABSORB_MERGE_OR_TRANSFER_AUTHORITY_TO_ONE_ANOTHER" },
+      { "row": 9, "frozen": "EXACT_STEPS_1_THROUGH_3_PROCEDURE_ADJUDICATION_QUORUM_FREQUENCY_ESCALATION_QUALIFICATIONS_INDEPENDENCE_AND_CONFLICT_RULES_REMAIN_OPEN" },
+      { "row": 10, "frozen": "XFR_D_018_XFR_D_021_AND_ARCHITECTURE_SECTION_37_QUESTIONS_TWO_AND_THREE_REMAIN_INDEPENDENT_WITH_CURRENT_STATUSES_UNCHANGED" },
+      { "row": 11, "frozen": "NO_SCORING_POLICY_DATASET_METRIC_THRESHOLD_SCHEMA_CARRIER_RUNTIME_OR_IMPLEMENTATION_APPROVAL_IS_CREATED" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "STEPS_1_THROUGH_3_ADJUDICATION_AND_PROCEDURE_CONTENT",
+      "QUORUM_STAGING_FREQUENCY_SCHEDULE_ESCALATION_AND_EXCEPTION_HANDLING",
+      "REVIEWER_QUALIFICATIONS_INDEPENDENCE_SEPARATION_OF_DUTIES_AND_CONFLICT_OF_INTEREST_RULES",
+      "DATASET_SOURCE_SIZE_COMPOSITION_ALLOCATION_SPLIT_SEED_LINEAGE_AND_FROZEN_MANIFEST",
+      "LABEL_QUALITY_DEFINITION_REVIEW_ADJUDICATION_CORRECTION_AND_AUTHORITY",
+      "OFFLINE_EVALUATION_METRICS_TARGETS_METHODS_UNCERTAINTY_STATISTICS_RESULTS_AND_VERDICTS",
+      "XFR_D_018_SEGMENT_OVERRIDE_EXACT_EVIDENCE_POLICY_PRODUCTION_AND_RUNTIME_CONTENT",
+      "XFR_D_021_RANKING_DIVERSIFICATION_EXACT_ALGORITHM_POLICY_PRODUCTION_AND_RUNTIME_CONTENT",
+      "ARCHITECTURE_SECTION_37_MUTUAL_AGGREGATE_FUNCTION_WEIGHTS_THRESHOLDS_VALUES_AND_APPROVAL",
+      "SCORING_POLICY_EVALUATION_PLAN_MANIFEST_SCHEMA_CARRIER_API_DB_EVENT_RBAC_RUNTIME_MONITORING_ROLLBACK_MIGRATION_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G39_SYNTHETIC_NO_PROCEDURE_QUORUM_DATASET_SCORING_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO PROCEDURE, ADJUDICATION, QUORUM, DATASET, METRIC, THRESHOLD, SCORING POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G39_SYNTHETIC_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "governance_owner_basis": "CANDIDATE_GOVERNANCE_ASSIGNMENT_MATCHES_SCORING_POLICY_ARTIFACT_OWNER",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "steps_1_3_operational_evidence_owner": "AI + DEVELOPMENT",
+    "development_role": "TECHNICAL_EXECUTOR_STEWARD",
+    "step_6_reviewer": "Chief AI Architect",
+    "step_6_basis": "SOURCE_NORMATIVE_ARCHITECTURE_SECTION_30_3",
+    "step_7_affected_rule_approvers": "PRODUCT + LEGAL",
+    "step_7_basis": "SOURCE_NORMATIVE_ARCHITECTURE_SECTION_30_3",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G39_SYNTHETIC_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-operational-owner-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-operational-owner-boundary-reference/G39_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-scoring-operational-owner-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringOperationalOwnerBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticScoringOperationalOwnerBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringOperationalOwnerBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticScoringOperationalOwnerBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-operational-owner-boundary-reference/G39_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
