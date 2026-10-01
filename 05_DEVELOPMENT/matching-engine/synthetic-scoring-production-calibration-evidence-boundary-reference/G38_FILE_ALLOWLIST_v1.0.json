@@ -1,0 +1,121 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G38_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-scoring-production-calibration-evidence-boundary-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-01",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g38-synthetic-scoring-production-calibration-evidence-boundary-reference",
+    "commit": "65eb5349fec387f3eda357f441b396fb9005aee3"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-026 v1.0",
+    "resolution_status": "RESOLVED_EVIDENCE_BOUNDARY",
+    "canonical_identity": "MSP-15 -> XFR-D-026",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "approved_boundary_only": "SYNTHETIC_ONLY_EVIDENCE_DOES_NOT_ESTABLISH_SCORING_PRODUCTION_CALIBRATION_READINESS_OR_LAUNCH_READINESS",
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_RESOLVED_EVIDENCE_BOUNDARY_PRESERVED_WITHOUT_POLICY_OR_IMPLEMENTATION_APPROVAL" },
+      { "row": 2, "frozen": "SCORING_GOVERNANCE_OWNER_APPROVERS_CONSULTED_AI_AND_EVALUATION_EVIDENCE_PROCEDURE_OWNER_REMAIN_SEPARATE" },
+      { "row": 3, "frozen": "SYNTHETIC_DATASET_CATEGORIES_ONE_THROUGH_FOUR_DO_NOT_BY_THEMSELVES_ESTABLISH_PRODUCTION_CALIBRATION_READINESS_OR_LAUNCH_READINESS" },
+      { "row": 4, "frozen": "SUCCESSFUL_SYNTHETIC_EVALUATION_ROBUSTNESS_OR_CALIBRATION_METRICS_CREATE_NO_AUTOMATIC_SCORING_APPROVAL" },
+      { "row": 5, "frozen": "SCORING_BOUNDARY_MIRRORS_RISK_AND_QUALIFICATION_PRECEDENTS_WITHOUT_SUPERSESSION_AUTHORITY_TRANSFER_OR_POLICY_MUTATION" },
+      { "row": 6, "frozen": "EVIDENCE_PROCEDURE_OWNERSHIP_DOES_NOT_CREATE_SCORING_GOVERNANCE_CO_OWNERSHIP_OR_UNILATERAL_APPROVAL" },
+      { "row": 7, "frozen": "DATASET_SIZE_SPLIT_RATIO_METRIC_TARGET_CALIBRATION_PROCEDURE_ACCEPTANCE_THRESHOLD_AND_PRODUCTION_READINESS_CRITERION_REMAIN_OPEN" },
+      { "row": 8, "frozen": "MUTUAL_AGGREGATE_FUNCTION_WEIGHTS_AND_ALL_OTHER_SCORING_CANDIDATE_COMPARISONS_REMAIN_UNSELECTED" },
+      { "row": 9, "frozen": "ARCHITECTURE_SECTION_37_QUESTIONS_TWO_AND_THREE_REMAIN_OPEN_AND_RECEIVE_NO_FUNCTION_WEIGHT_OR_VALUE" },
+      { "row": 10, "frozen": "PRODUCTION_EVIDENCE_OR_ANY_EVALUATION_RESULT_ALONE_CREATES_NO_AUTOMATIC_POLICY_RUNTIME_RELEASE_OR_GATE_ACTION" },
+      { "row": 11, "frozen": "NO_DATASET_EVALUATION_PLAN_SCORING_POLICY_PRODUCTION_DATA_SCHEMA_CARRIER_RUNTIME_OR_IMPLEMENTATION_APPROVAL_IS_CREATED" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "DATASET_SIZE_SOURCE_COMPOSITION_SAMPLE_ALLOCATION_AND_SPLIT_RATIO",
+      "LABEL_QUALITY_ADJUDICATION_CORRECTION_LINEAGE_AND_FROZEN_MANIFEST",
+      "METRIC_DEFINITION_TARGET_DIRECTION_AGGREGATION_UNCERTAINTY_AND_STATISTICAL_METHOD",
+      "CALIBRATION_PROCEDURE_CANDIDATE_SET_SEARCH_METHOD_AND_COMPARISON_RULE",
+      "ACCEPTANCE_THRESHOLD_TOLERANCE_INTERVAL_WINDOW_TEST_AND_VERDICT",
+      "PRODUCTION_READINESS_CRITERION_PRODUCTION_DATA_AUTHORITY_REPRESENTATIVENESS_AND_APPLICABILITY",
+      "MUTUAL_AGGREGATE_FUNCTION_FORMULA_EDGE_BEHAVIOR_AND_NUMERIC_REPRESENTATION",
+      "GLOBAL_SEGMENT_FEATURE_COMPONENT_WEIGHTS_RATIOS_NORMALIZATION_AND_VALUES",
+      "SCORING_POLICY_EVALUATION_PLAN_CONTROLLED_MANIFEST_AND_APPROVAL_RECORD",
+      "SCHEMA_CARRIER_API_DB_EVENT_RBAC_RUNTIME_MONITORING_ROLLBACK_MIGRATION_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G38_SYNTHETIC_NO_PRODUCTION_CALIBRATION_READINESS_POLICY_RUNTIME_OR_LAUNCH_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO DATASET, METRIC, CALIBRATION PROCEDURE, ACCEPTANCE THRESHOLD, PRODUCTION-READINESS CRITERION, SCORING CANDIDATE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G38_SYNTHETIC_SCORING_PRODUCTION_CALIBRATION_EVIDENCE_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "governance_owner_basis": "HUMAN_APPROVED_MATCHES_SCORING_POLICY_ARTIFACT_OWNER",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "evidence_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_procedure_artifact": "MATCHING_EVALUATION_PLAN",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G38_SYNTHETIC_SCORING_PRODUCTION_CALIBRATION_EVIDENCE_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-production-calibration-evidence-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-production-calibration-evidence-boundary-reference/G38_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-scoring-production-calibration-evidence-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringProductionCalibrationEvidenceBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticScoringProductionCalibrationEvidenceBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringProductionCalibrationEvidenceBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticScoringProductionCalibrationEvidenceBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-scoring-production-calibration-evidence-boundary-reference/G38_SCORING_PRODUCTION_CALIBRATION_EVIDENCE_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
