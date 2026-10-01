@@ -1,0 +1,188 @@
+{
+  "artifact_type": "G42_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-qualification-runtime-representation-responsibility-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G42_CODE_PHASE",
+  "verification_date": "2026-10-01",
+  "branch": "development/sprint-7-matching-g42-synthetic-qualification-runtime-representation-responsibility-boundary-reference",
+  "code_phase_baseline_head": "0c2dbeea533afb344f183727dd705bf68fd67cdc",
+  "documentation_baseline_recorded_in_authorization": "56cc5b3b9e8541a25738fcb3574bdb45a2b33a9e",
+  "source_decision": "XFR-D-031 v1.0",
+  "source_status": "APPROVED RESPONSIBILITY BOUNDARY — exact runtime representation remains OPEN",
+  "canonical_identity": "MQP-02 -> XFR-D-031",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G42_SYNTHETIC_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G42_SYNTHETIC_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "3d584951d3c7a788201d4c9efedd7851d7b31fe7cb785e5994bf37febe68fece",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-qualification-runtime-representation-responsibility-boundary-reference.html",
+      "sha256": "73ebcfbbde741f30bcfc9c8b26cb590e2aca61fd1bc39d08d36532cba8e5ddad",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReferenceScenario.ts",
+      "sha256": "98f40e4e9b1d5941a299682687f228007bc8110f6ad3aa7147d43ef4e0c67b61",
+      "line_count": 91
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationRuntimeRepresentationResponsibilityBoundaryReference.tsx",
+      "sha256": "235edfe747bc509a6de1a7f7cb52f80b5421e9e45c24cec58f491bec63fd0c2c",
+      "line_count": 69
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReferenceEntry.tsx",
+      "sha256": "93c4adbf3167816e759eddae754f8bc9b0845f4a22942a434cf04030ddea01a7",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReference.test.ts",
+      "sha256": "412199d8e1608693bf5354da260a42b9740453f9800bf6004b7e8d8b030ab4ee",
+      "line_count": 164
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G42 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, four semantic result strings, terminal token and terminal line."
+    },
+    {
+      "id": "responsibility_and_non_conflation",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes semantic ownership, technical stewardship, applicable reviews, the four semantic results, GateState non-reuse, fifth-result prohibition and absence of representation approval."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, network, persistence, telemetry, timers, randomness, representation selection or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC QUALIFICATION RUNTIME-REPRESENTATION RESPONSIBILITY-BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "RESPONSIBILITY SPLIT MATRIX",
+      "SEMANTIC OWNER / SCHEMA STEWARD / REVIEW SEPARATION",
+      "GATESTATE AND FIFTH-RESULT NON-CONFLATION",
+      "OPEN EXACT REPRESENTATION",
+      "NON-DECISION RESULT"
+    ],
+    "source_normative_results": [
+      "QUALIFIED_HYPOTHESIS",
+      "NEEDS_VERIFICATION",
+      "HUMAN_REVIEW_REQUIRED",
+      "REJECTED_BY_MATCHING"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_representation_categories_count": 10,
+    "terminal_token": "G42_SYNTHETIC_NO_FIELD_ENUM_CARRIER_API_EVENT_COMPATIBILITY_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO FIELD, ENUM, CARRIER, API, EVENT, COMPATIBILITY STRATEGY, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_results_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_031_version": "v1.0",
+    "xfr_d_031_status": "APPROVED_RESPONSIBILITY_BOUNDARY_EXACT_RUNTIME_REPRESENTATION_OPEN",
+    "canonical_identity": "MQP-02 -> XFR-D-031",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "qualification_semantic_owner": "CHIEF_AI_ARCHITECT_PLUS_PRODUCT_UNDER_XFR_D_030",
+    "technical_schema_steward_and_carrier_implementation_owner": "DEVELOPMENT_WITHOUT_UNILATERAL_SEMANTIC_AUTHORITY",
+    "four_source_normative_results": "PRESERVED_AS_SEMANTIC_VALUES_NOT_RUNTIME_ENUM_APPROVAL",
+    "gate_state": "NO_AUTOMATIC_REUSE_ALIAS_IMPORT_OR_APPROVAL",
+    "fifth_result": "PROHIBITED",
+    "exact_field_enum_carrier_api_event_compatibility_policy_runtime_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20
+  },
+  "governance": {
+    "qualification_semantic_owner": "Chief AI Architect + PRODUCT",
+    "technical_schema_steward_and_carrier_implementation_owner": "DEVELOPMENT",
+    "mandatory_architecture_and_replay_reviewer": "Chief AI Architect",
+    "legal_review": "MANDATORY_WHEN_RIGHTS_AFFECTING_ROUTING_HUMAN_REVIEW_OR_DISCLOSURE_BOUNDARY_IS_AFFECTED",
+    "evidence_procedure_owner_assigned_by_xfr_d_031": false,
+    "named_appointment_or_rbac_created": false,
+    "gate_state_automatic_reuse": "PROHIBITED",
+    "fifth_result_creation": "PROHIBITED",
+    "unilateral_semantic_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node with an in-memory node:os userInfo shim, then --import tsx --test tests/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G42 test file and web typecheck were executed.",
+    "The focused test proactively used the established in-memory process-only node:os userInfo shim because this host has repeatedly returned uv_os_get_passwd ENOMEM before tsx initialization; the shim changed no project file or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command or Git mutation was performed during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no field, enum, carrier, API, event, compatibility, Policy, Data Contracts, dataset, evidence-verdict, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G42_SYNTHETIC_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "3d584951d3c7a788201d4c9efedd7851d7b31fe7cb785e5994bf37febe68fece",
+    "code_phase_baseline_head": "0c2dbeea533afb344f183727dd705bf68fd67cdc",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G42 creates only an isolated synthetic Qualification runtime-representation responsibility-boundary reference. XFR-D-031 remains APPROVED RESPONSIBILITY BOUNDARY — exact runtime representation remains OPEN and MQP-02 remains PRIMARY_STANDALONE. Responsibility assignment creates no runtime representation approval; GateState is not reused and no fifth result is created. No field, enum, carrier, API, event, compatibility strategy, Qualification Policy, Data Contracts change, dataset, production, runtime or implementation content was selected or approved."
+  }
+}
