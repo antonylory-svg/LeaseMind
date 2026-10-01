@@ -1,0 +1,186 @@
+{
+  "artifact_type": "G39_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFICATION",
+  "package": "synthetic-scoring-operational-owner-boundary-reference",
+  "package_version": "1.0",
+  "phase": "G39_CODE_PHASE",
+  "verification_date": "2026-10-01",
+  "branch": "development/sprint-7-matching-g39-synthetic-scoring-operational-owner-boundary-reference",
+  "code_phase_baseline_head": "b404856f30a9e2b2dda9aa65adb1058df05da726",
+  "documentation_baseline_recorded_in_authorization": "be49bb9807b8fd0ed15da27df60ff47635e9d702",
+  "source_decision": "XFR-D-027 v1.0",
+  "source_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+  "canonical_identity": "MSP-16 -> XFR-D-027",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G39_SYNTHETIC_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFIED",
+  "expected_result_label": "G39_SYNTHETIC_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "c4ff5d195a486a99da4ba39ea875586aeba01cf6a959dc6c57b674099676cc04",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-scoring-operational-owner-boundary-reference.html",
+      "sha256": "4962f1e9eae8880a07a9c669468c6be6affb676581cf86e9f7f131fe3365e970",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringOperationalOwnerBoundaryReferenceScenario.ts",
+      "sha256": "a562d01fd7a1675034343065d1fefa08f2f76aaa6e3cd743af8f3dc0261be768",
+      "line_count": 89
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticScoringOperationalOwnerBoundaryReference.tsx",
+      "sha256": "3659a68b35a865bed21932c9a17b3401afe42a59a305a92b3c764d9e4762750f",
+      "line_count": 69
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticScoringOperationalOwnerBoundaryReferenceEntry.tsx",
+      "sha256": "516ab87ef4a5224c7112c1b1aa01df45ed3aca487f264f1c7c822782a697c4b8",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticScoringOperationalOwnerBoundaryReference.test.ts",
+      "sha256": "62dd09ad07ae2e55f9516ba09aa8a3373df2a2822e676b39fe4caa6bf5f6f2a7",
+      "line_count": 144
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G39 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_boundary_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the twelve allowlist frozen strings in exact order and the surface renders the exact title, disclaimer, scope line, six regions, terminal token and terminal line."
+    },
+    {
+      "id": "authority_mapping",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes governance ownership, operational/evidence ownership, technical execution, review, affected-rule approval, record-level approval and consulted-function boundaries without authority transfer or self-review."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, network, persistence, telemetry, timers, randomness, candidate selection or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "OPERATIONAL-OWNER QUALITATIVE MATRIX",
+      "ROLE AND PROCESS-LAYER SEPARATION",
+      "STEPS 1–3, STEP 6 REVIEW AND STEP 7 APPROVAL BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 10,
+    "terminal_token": "G39_SYNTHETIC_NO_PROCEDURE_QUORUM_DATASET_SCORING_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO PROCEDURE, ADJUDICATION, QUORUM, DATASET, METRIC, THRESHOLD, SCORING POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_027_version": "v1.0",
+    "xfr_d_027_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+    "canonical_identity": "MSP-16 -> XFR-D-027",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "steps_1_through_3": "OPERATIONAL_EVIDENCE_OWNER_AI_PLUS_DEVELOPMENT_WITH_DEVELOPMENT_AS_TECHNICAL_EXECUTOR",
+    "step_6": "CHIEF_AI_ARCHITECT_REVIEWER_NOT_OPERATIONAL_PREPARER_OR_SELF_REVIEWER",
+    "step_7": "PRODUCT_PLUS_LEGAL_AFFECTED_RULE_APPROVERS_NOT_RECORD_LEVEL_APPROVERS",
+    "record_level_mandatory_approvers": "LEGAL_PLUS_DEVELOPMENT",
+    "consulted_ai": "DISTINCT_FROM_AI_OPERATIONAL_CO_OWNERSHIP_WITH_NO_UNILATERAL_AUTHORITY",
+    "exact_procedure_adjudication_quorum_frequency_escalation_qualifications_independence_conflict_rules": "OPEN",
+    "xfr_d_018_status": "PARTIALLY_RESOLVED_BOUNDARY_WITH_EXACT_CONTENT_OPEN",
+    "xfr_d_021_status": "PARTIALLY_RESOLVED_BOUNDARY_WITH_EXACT_CONTENT_OPEN",
+    "architecture_section_37_questions_2_and_3": "INDEPENDENT_AND_OPEN",
+    "exact_dataset_metric_threshold_schema_carrier_policy_runtime_implementation_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED"
+  },
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "governance_owner_basis": "HUMAN_APPROVED_MATCHES_SCORING_POLICY_ARTIFACT_OWNER",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "operational_evidence_owner": "AI + DEVELOPMENT",
+    "technical_executor": "DEVELOPMENT",
+    "step_6_reviewer": "Chief AI Architect",
+    "step_7_affected_rule_approvers": "PRODUCT + LEGAL",
+    "authority_transfer": "PROHIBITED",
+    "self_review": "PROHIBITED",
+    "named_appointments_or_rbac_created": false,
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "npm exec -- tsx --test tests/syntheticScoringOperationalOwnerBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "ENVIRONMENT_FAILURE_BEFORE_TEST_LOADING",
+      "observed": "node:os userInfo returned uv_os_get_passwd ENOMEM before tsx initialized"
+    },
+    {
+      "command": "node with an in-memory node:os userInfo shim, then --import tsx --test tests/syntheticScoringOperationalOwnerBoundaryReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": { "tests": 9, "pass": 9, "fail": 0, "cancelled": 0, "skipped": 0, "todo": 0 }
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G39 test file and web typecheck were executed.",
+    "The host node:os userInfo call returned ENOMEM, so the focused test used an in-memory process-only userInfo shim that changed no project file or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command was used to mutate repository state during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no procedure, adjudication, quorum, dataset, metric, threshold, Policy, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G39_SYNTHETIC_SCORING_OPERATIONAL_OWNER_BOUNDARY_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "c4ff5d195a486a99da4ba39ea875586aeba01cf6a959dc6c57b674099676cc04",
+    "code_phase_baseline_head": "b404856f30a9e2b2dda9aa65adb1058df05da726",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G39 creates only an isolated synthetic Scoring operational-owner qualitative-boundary reference. XFR-D-027 remains RESOLVED_QUALITATIVE_BOUNDARY and MSP-16 remains PRIMARY_STANDALONE. Governance, operational preparation, technical execution, review, affected-rule approval, record-level approval and consultation remain distinct. Exact procedures and independent decision contents remain open. No procedure, adjudication, quorum, dataset, metric, threshold, Policy, production, runtime or implementation content was selected or approved."
+  }
+}
