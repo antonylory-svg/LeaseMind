@@ -1,0 +1,146 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G42_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-qualification-runtime-representation-responsibility-boundary-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-01",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g42-synthetic-qualification-runtime-representation-responsibility-boundary-reference",
+    "commit": "56cc5b3b9e8541a25738fcb3574bdb45a2b33a9e"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_policy_or_data_contracts_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-031 v1.0",
+    "source_status": "APPROVED RESPONSIBILITY BOUNDARY — exact runtime representation remains OPEN",
+    "canonical_identity": "MQP-02 -> XFR-D-031",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "QUALIFICATION_SEMANTIC_OWNER_TECHNICAL_SCHEMA_STEWARD_CARRIER_IMPLEMENTATION_OWNER_AND_APPLICABLE_REVIEW_RESPONSIBILITY_SPLIT",
+    "source_normative_results": [
+      "QUALIFIED_HYPOTHESIS",
+      "NEEDS_VERIFICATION",
+      "HUMAN_REVIEW_REQUIRED",
+      "REJECTED_BY_MATCHING"
+    ],
+    "future_surface": {
+      "title": "SYNTHETIC QUALIFICATION RUNTIME-REPRESENTATION RESPONSIBILITY-BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC QUALIFICATION RUNTIME-REPRESENTATION RESPONSIBILITY-BOUNDARY REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — RESPONSIBILITY ASSIGNMENT IS NOT RUNTIME REPRESENTATION APPROVAL",
+        "NO FIELD, ENUM, CARRIER, API, EVENT, COMPATIBILITY STRATEGY, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "RESPONSIBILITY SPLIT MATRIX",
+        "SEMANTIC OWNER / SCHEMA STEWARD / REVIEW SEPARATION",
+        "GATESTATE AND FIFTH-RESULT NON-CONFLATION",
+        "OPEN EXACT REPRESENTATION",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_APPROVED_RESPONSIBILITY_BOUNDARY_PRESERVED_WITH_EXACT_RUNTIME_REPRESENTATION_OPEN" },
+      { "row": 2, "frozen": "QUALIFICATION_SEMANTIC_OWNER_REMAINS_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_UNDER_XFR_D_030" },
+      { "row": 3, "frozen": "DEVELOPMENT_REMAINS_TECHNICAL_SCHEMA_STEWARD_AND_CARRIER_IMPLEMENTATION_OWNER_WITHOUT_UNILATERAL_SEMANTIC_AUTHORITY" },
+      { "row": 4, "frozen": "CHIEF_AI_ARCHITECT_ARCHITECTURE_AND_REPLAY_REVIEW_REMAINS_MANDATORY_FOR_ANY_FUTURE_REPRESENTATION" },
+      { "row": 5, "frozen": "LEGAL_REVIEW_REMAINS_MANDATORY_WHEN_RIGHTS_AFFECTING_ROUTING_HUMAN_REVIEW_OR_DISCLOSURE_BOUNDARIES_ARE_AFFECTED" },
+      { "row": 6, "frozen": "FOUR_SOURCE_NORMATIVE_QUALIFICATION_RESULTS_REMAIN_SEMANTIC_VALUES_AND_DO_NOT_BY_THEMSELVES_APPROVE_A_RUNTIME_ENUM" },
+      { "row": 7, "frozen": "ORPHANED_GATE_STATE_IS_NOT_AUTOMATICALLY_REUSED_ALIASED_OR_APPROVED_AS_A_QUALIFICATION_CARRIER" },
+      { "row": 8, "frozen": "FIELD_TRANSPORT_OR_SCHEMA_DESIGN_CANNOT_ADD_A_FIFTH_RESULT_OR_SILENTLY_CHANGE_QUALIFICATION_SEMANTICS" },
+      { "row": 9, "frozen": "RESPONSIBILITY_ASSIGNMENT_CREATES_NO_EVIDENCE_PROCEDURE_OWNER_NAMED_APPOINTMENT_RBAC_GRANT_OR_UNILATERAL_APPROVAL" },
+      { "row": 10, "frozen": "EXACT_FIELD_ENUM_CARRIER_SERIALIZATION_API_EVENT_MIGRATION_REPLAY_AND_COMPATIBILITY_STRATEGY_REMAIN_OPEN" },
+      { "row": 11, "frozen": "NO_QUALIFICATION_POLICY_DATA_CONTRACT_SCHEMA_RUNTIME_PRODUCTION_OR_IMPLEMENTATION_APPROVAL_IS_CREATED" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_representation": [
+      "RUNTIME_FIELD_NAME_ENUM_NAMESPACE_IDENTIFIERS_CODES_AND_VALUES",
+      "CARRIER_OBJECT_SHAPE_CARDINALITY_REQUIREDNESS_OPTIONALITY_NULLABILITY_AND_LIFECYCLE",
+      "SERIALIZATION_VALIDATION_ERROR_UNKNOWN_FALLBACK_AND_MALFORMED_INPUT_BEHAVIOR",
+      "API_DB_EVENT_TOPIC_MESSAGE_PAYLOAD_AND_TRANSPORT_REPRESENTATION",
+      "SCHEMA_VERSIONING_COMPATIBILITY_TAXONOMY_MIGRATION_SUPERSESSION_AND_ROLLBACK_STRATEGY",
+      "SEMANTIC_RESULT_TO_RUNTIME_REPRESENTATION_MAPPING_AND_COMPATIBILITY_PROOF",
+      "RELATIONSHIP_IF_ANY_TO_GATE_STATE_OR_OTHER_DATA_CONTRACTS_CONSTRUCTS",
+      "REPLAY_IDEMPOTENCY_PROVENANCE_AUDIT_MONITORING_TTL_EXPIRY_AND_RECALCULATION",
+      "REASON_EVIDENCE_CATALOG_QUEUE_AND_SAFE_PRESENTATION_CARRIER_LINKAGE",
+      "POLICY_DATA_CONTRACTS_MANIFEST_DATASET_EVIDENCE_PRODUCTION_RUNTIME_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G42_SYNTHETIC_NO_FIELD_ENUM_CARRIER_API_EVENT_COMPATIBILITY_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO FIELD, ENUM, CARRIER, API, EVENT, COMPATIBILITY STRATEGY, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G42_SYNTHETIC_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFIED",
+  "governance": {
+    "qualification_semantic_owner": "Chief AI Architect + PRODUCT",
+    "technical_schema_steward_and_carrier_implementation_owner": "DEVELOPMENT",
+    "mandatory_architecture_and_replay_reviewer": "Chief AI Architect",
+    "legal_review": "MANDATORY_WHEN_RIGHTS_AFFECTING_ROUTING_HUMAN_REVIEW_OR_DISCLOSURE_BOUNDARY_IS_AFFECTED",
+    "evidence_procedure_owner_assigned_by_xfr_d_031": false,
+    "named_appointment_or_rbac_created": false,
+    "gate_state_automatic_reuse": "PROHIBITED",
+    "fifth_result_creation": "PROHIBITED",
+    "unilateral_semantic_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G42_SYNTHETIC_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-runtime-representation-responsibility-boundary-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-runtime-representation-responsibility-boundary-reference/G42_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-qualification-runtime-representation-responsibility-boundary-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationRuntimeRepresentationResponsibilityBoundaryReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationRuntimeRepresentationResponsibilityBoundaryReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-runtime-representation-responsibility-boundary-reference/G42_QUALIFICATION_RUNTIME_REPRESENTATION_RESPONSIBILITY_BOUNDARY_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
