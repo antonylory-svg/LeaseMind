@@ -1,0 +1,139 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G41_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-qualification-policy-artifact-owner-governance-assignment-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-01",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g41-synthetic-qualification-policy-artifact-owner-governance-assignment-reference",
+    "commit": "9d7eb3e72757a954fa3fd84d4f704730536b3ab3"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "policy_or_inventory_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-030 v1.0",
+    "source_status": "APPROVED GOVERNANCE ASSIGNMENT — POLICY NOT APPROVED",
+    "canonical_identity": "MQP-01 -> XFR-D-030",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "QUALIFICATION_POLICY_ARTIFACT_OWNER_MANDATORY_APPROVERS_CONSULTED_FUNCTION_AND_NON_CONFLATION_GOVERNANCE_ASSIGNMENT",
+    "future_surface": {
+      "title": "SYNTHETIC QUALIFICATION POLICY ARTIFACT-OWNER GOVERNANCE-ASSIGNMENT REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC QUALIFICATION POLICY ARTIFACT-OWNER GOVERNANCE-ASSIGNMENT REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — ROLE ASSIGNMENT IS NOT POLICY APPROVAL",
+        "NO THRESHOLD, PRECEDENCE, REASON CATALOG, ROUTING RULE, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "ARTIFACT-OWNER GOVERNANCE MATRIX",
+        "OWNER / APPROVER / CONSULTED ROLE SEPARATION",
+        "TECHNICAL-WRITER AND THRESHOLD-OWNER NON-CONFLATION",
+        "OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_APPROVED_GOVERNANCE_ASSIGNMENT_PRESERVED_WITH_QUALIFICATION_POLICY_NOT_APPROVED" },
+      { "row": 2, "frozen": "QUALIFICATION_POLICY_ARTIFACT_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_REMAINS_THE_EXACT_APPROVED_OWNER_PAIR" },
+      { "row": 3, "frozen": "MANDATORY_APPROVERS_LEGAL_PLUS_DEVELOPMENT_REMAIN_DISTINCT_AND_NO_PARTY_RECEIVES_UNILATERAL_POLICY_AUTHORITY" },
+      { "row": 4, "frozen": "AI_REMAINS_A_CONSULTED_DOMAIN_FUNCTION_WHERE_NOT_COVERED_BY_CHIEF_AI_ARCHITECT_AND_GAINS_NO_UNILATERAL_AUTHORITY" },
+      { "row": 5, "frozen": "ROLE_ASSIGNMENT_DOES_NOT_CREATE_NAMED_PEOPLE_APPOINTMENT_INSTRUMENTS_RBAC_GRANTS_OR_AN_EVIDENCE_PROCEDURE_OWNER" },
+      { "row": 6, "frozen": "ARTIFACT_OWNER_RESPONSIBILITY_COVERS_SEMANTIC_INTEGRITY_CROSS_POLICY_COORDINATION_VERSION_CHANGE_PROPOSAL_AND_COMPLETE_APPROVAL_PACKAGE_PREPARATION_ONLY" },
+      { "row": 7, "frozen": "LEGAL_MANDATORY_APPROVAL_PRESERVES_RIGHTS_AFFECTING_ROUTING_HUMAN_REVIEW_AND_PROTECTED_PROXY_BOUNDARIES_WITHOUT_UNILATERAL_POLICY_CHANGE" },
+      { "row": 8, "frozen": "DEVELOPMENT_MANDATORY_APPROVAL_PRESERVES_FEASIBILITY_REPRODUCIBILITY_VERSION_COMPATIBILITY_AND_DATA_CONTRACT_NON_CONFLICT_WITHOUT_SEMANTIC_OWNERSHIP" },
+      { "row": 9, "frozen": "FILENAME_SERVICE_GATE_TECHNICAL_WRITER_AND_RUNTIME_COMPONENT_IDENTITY_NEVER_BECOME_POLICY_OWNER_AUTHORITY" },
+      { "row": 10, "frozen": "AI_PLUS_LEGAL_ARCHITECTURE_SECTION_37_QUESTION_8_AUTHORITY_REMAINS_LIMITED_TO_RISK_TO_ROUTING_THRESHOLD_AND_NOT_THE_WHOLE_QUALIFICATION_POLICY" },
+      { "row": 11, "frozen": "NO_THRESHOLD_PRECEDENCE_REASON_CATALOG_MAPPING_ROUTE_POLICY_DATASET_SCHEMA_CARRIER_RUNTIME_OR_IMPLEMENTATION_APPROVAL_IS_CREATED" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "QUALIFICATION_POLICY_VERSION_HASH_APPROVAL_RECORD_AND_MANIFEST_ENTRY",
+      "FOUR_ROUTING_RESULT_RUNTIME_REPRESENTATION_IDENTIFIERS_ENUMS_VALUES_AND_CARRIER",
+      "THRESHOLDS_TRIGGERS_COMPARATORS_MAPPINGS_AND_ROUTING_CONSEQUENCES",
+      "PRECEDENCE_SIMULTANEOUS_CAUSE_HANDLING_AND_TIE_RESOLUTION",
+      "REASON_CATALOGS_CODES_CROSSWALKS_WORDING_AND_USER_FACING_EXPLANATIONS",
+      "HUMAN_REVIEW_APPOINTMENTS_QUALIFICATIONS_RBAC_QUORUM_QUEUE_AND_ESCALATION",
+      "PROTECTED_PROXY_CLASSIFICATIONS_LAWFUL_BASIS_DETERMINATIONS_AND_RIGHTS_AFFECTING_RULES",
+      "VERSION_COMPATIBILITY_SUPERSESSION_MIGRATION_TTL_EXPIRY_AND_RECALCULATION",
+      "DATASET_EVIDENCE_EVALUATION_METRICS_STATISTICS_RESULT_VERDICT_AND_PRODUCTION_APPLICABILITY",
+      "SCHEMA_CARRIER_API_DB_EVENT_MONITORING_ROLLBACK_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G41_SYNTHETIC_NO_THRESHOLD_PRECEDENCE_REASON_ROUTE_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO THRESHOLD, PRECEDENCE, REASON CATALOG, ROUTING RULE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G41_SYNTHETIC_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFIED",
+  "governance": {
+    "qualification_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "risk_to_routing_threshold_owner": "AI + LEGAL",
+    "risk_to_routing_threshold_owner_scope": "ARCHITECTURE_SECTION_37_QUESTION_8_ONLY",
+    "evidence_procedure_owner_assigned_by_xfr_d_030": false,
+    "named_appointment_or_rbac_created": false,
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G41_SYNTHETIC_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-policy-artifact-owner-governance-assignment-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-policy-artifact-owner-governance-assignment-reference/G41_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-qualification-policy-artifact-owner-governance-assignment-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-policy-artifact-owner-governance-assignment-reference/G41_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}

@@ -1,0 +1,187 @@
+{
+  "artifact_type": "G41_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFICATION",
+  "package": "synthetic-qualification-policy-artifact-owner-governance-assignment-reference",
+  "package_version": "1.0",
+  "phase": "G41_CODE_PHASE",
+  "verification_date": "2026-10-01",
+  "branch": "development/sprint-7-matching-g41-synthetic-qualification-policy-artifact-owner-governance-assignment-reference",
+  "code_phase_baseline_head": "d4cd43f8691073b1dabace0f4e3269eb26775986",
+  "documentation_baseline_recorded_in_authorization": "9d7eb3e72757a954fa3fd84d4f704730536b3ab3",
+  "source_decision": "XFR-D-030 v1.0",
+  "source_status": "APPROVED GOVERNANCE ASSIGNMENT — POLICY NOT APPROVED",
+  "canonical_identity": "MQP-01 -> XFR-D-030",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G41_SYNTHETIC_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFIED",
+  "expected_result_label": "G41_SYNTHETIC_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFIED",
+  "allowlist_sha256": "94b59fbc168725852711fad791d6f352d0da8b7a709db8d4e85faa5f838df89c",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": true,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-qualification-policy-artifact-owner-governance-assignment-reference.html",
+      "sha256": "4c7cd531d3989d2e1f1d64243111992c387a772913dd6befbc87baee680a8c31",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReferenceScenario.ts",
+      "sha256": "b0db26a29e0295415cb4132323763b1de41dc56f4d1b2f2b047cd9bac7028513",
+      "line_count": 91
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.tsx",
+      "sha256": "f357746cd925ff467090011bfd4a4dd0e24eace215b2480b20cbd32b38251937",
+      "line_count": 69
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReferenceEntry.tsx",
+      "sha256": "d1101d3ba990fdf2be092420e0efa4288f84c3220920e31b4b450169e3206355",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.test.ts",
+      "sha256": "0b26b667c948e69331b6f790b83dc32f5d4b2f3eda562a683ce03a4139b22ed2",
+      "line_count": 157
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G41 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, terminal token and terminal line."
+    },
+    {
+      "id": "role_separation_and_non_conflation",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes the artifact owner, mandatory approvers, consulted function, non-unilateral role split, absence of evidence-procedure ownership and separation from technical-writer and Risk-to-routing-threshold authority."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, network, persistence, telemetry, timers, randomness, policy selection or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC QUALIFICATION POLICY ARTIFACT-OWNER GOVERNANCE-ASSIGNMENT REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "ARTIFACT-OWNER GOVERNANCE MATRIX",
+      "OWNER / APPROVER / CONSULTED ROLE SEPARATION",
+      "TECHNICAL-WRITER AND THRESHOLD-OWNER NON-CONFLATION",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 10,
+    "terminal_token": "G41_SYNTHETIC_NO_THRESHOLD_PRECEDENCE_REASON_ROUTE_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO THRESHOLD, PRECEDENCE, REASON CATALOG, ROUTING RULE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_030_version": "v1.0",
+    "xfr_d_030_status": "APPROVED_GOVERNANCE_ASSIGNMENT_POLICY_NOT_APPROVED",
+    "canonical_identity": "MQP-01 -> XFR-D-030",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "qualification_policy_artifact_owner": "CHIEF_AI_ARCHITECT_PLUS_PRODUCT",
+    "mandatory_approvers": "LEGAL_PLUS_DEVELOPMENT",
+    "consulted_domain_function": "AI_WHERE_NOT_COVERED_BY_CHIEF_AI_ARCHITECT",
+    "xfr_d_031_xfr_d_032_xfr_d_033_and_merged_xfr_d_m2": "INDEPENDENT_AND_UNCHANGED",
+    "exact_threshold_precedence_reason_mapping_route_policy_runtime_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20
+  },
+  "governance": {
+    "qualification_policy_artifact_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "risk_to_routing_threshold_owner": "AI + LEGAL",
+    "risk_to_routing_threshold_owner_scope": "ARCHITECTURE_SECTION_37_QUESTION_8_ONLY",
+    "evidence_procedure_owner_assigned_by_xfr_d_030": false,
+    "named_appointment_or_rbac_created": false,
+    "authority_transfer": "PROHIBITED",
+    "unilateral_authority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "npm exec -- tsx --test tests/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "ENVIRONMENT_FAILURE_BEFORE_TEST_LOADING",
+      "observed": "node:os userInfo returned uv_os_get_passwd ENOMEM before tsx initialized"
+    },
+    {
+      "command": "node with an in-memory node:os userInfo shim, then --import tsx --test tests/syntheticQualificationPolicyArtifactOwnerGovernanceAssignmentReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G41 test file and web typecheck were executed.",
+    "The host node:os userInfo call returned ENOMEM, so the focused test used an in-memory process-only userInfo shim that changed no project file or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "Only read-only Git preflight and final-state inspection were used by the controlling agent; no Git mutation was performed during code authoring.",
+    "This record makes no threshold, precedence, reason catalog, route, Policy, dataset, evidence-verdict, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G41_SYNTHETIC_QUALIFICATION_POLICY_ARTIFACT_OWNER_GOVERNANCE_ASSIGNMENT_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "94b59fbc168725852711fad791d6f352d0da8b7a709db8d4e85faa5f838df89c",
+    "code_phase_baseline_head": "d4cd43f8691073b1dabace0f4e3269eb26775986",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G41 creates only an isolated synthetic Qualification Policy artifact-owner governance-assignment reference. XFR-D-030 remains APPROVED GOVERNANCE ASSIGNMENT — POLICY NOT APPROVED and MQP-01 remains PRIMARY_STANDALONE. Role assignment creates no Policy approval or exact routing authority; sibling Qualification decisions remain independent. No threshold, precedence, reason catalog, mapping, route, Policy, dataset, production, runtime or implementation content was selected or approved."
+  }
+}
