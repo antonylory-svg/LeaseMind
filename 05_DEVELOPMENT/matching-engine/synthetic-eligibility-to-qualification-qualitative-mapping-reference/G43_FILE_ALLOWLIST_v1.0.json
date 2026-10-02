@@ -1,0 +1,157 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G43_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-eligibility-to-qualification-qualitative-mapping-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-02",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g43-synthetic-eligibility-to-qualification-qualitative-mapping-reference",
+    "commit": "7f46c3049ec643b1bf26faa4f91ae126a09dbbbb"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_policy_or_data_contracts_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-032 v1.0",
+    "source_status": "APPROVED QUALITATIVE MAPPING — runtime representation and numeric thresholds remain OPEN",
+    "canonical_identity": "MQP-03 -> XFR-D-032",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "ONE_WAY_QUALITATIVE_ELIGIBILITY_FILTER_TO_MATCHING_QUALIFICATION_GATE_MAPPING_WITH_DISTINCT_STAGES_AND_NAMESPACES",
+    "eligibility_results": [
+      "ELIGIBLE",
+      "INELIGIBLE",
+      "NEEDS_VERIFICATION",
+      "HUMAN_REVIEW_REQUIRED_WHEN_RETURNED_BY_SOURCE_FALLBACK"
+    ],
+    "qualification_results": [
+      "QUALIFIED_HYPOTHESIS",
+      "NEEDS_VERIFICATION",
+      "HUMAN_REVIEW_REQUIRED",
+      "REJECTED_BY_MATCHING"
+    ],
+    "automatic_ineligible_conditions": [
+      "CRITERION_PREAPPROVED_AS_HARD_CONSTRAINT_IN_VERSIONED_POLICY",
+      "CRITERION_EXPLICITLY_STATED_BY_RELEVANT_PARTY_OR_DIRECTLY_MANDATED_NOT_MODEL_INFERRED",
+      "INCOMPATIBLE_VALUE_CONFIRMED_BY_CURRENT_PERMITTED_SOURCE",
+      "CRITERION_IS_NOT_PROTECTED_PERSONAL_ATTRIBUTE_HIDDEN_PROXY_OR_DISCRIMINATORY_RESTRICTION",
+      "NO_UNKNOWN_SOURCE_CONFLICT_OR_LEGAL_INTERPRETATION_REQUIRED",
+      "RESULT_HAS_REASON_CODE_RULE_VERSION_EVIDENCE_REFERENCE_AND_HUMAN_REVIEW_AVAILABILITY"
+    ],
+    "future_surface": {
+      "title": "SYNTHETIC ELIGIBILITY-TO-QUALIFICATION QUALITATIVE-MAPPING REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC ELIGIBILITY-TO-QUALIFICATION QUALITATIVE-MAPPING REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — QUALITATIVE MAPPING IS NOT RUNTIME REPRESENTATION OR POLICY APPROVAL",
+        "NO NUMERIC THRESHOLD, ENUM, FIELD, CARRIER, REASON CODE, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "QUALITATIVE MAPPING MATRIX",
+        "STAGE AND NAMESPACE SEPARATION",
+        "FAIL-CLOSED AND NON-REJECTION BOUNDARY",
+        "OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_APPROVED_QUALITATIVE_MAPPING_PRESERVED_WITH_RUNTIME_REPRESENTATION_AND_NUMERIC_THRESHOLDS_OPEN" },
+      { "row": 2, "frozen": "ELIGIBILITY_FILTER_AND_MATCHING_QUALIFICATION_GATE_REMAIN_DISTINCT_STAGES_AND_NAMESPACES" },
+      { "row": 3, "frozen": "ELIGIBILITY_INELIGIBLE_MAPS_TO_QUALIFICATION_REJECTED_BY_MATCHING_ONLY_WHEN_ALL_SIX_ARCHITECTURE_SECTION_14_CONDITIONS_ARE_PROVEN_AND_PRESERVED" },
+      { "row": 4, "frozen": "MISSING_ANY_AUTOMATIC_INELIGIBLE_CONDITION_PROHIBITS_MAPPING_TO_REJECTED_BY_MATCHING" },
+      { "row": 5, "frozen": "ELIGIBILITY_ELIGIBLE_PERMITS_CONTINUED_CALCULATION_BUT_NEVER_AUTOMATICALLY_MEANS_QUALIFIED_HYPOTHESIS" },
+      { "row": 6, "frozen": "ELIGIBILITY_NEEDS_VERIFICATION_MAPS_TO_QUALIFICATION_NEEDS_VERIFICATION_UNLESS_A_SEPARATE_CRITICAL_REASON_REQUIRES_HUMAN_REVIEW_REQUIRED" },
+      { "row": 7, "frozen": "NEEDS_VERIFICATION_BY_ITSELF_NEVER_CREATES_REJECTION" },
+      { "row": 8, "frozen": "ELIGIBILITY_STAGE_HUMAN_REVIEW_REQUIRED_WHEN_RETURNED_BY_SOURCE_FALLBACK_MAPS_TO_QUALIFICATION_HUMAN_REVIEW_REQUIRED" },
+      { "row": 9, "frozen": "MISSING_OR_UNKNOWN_IS_NOT_A_NEGATIVE_FACT_AND_CANNOT_BE_COERCED_TO_REJECTION" },
+      { "row": 10, "frozen": "RISK_SCORE_MODEL_INFERENCE_CORRELATION_OR_DATA_ABSENCE_ALONE_CANNOT_CREATE_REJECTION" },
+      { "row": 11, "frozen": "IDENTICAL_LABEL_TEXT_DOES_NOT_MERGE_NAMESPACES_OR_APPROVE_A_SHARED_ENUM_FIELD_CARRIER_REASON_CODE_OR_NUMERIC_THRESHOLD" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "NUMERIC_THRESHOLDS_AND_CALIBRATION",
+      "RUNTIME_ENUM_FIELD_NAMESPACE_IDENTIFIERS_CODES_AND_VALUES",
+      "CARRIER_OBJECT_SHAPE_CARDINALITY_REQUIREDNESS_OPTIONALITY_NULLABILITY_AND_LIFECYCLE",
+      "SERIALIZATION_VALIDATION_ERROR_UNKNOWN_FALLBACK_AND_MALFORMED_INPUT_BEHAVIOR",
+      "API_DB_EVENT_TOPIC_MESSAGE_PAYLOAD_AND_TRANSPORT_REPRESENTATION",
+      "REASON_CODE_CATALOG_AND_EXACT_REASON_TO_RESULT_CROSSWALK",
+      "SCHEMA_VERSIONING_COMPATIBILITY_MIGRATION_SUPERSESSION_AND_ROLLBACK",
+      "EVIDENCE_REFERENCE_PROVENANCE_REPLAY_AUDIT_MONITORING_TTL_EXPIRY_AND_RECALCULATION",
+      "QUALIFICATION_POLICY_DATA_CONTRACTS_MANIFEST_DATASET_PRODUCTION_RUNTIME_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G43_SYNTHETIC_NO_NUMERIC_THRESHOLD_ENUM_FIELD_CARRIER_REASON_CODE_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO NUMERIC THRESHOLD, ENUM, FIELD, CARRIER, REASON CODE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G43_SYNTHETIC_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFIED",
+  "governance": {
+    "mapping_change_control": "Chief AI Architect + PRODUCT + LEGAL + DEVELOPMENT",
+    "all_six_automatic_ineligible_conditions_required": true,
+    "missing_unknown_as_negative": "PROHIBITED",
+    "eligible_as_automatic_qualified_hypothesis": "PROHIBITED",
+    "needs_verification_as_rejection": "PROHIBITED",
+    "risk_model_correlation_or_absence_as_rejection": "PROHIBITED",
+    "stage_or_namespace_merging": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G43_SYNTHETIC_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-eligibility-to-qualification-qualitative-mapping-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-eligibility-to-qualification-qualitative-mapping-reference/G43_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-eligibility-to-qualification-qualitative-mapping-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEligibilityToQualificationQualitativeMappingReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticEligibilityToQualificationQualitativeMappingReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEligibilityToQualificationQualitativeMappingReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticEligibilityToQualificationQualitativeMappingReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-eligibility-to-qualification-qualitative-mapping-reference/G43_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
