@@ -1,0 +1,191 @@
+{
+  "artifact_type": "G43_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFICATION",
+  "package": "synthetic-eligibility-to-qualification-qualitative-mapping-reference",
+  "package_version": "1.0",
+  "phase": "G43_CODE_PHASE",
+  "verification_date": "2026-10-02",
+  "branch": "development/sprint-7-matching-g43-synthetic-eligibility-to-qualification-qualitative-mapping-reference",
+  "code_phase_baseline_head": "694b8069df30ce57de964a08db1c7dbcaab8d9fe",
+  "documentation_baseline_recorded_in_authorization": "7f46c3049ec643b1bf26faa4f91ae126a09dbbbb",
+  "source_decision": "XFR-D-032 v1.0",
+  "source_status": "APPROVED QUALITATIVE MAPPING — runtime representation and numeric thresholds remain OPEN",
+  "canonical_identity": "MQP-03 -> XFR-D-032",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G43_SYNTHETIC_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFIED",
+  "expected_result_label": "G43_SYNTHETIC_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFIED",
+  "allowlist_sha256": "98c1878ab75c4525c0c6d7f2cb4884dd58ded2b772ec50b4ccd56247239f1941",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-eligibility-to-qualification-qualitative-mapping-reference.html",
+      "sha256": "9c942e54fcb22f7aa5662d0b4f60b1952325c665f7930a759393330806d09ee9",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEligibilityToQualificationQualitativeMappingReferenceScenario.ts",
+      "sha256": "33ae9dadb0867302f19f49d1c4273f2c826e116c12dfc3907cedf87e974494ef",
+      "line_count": 97
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticEligibilityToQualificationQualitativeMappingReference.tsx",
+      "sha256": "31bd6a1141e1088f7da490d74cf01c0342827b36378f9af2c613beb00e6043a2",
+      "line_count": 70
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticEligibilityToQualificationQualitativeMappingReferenceEntry.tsx",
+      "sha256": "afd0907212f585c03f2c3183c05790ccb7eb5738ad4db6da2a045c61c815789b",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticEligibilityToQualificationQualitativeMappingReference.test.ts",
+      "sha256": "e6667465f0f1ebd06c176108f7505c8775101263121a19a70bef1f255694fb0d",
+      "line_count": 176
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G43 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, terminal token and terminal line."
+    },
+    {
+      "id": "mapping_and_fail_closed_boundary",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes all four one-way mapping rules, the cumulative six-condition rule, stage and namespace separation, and the missing/unknown/Risk/model/correlation/data-absence non-rejection safeguards."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, network, persistence, telemetry, timers, randomness, threshold selection or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC ELIGIBILITY-TO-QUALIFICATION QUALITATIVE-MAPPING REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "QUALITATIVE MAPPING MATRIX",
+      "STAGE AND NAMESPACE SEPARATION",
+      "FAIL-CLOSED AND NON-REJECTION BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "mapping_rules_count": 4,
+    "automatic_ineligible_conditions_count": 6,
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 9,
+    "terminal_token": "G43_SYNTHETIC_NO_NUMERIC_THRESHOLD_ENUM_FIELD_CARRIER_REASON_CODE_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO NUMERIC THRESHOLD, ENUM, FIELD, CARRIER, REASON CODE, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_conditions_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_032_version": "v1.0",
+    "xfr_d_032_status": "APPROVED_QUALITATIVE_MAPPING_RUNTIME_REPRESENTATION_AND_NUMERIC_THRESHOLDS_OPEN",
+    "canonical_identity": "MQP-03 -> XFR-D-032",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "eligibility_and_qualification_stages": "DISTINCT",
+    "eligibility_and_qualification_namespaces": "DISTINCT",
+    "all_six_automatic_ineligible_conditions": "CUMULATIVE_AND_REQUIRED",
+    "eligible_as_automatic_qualified_hypothesis": "PROHIBITED",
+    "needs_verification_as_rejection": "PROHIBITED",
+    "missing_unknown_as_negative": "PROHIBITED",
+    "risk_model_correlation_or_absence_as_rejection": "PROHIBITED",
+    "numeric_threshold_enum_field_carrier_reason_code_policy_runtime_approval": "NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20
+  },
+  "governance": {
+    "mapping_change_control": "Chief AI Architect + PRODUCT + LEGAL + DEVELOPMENT",
+    "all_six_automatic_ineligible_conditions_required": true,
+    "missing_unknown_as_negative": "PROHIBITED",
+    "eligible_as_automatic_qualified_hypothesis": "PROHIBITED",
+    "needs_verification_as_rejection": "PROHIBITED",
+    "risk_model_correlation_or_absence_as_rejection": "PROHIBITED",
+    "stage_or_namespace_merging": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node --import tsx --test tests/syntheticEligibilityToQualificationQualitativeMappingReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "HOST_BOOTSTRAP_FAILED_BEFORE_TEST_LOADING",
+      "observed": "node:os userInfo returned uv_os_get_passwd ENOMEM before tsx initialized"
+    },
+    {
+      "command": "node with an in-memory process.geteuid shim, then --import tsx --test tests/syntheticEligibilityToQualificationQualitativeMappingReference.test.ts",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G43 test file and web typecheck were executed.",
+    "The ordinary focused test invocation failed before test loading because this Windows host returned uv_os_get_passwd ENOMEM during tsx initialization.",
+    "The passing focused test used an in-memory process-only process.geteuid shim; it changed no repository file, dependency, configuration, application behavior or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command or Git mutation was performed during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no numeric-threshold, calibration, enum, field, carrier, reason-code, Policy, Data Contracts, dataset, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G43_SYNTHETIC_ELIGIBILITY_TO_QUALIFICATION_QUALITATIVE_MAPPING_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "98c1878ab75c4525c0c6d7f2cb4884dd58ded2b772ec50b4ccd56247239f1941",
+    "code_phase_baseline_head": "694b8069df30ce57de964a08db1c7dbcaab8d9fe",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G43 creates only an isolated synthetic Eligibility-to-Qualification qualitative-mapping reference. XFR-D-032 remains APPROVED QUALITATIVE MAPPING — runtime representation and numeric thresholds remain OPEN and MQP-03 remains PRIMARY_STANDALONE. The stages and namespaces remain distinct; all six automatic-INELIGIBLE conditions remain cumulative; missing, unknown, Risk Score, model inference, correlation or data absence do not create rejection. No numeric threshold, enum, field, carrier, reason-code catalog, Qualification Policy, Data Contracts change, dataset, production, runtime or implementation content was selected or approved."
+  }
+}
