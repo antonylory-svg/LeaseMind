@@ -1,0 +1,185 @@
+{
+  "artifact_type": "G47_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFICATION",
+  "package": "synthetic-critical-data-completeness-threshold-rule-governance-reference",
+  "package_version": "1.0",
+  "phase": "G47_CODE_PHASE",
+  "verification_date": "2026-10-03",
+  "branch": "development/sprint-7-matching-g47-synthetic-critical-data-completeness-threshold-rule-governance-reference",
+  "code_phase_baseline_head": "0e3c48520a5b6896b960e7bc4b1163f459e7a3bb",
+  "documentation_baseline_recorded_in_authorization": "b693aaea4d6d9a904658a920f5f22630ccd16c2e",
+  "source_decision": "XFR-D-036 v1.0",
+  "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+  "canonical_identity": "MQP-07 -> XFR-D-036",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G47_SYNTHETIC_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFIED",
+  "expected_result_label": "G47_SYNTHETIC_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFIED",
+  "allowlist_sha256": "67beaf21ef6f2af968fee77f8330026f59f68db6736cab1e9caffaf64cdf3d31",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-critical-data-completeness-threshold-rule-governance-reference.html",
+      "sha256": "475e8f13eb0235475e7da8680f775211c9dbfb410695215340379e409b517867",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriticalDataCompletenessThresholdRuleGovernanceReferenceScenario.ts",
+      "sha256": "ed5f6ad8ed27cd9248f00b1bbc942244db01e4691982aaa9019b158c4a319dc2",
+      "line_count": 107
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticCriticalDataCompletenessThresholdRuleGovernanceReference.tsx",
+      "sha256": "64a3db70ccfb3ec68ad0d3354b41b09839c8e654836719ecaf3c40f75925d619",
+      "line_count": 71
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriticalDataCompletenessThresholdRuleGovernanceReferenceEntry.tsx",
+      "sha256": "9d2c404e9e24cc6ab3d11346d71daabff10ec0bbff21734588c9c4309cfc412f",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticCriticalDataCompletenessThresholdRuleGovernanceReference.test.ts",
+      "sha256": "1bfe58666cdf399065c3e788e3cb163b8edc8eb2c8e0dff2f2feb43409ccb25a",
+      "line_count": 159
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G47 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, terminal token and terminal line."
+    },
+    {
+      "id": "semantic_evidence_and_fail_closed_boundary",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes critical-data/use-purpose scope, semantic and representation separation, XFR-D-045/XFR-F1 prerequisites, baseline-first/frozen-manifest/tuning-final isolation, non-compensation, no-surrogate/no-default and affected-progression-only fail-closed handling without zero, adverse fact or automatic routing."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, sorting, network, persistence, telemetry, timers, randomness or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC CRITICAL-DATA COMPLETENESS THRESHOLD/RULE GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "ROLE AND AUTHORITY SEPARATION",
+      "COMPLETENESS SEMANTIC AND REPRESENTATION SEPARATION",
+      "EVIDENCE / NON-COMPENSATION / FAIL-CLOSED BOUNDARY",
+      "NO-SURROGATE / NO-DEFAULT AND OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 8,
+    "terminal_token": "G47_SYNTHETIC_NO_CRITICAL_DATA_SET_COMPLETENESS_DEFINITION_COUNTING_UNIT_THRESHOLD_RULE_DATASET_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO CRITICAL-DATA SET, COMPLETENESS DEFINITION, COUNTING UNIT, THRESHOLD/RULE, DATASET, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_036_version": "v1.0",
+    "xfr_d_036_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MQP-07 -> XFR-D-036",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "critical_data_scope": "SEPARATELY_APPROVED_SET_FOR_SPECIFIC_QUALIFICATION_USE_AND_PURPOSE_ONLY",
+    "exact_representation": "OPEN_NOT_SELECTED_PREFERRED_EXCLUDED_OR_APPROVED",
+    "adjacent_semantic_spaces": "SEPARATE_WITHOUT_APPROVED_MAPPING",
+    "xfr_d_045_and_xfr_f1": "MANDATORY_INDEPENDENT_EVIDENCE_PREREQUISITES",
+    "evidence_discipline": "BASELINE_FIRST_FROZEN_MANIFEST_AND_TUNING_FINAL_ISOLATION",
+    "independent_families": "NON_COMPENSATING",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "fail_closed_scope": "AFFECTED_QUALIFICATION_PROGRESSION_ONLY_WITHOUT_ZERO_ADVERSE_FACT_OR_AUTOMATIC_ROUTE",
+    "exact_completeness_threshold_rule_data_policy_runtime_content": "OPEN_NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20
+  },
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + AI + DEVELOPMENT",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + AI + DEVELOPMENT",
+    "cross_semantic_conflation": "PROHIBITED",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node with an in-memory process.geteuid shim, then import tsx and the focused G47 test",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 10,
+        "pass": 10,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "host_note": "The direct first invocation stopped before loading the test because this Windows host returned ENOMEM from node:os userInfo inside tsx temporary-directory initialization. The in-memory process-only getuid shim avoided that host lookup and changed no repository file or test behavior."
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G47 test file and web typecheck were executed.",
+    "The focused test used the established in-memory process-only process.geteuid shim for this Windows host; the shim changed no repository file, dependency, configuration, application behavior or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command or Git mutation was performed during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no critical-data set, completeness definition, counting unit, threshold/rule, dataset, evidence verdict, Policy, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G47_SYNTHETIC_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "67beaf21ef6f2af968fee77f8330026f59f68db6736cab1e9caffaf64cdf3d31",
+    "code_phase_baseline_head": "0e3c48520a5b6896b960e7bc4b1163f459e7a3bb",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G47 creates only an isolated synthetic critical-data completeness threshold/rule governance reference. XFR-D-036 v1.0 remains PARTIALLY_RESOLVED_BOUNDARY and MQP-07 remains PRIMARY_STANDALONE. Completeness is scoped only to a separately approved critical-data set and specific Qualification use/purpose; exact representation remains open; XFR-D-045/XFR-F1, baseline discipline, non-compensation, no-surrogate/no-default and affected-progression-only fail-closed handling are preserved. No critical-data set, completeness definition, counting unit, threshold/rule, dataset, evidence verdict, Policy, production, runtime or implementation content was selected or approved."
+  }
+}
