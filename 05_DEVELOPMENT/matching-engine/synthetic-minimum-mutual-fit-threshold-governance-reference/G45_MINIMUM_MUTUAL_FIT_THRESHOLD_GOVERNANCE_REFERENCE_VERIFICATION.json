@@ -1,0 +1,189 @@
+{
+  "artifact_type": "G45_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFICATION",
+  "package": "synthetic-minimum-mutual-fit-threshold-governance-reference",
+  "package_version": "1.0",
+  "phase": "G45_CODE_PHASE",
+  "verification_date": "2026-10-03",
+  "branch": "development/sprint-7-matching-g45-synthetic-minimum-mutual-fit-threshold-governance-reference",
+  "code_phase_baseline_head": "6526e53a3e944466a23f62c6da6bd04596adb97a",
+  "documentation_baseline_recorded_in_authorization": "471998837f0d73f44a9bed0f8787e641789a24a1",
+  "source_decision": "XFR-D-034 v1.0",
+  "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+  "canonical_identities": [
+    "MQP-05 -> XFR-D-034",
+    "MSP-05 -> XFR-D-034"
+  ],
+  "canonical_relationships": [
+    "PRIMARY_STANDALONE",
+    "SECONDARY_BOUNDARY_REFERENCE"
+  ],
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G45_SYNTHETIC_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFIED",
+  "expected_result_label": "G45_SYNTHETIC_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFIED",
+  "allowlist_sha256": "d8598e134249cdb1cddb413240397750c132c150f80e54aa7473b9a295fc5c76",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-minimum-mutual-fit-threshold-governance-reference.html",
+      "sha256": "0ccd78d898f6db416217d7427abc96b605889fe8e25328af4aa61b23eec01214",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMinimumMutualFitThresholdGovernanceReferenceScenario.ts",
+      "sha256": "cb6e2b2aa551505e144f14b6f5598b256d76d1437cce0fadc74fef8f64474008",
+      "line_count": 97
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMinimumMutualFitThresholdGovernanceReference.tsx",
+      "sha256": "5ddac64cd9a182a3e050988c60fbc1a8f3265fb32d1c1a855af45772400da557",
+      "line_count": 70
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMinimumMutualFitThresholdGovernanceReferenceEntry.tsx",
+      "sha256": "5f15362653a30e3b63dc9db59bb3c4aa5b14d967111a32f84288df1776a4b134",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticMinimumMutualFitThresholdGovernanceReference.test.ts",
+      "sha256": "5cb118d2f9d18d58b3557534eb5b697dd80691408ddb875277db53887732bccc",
+      "line_count": 154
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G45 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, terminal token and terminal line."
+    },
+    {
+      "id": "authority_prerequisite_and_fail_closed_boundary",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes exact role separation, Qualification-only authority, XFR-D-045 and XFR-F1 prerequisites, non-compensation, no-surrogate/no-default rules and affected-progression-only fail-closed handling without negative coercion or automatic routing."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, sorting, network, persistence, telemetry, timers, randomness or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC MINIMUM MUTUAL-FIT THRESHOLD GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "ROLE AND AUTHORITY SEPARATION",
+      "QUALIFICATION-ONLY AND NON-COMPENSATION BOUNDARY",
+      "NO-SURROGATE / NO-DEFAULT AND FAIL-CLOSED BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 8,
+    "terminal_token": "G45_SYNTHETIC_NO_MUTUAL_FIT_OBJECT_FUNCTION_COMPARATOR_NUMERIC_VALUE_DATASET_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO MUTUAL-FIT OBJECT, FUNCTION, COMPARATOR, NUMERIC VALUE, DATASET, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_034_version": "v1.0",
+    "xfr_d_034_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "primary_identity": "MQP-05 -> XFR-D-034",
+    "primary_relationship": "PRIMARY_STANDALONE",
+    "secondary_identity": "MSP-05 -> XFR-D-034",
+    "secondary_relationship": "SECONDARY_BOUNDARY_REFERENCE",
+    "threshold_authority": "QUALIFICATION_ONLY_IF_FUTURE_SEPARATELY_APPROVED",
+    "scoring_threshold_selection_authority": "NONE",
+    "xfr_d_045_and_xfr_f1": "MANDATORY_INDEPENDENT_EVIDENCE_PREREQUISITES",
+    "mutual_fit_confidence_and_completeness": "NON_COMPENSATING",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "fail_closed_scope": "AFFECTED_QUALIFICATION_PROGRESSION_ONLY_WITHOUT_NEGATIVE_COERCION_OR_AUTOMATIC_ROUTE",
+    "exact_numeric_data_policy_runtime_content": "OPEN_NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "scoring_register_rows": 18
+  },
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + AI + DEVELOPMENT",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + AI + DEVELOPMENT",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node with an in-memory process.geteuid shim, then import tsx and the focused G45 test",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G45 test file and web typecheck were executed.",
+    "The focused test used the established in-memory process-only process.geteuid shim after the direct tsx invocation encountered this Windows host's uv_os_get_passwd ENOMEM issue; the shim changed no repository file, dependency, configuration, application behavior or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command or Git mutation was performed during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no mutual-fit object, function, comparator, numeric threshold, dataset, Policy, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G45_SYNTHETIC_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "d8598e134249cdb1cddb413240397750c132c150f80e54aa7473b9a295fc5c76",
+    "code_phase_baseline_head": "6526e53a3e944466a23f62c6da6bd04596adb97a",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G45 creates only an isolated synthetic minimum mutual-fit threshold governance reference. XFR-D-034 v1.0 remains PARTIALLY_RESOLVED_BOUNDARY; MQP-05 remains PRIMARY_STANDALONE and MSP-05 remains SECONDARY_BOUNDARY_REFERENCE. Governance roles, Qualification-only authority, XFR-D-045 and XFR-F1 evidence prerequisites, non-compensation, no-surrogate/no-default and affected-progression-only fail-closed handling are preserved. No mutual-fit object, function, comparator, numeric value, dataset, evidence verdict, Policy, production, runtime or implementation content was selected or approved."
+  }
+}
