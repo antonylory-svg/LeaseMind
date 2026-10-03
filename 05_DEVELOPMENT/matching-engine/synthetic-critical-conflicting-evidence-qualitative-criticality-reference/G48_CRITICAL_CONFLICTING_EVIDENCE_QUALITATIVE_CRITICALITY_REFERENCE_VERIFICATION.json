@@ -1,0 +1,185 @@
+{
+  "artifact_type": "G48_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFICATION",
+  "package": "synthetic-critical-conflicting-evidence-qualitative-criticality-reference",
+  "package_version": "1.0",
+  "phase": "G48_CODE_PHASE",
+  "verification_date": "2026-10-03",
+  "branch": "development/sprint-7-matching-g48-synthetic-critical-conflicting-evidence-qualitative-criticality-reference",
+  "code_phase_baseline_head": "11680e659c9d59f94a0f40da8d43d94b866dbb25",
+  "documentation_baseline_recorded_in_authorization": "e2045b7fc010c82f6d06656ae143fe316e304595",
+  "source_decision": "XFR-D-037 v1.0",
+  "source_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+  "canonical_identity": "MQP-10 -> XFR-D-037",
+  "canonical_relationship": "PRIMARY_STANDALONE",
+  "result": "STATIC_CREATION_TIME_VERIFICATION_WITH_FOCUSED_TEST_AND_TYPECHECK",
+  "result_label": "G48_SYNTHETIC_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFIED",
+  "expected_result_label": "G48_SYNTHETIC_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFIED",
+  "allowlist_sha256": "9f0a60b95cfdbf4bbfe50ef4e0cca188015e27907ff1700e84ee3e87e92c68b5",
+  "allowlist_sha256_matches_authorized_value": true,
+  "verification_scope": "CREATION_TIME_STATIC_CHECKS_PLUS_FOCUSED_TEST_AND_TYPECHECK",
+  "tests_executed_by_code_author": true,
+  "typecheck_command_executed_by_code_author": true,
+  "full_regression_suite_executed": false,
+  "git_commands_executed_by_code_author": false,
+  "git_mutation_performed": false,
+  "browser_rendering_performed": false,
+  "network_access_performed": false,
+  "authored_files": [
+    {
+      "path": "apps/web/synthetic-critical-conflicting-evidence-qualitative-criticality-reference.html",
+      "sha256": "b360e6b09b98b1d87b4a10fb1503021966b715fd54fec038b4a6d98e8b6d6625",
+      "line_count": 12
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriticalConflictingEvidenceQualitativeCriticalityReferenceScenario.ts",
+      "sha256": "f1226f7777516eac3240ec5fa8aae388bb9d0bed4e10075e35afee532079bfb6",
+      "line_count": 119
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticCriticalConflictingEvidenceQualitativeCriticalityReference.tsx",
+      "sha256": "80ea54a9b30998edb1d50f3684bd3e93d5fecb52d67ad0c0800e7c0ced002946",
+      "line_count": 73
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticCriticalConflictingEvidenceQualitativeCriticalityReferenceEntry.tsx",
+      "sha256": "da6b7c36a4de54e97401b1af41aeb28ebd0b324b6208054747e2645b4c6d222b",
+      "line_count": 8
+    },
+    {
+      "path": "apps/web/tests/syntheticCriticalConflictingEvidenceQualitativeCriticalityReference.test.ts",
+      "sha256": "c92516558de0e5958022ee35fcd2f74ad5dde80c00f71a39161603fa83588789",
+      "line_count": 177
+    }
+  ],
+  "recorded_static_checks": [
+    {
+      "id": "allowlist_hash_binding",
+      "status": "CONFIRMED_STATIC",
+      "description": "The raw G48 allowlist SHA-256 equals the authorized value, and the allowlist was not modified in the code phase."
+    },
+    {
+      "id": "allowlisted_path_count",
+      "status": "CONFIRMED_STATIC",
+      "description": "The closed allowlist declares exactly nine paths: three documentation artifacts and six code, test and verification artifacts."
+    },
+    {
+      "id": "created_paths",
+      "status": "CONFIRMED_STATIC",
+      "description": "Exactly the six planned allowlisted paths were created. No pre-existing source or documentation file was modified in this phase."
+    },
+    {
+      "id": "frozen_surface_reproduction",
+      "status": "CONFIRMED_STATIC",
+      "description": "The scenario reproduces the allowlist title, three permanent lines, six ordered regions, twelve frozen matrix strings, five outcome classes, terminal token and terminal line."
+    },
+    {
+      "id": "criticality_precedence_and_noncritical_boundary",
+      "status": "CONFIRMED_STATIC",
+      "description": "The focused test freezes the five outcome-sensitive criticality classes, XFR-D-033 precedence, confirmed-INELIGIBLE priority, all-version/evidence preservation, Confidence reduction, non-negative handling, no automatic rejection/route, no-surrogate and all exact-content-open boundaries."
+    },
+    {
+      "id": "static_surface_constraints",
+      "status": "CONFIRMED_STATIC",
+      "description": "Static markup contains one main, one h1, six sections and one twelve-row table, with no controls, links, live regions, mutable state, calculation, sorting, network, persistence, telemetry, timers, randomness or automatic action."
+    }
+  ],
+  "frozen_boundary_reproduction": {
+    "title": "SYNTHETIC CRITICAL CONFLICTING-EVIDENCE QUALITATIVE-CRITICALITY REFERENCE — NOT PRODUCTION APPROVED",
+    "regions_in_order": [
+      "SOURCE AND STATUS BOUNDARY",
+      "OUTCOME-SENSITIVE CRITICALITY BOUNDARY",
+      "QUALIFICATION PRECEDENCE AND HUMAN-REVIEW BOUNDARY",
+      "NONCRITICAL CONFLICT PRESERVATION AND NON-NEGATIVE BOUNDARY",
+      "OPEN EXACT CONTENT",
+      "NON-DECISION RESULT"
+    ],
+    "criticality_outcome_classes_count": 5,
+    "matrix_rows_count": 12,
+    "always_visible_lines_count": 3,
+    "open_exact_content_categories_count": 8,
+    "terminal_token": "G48_SYNTHETIC_NO_NUMERIC_THRESHOLD_EXHAUSTIVE_CRITICAL_FIELD_CATALOG_SEVERITY_SCALE_RUNTIME_CLASSIFIER_POLICY_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO NUMERIC THRESHOLD, EXHAUSTIVE CRITICAL-FIELD CATALOG, SEVERITY SCALE, RUNTIME CLASSIFIER, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED",
+    "surface_matrix_and_terminal_fields_reproduced_verbatim_from_allowlist": true
+  },
+  "preserved_status_and_boundary": {
+    "xfr_d_037_version": "v1.0",
+    "xfr_d_037_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+    "canonical_identity": "MQP-10 -> XFR-D-037",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "criticality_definition": "OUTCOME_SENSITIVE_ACROSS_FIVE_APPROVED_CLASSES",
+    "critical_route": "HUMAN_REVIEW_REQUIRED_SUBJECT_TO_XFR_D_033_PRECEDENCE",
+    "confirmed_ineligible_precedence": "PRESERVED",
+    "noncritical_versions_and_evidence": "PRESERVED",
+    "noncritical_confidence": "REDUCED_ONLY_UNDER_SEPARATELY_APPROVED_RULE",
+    "noncritical_negative_fact_or_automatic_rejection": "PROHIBITED",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "exact_numeric_catalog_classifier_policy_runtime_content": "OPEN_NOT_SELECTED",
+    "inventory_counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20
+  },
+  "governance": {
+    "qualification_semantic_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "consulted_function_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + DEVELOPMENT",
+    "numeric_or_catalog_surrogate": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "observed_command_results": [
+    {
+      "command": "node with an in-memory process.geteuid shim, then import tsx and the focused G48 test",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED_AFTER_ONE_ALLOWLISTED_WORDING_CORRECTION",
+      "observed": {
+        "tests": 11,
+        "pass": 11,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      },
+      "host_note": "The direct first invocation stopped before loading the test because this Windows host returned ENOMEM from node:os userInfo inside tsx temporary-directory initialization. The in-memory process-only getuid shim avoided that host lookup and changed no repository file or test behavior.",
+      "correction": "The first shimmed run passed 10 of 11 tests and identified that the scenario grouped automatic route under a shared negative construction instead of stating NO AUTOMATIC ROUTE explicitly. Only that allowlisted scenario sentence was clarified; the final run passed 11/11."
+    },
+    {
+      "command": "npm run typecheck",
+      "working_directory": "C:/Projects/LeaseMind/apps/web",
+      "status": "PASSED",
+      "observed": "tsc -p tsconfig.json --noEmit exited with code 0 and reported no diagnostics"
+    },
+    {
+      "command": "non-Git path, hash, line-count and JSON checks",
+      "working_directory": "C:/Projects/LeaseMind",
+      "status": "CONFIRMED_STATIC",
+      "observed": "The six planned paths were created; five authored-file hashes and line counts were recorded; the allowlist hash remained exact."
+    }
+  ],
+  "limitations": [
+    "The full web regression suite was not executed in this code phase; only the focused G48 test file and web typecheck were executed.",
+    "The focused test used the established in-memory process-only process.geteuid shim for this Windows host; the shim changed no repository file, dependency, configuration, application behavior or test behavior.",
+    "No live browser render was performed, so responsive layout beyond static markup and responsive CSS constraints remains for independent review.",
+    "The verification record omits its own SHA-256 because a file cannot contain its own stable hash.",
+    "No Git command or Git mutation was performed during code authoring; this record asserts creation-time filesystem and test facts only.",
+    "This record makes no numeric threshold, exhaustive critical-field catalog, severity scale, classifier, Policy, production, runtime or implementation approval claim."
+  ],
+  "conclusion": {
+    "result_label": "G48_SYNTHETIC_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFIED",
+    "allowlist_sha256_bound": "9f0a60b95cfdbf4bbfe50ef4e0cca188015e27907ff1700e84ee3e87e92c68b5",
+    "code_phase_baseline_head": "11680e659c9d59f94a0f40da8d43d94b866dbb25",
+    "planned_paths_created": 6,
+    "allowlist_paths_total": 9,
+    "paths_created_outside_allowlist": 0,
+    "gate_impact": "NONE",
+    "gates_still_blocked": [
+      "IMPLEMENTATION_READINESS_GATE",
+      "SYNTHETIC_ACCEPTANCE_GATE",
+      "PRODUCTION_LAUNCH_GATE"
+    ],
+    "statement": "G48 creates only an isolated synthetic critical conflicting-evidence qualitative-criticality reference. XFR-D-037 v1.0 remains RESOLVED_QUALITATIVE_BOUNDARY and MQP-10 remains PRIMARY_STANDALONE. The five outcome-sensitive classes, XFR-D-033 precedence, version/evidence preservation, Confidence reduction, non-negative treatment, no automatic rejection/route, no-surrogate and exact-content-open boundaries are preserved. No numeric threshold, exhaustive critical-field catalog, severity scale, classifier, reviewer verdict, Policy, production, runtime or implementation content was selected or approved."
+  }
+}
