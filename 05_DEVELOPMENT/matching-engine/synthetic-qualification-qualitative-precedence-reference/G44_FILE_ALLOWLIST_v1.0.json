@@ -1,0 +1,145 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G44_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-qualification-qualitative-precedence-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-03",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g44-synthetic-qualification-qualitative-precedence-reference",
+    "commit": "2318227ea25f4671dfc2dbb79b206d02da2ebf0d"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_policy_or_data_contracts_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-033 v1.0",
+    "source_status": "APPROVED QUALITATIVE PRECEDENCE — numeric thresholds and reason catalog remain OPEN",
+    "canonical_identity": "MQP-04 -> XFR-D-033",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "DETERMINISTIC_FAIL_CLOSED_QUALITATIVE_PRECEDENCE_NON_COMPENSATION_AND_ROUTE_SELECTION_WITH_ALL_CAUSES_PRESERVED",
+    "precedence_hierarchy": [
+      "CONFIRMED_ELIGIBILITY_INELIGIBLE_WITH_COMPLETE_SIX_PART_EVIDENCE_TO_REJECTED_BY_MATCHING",
+      "MANDATORY_HUMAN_REVIEW_CAUSE_TO_HUMAN_REVIEW_REQUIRED_ABSENT_CONFIRMED_INELIGIBLE",
+      "UNRESOLVED_VERIFICATION_NEED_MISSING_UNKNOWN_OR_INSUFFICIENT_EVIDENCE_TO_NEEDS_VERIFICATION_ABSENT_HIGHER_CLASS",
+      "QUALIFIED_HYPOTHESIS_ONLY_ABSENT_ALL_THREE_HIGHER_CLASSES_AND_WITH_ALL_ARCHITECTURE_SECTION_18_1_QUALITATIVE_CONDITIONS_MET"
+    ],
+    "future_surface": {
+      "title": "SYNTHETIC QUALIFICATION QUALITATIVE-PRECEDENCE REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC QUALIFICATION QUALITATIVE-PRECEDENCE REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — QUALITATIVE PRECEDENCE IS NOT NUMERIC SEVERITY, REASON-CATALOG ORDER OR RUNTIME ALGORITHM APPROVAL",
+        "NO NUMERIC THRESHOLD, SEVERITY REGISTRY, REASON-CATALOG ORDER, RUNTIME ALGORITHM, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "QUALITATIVE PRECEDENCE HIERARCHY",
+        "NON-COMPENSATION BOUNDARY",
+        "MULTI-CAUSE AND PRIMARY-REASON SEPARATION",
+        "OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_APPROVED_QUALITATIVE_PRECEDENCE_PRESERVED_WITH_NUMERIC_THRESHOLDS_AND_REASON_CATALOG_OPEN" },
+      { "row": 2, "frozen": "CONFIRMED_ELIGIBILITY_INELIGIBLE_WITH_COMPLETE_SIX_PART_EVIDENCE_HAS_HIGHEST_PRECEDENCE_AND_ROUTES_TO_REJECTED_BY_MATCHING" },
+      { "row": 3, "frozen": "MANDATORY_HUMAN_REVIEW_CAUSE_ROUTES_TO_HUMAN_REVIEW_REQUIRED_ONLY_WHEN_NO_CONFIRMED_INELIGIBLE_EXISTS" },
+      { "row": 4, "frozen": "UNRESOLVED_VERIFICATION_NEED_MISSING_UNKNOWN_OR_INSUFFICIENT_EVIDENCE_ROUTES_TO_NEEDS_VERIFICATION_ONLY_WHEN_NO_HIGHER_CLASS_EXISTS" },
+      { "row": 5, "frozen": "QUALIFIED_HYPOTHESIS_IS_PERMITTED_ONLY_WHEN_ALL_THREE_HIGHER_CLASSES_ARE_ABSENT_AND_ALL_ARCHITECTURE_SECTION_18_1_QUALITATIVE_CONDITIONS_ARE_MET" },
+      { "row": 6, "frozen": "STALE_IS_ORTHOGONAL_UNDER_XFR_D_038_AND_IS_NOT_A_ROUTING_RESULT_OR_FIFTH_PRECEDENCE_LEVEL" },
+      { "row": 7, "frozen": "SCORE_RANK_CONFIDENCE_OR_OTHER_FAVORABLE_SIGNAL_CANNOT_COMPENSATE_FOR_A_HIGHER_PRECEDENCE_CLASS" },
+      { "row": 8, "frozen": "PRECEDENCE_SELECTS_THE_FINAL_ROUTE_BUT_NEVER_DELETES_OTHER_APPLICABLE_CAUSES_OR_EVIDENCE_REFERENCES" },
+      { "row": 9, "frozen": "PRIMARY_REASON_REMAINS_A_SUMMARY_FROM_THE_ROUTE_DETERMINING_CLASS_UNDER_XFR_D_040" },
+      { "row": 10, "frozen": "INCIDENTAL_IDENTIFIER_FILE_STORAGE_MANIFEST_CROSSWALK_DISCOVERY_SQL_MAPPING_ORDER_OR_MULTIPLICITY_HAS_NO_SEMANTIC_PRIORITY" },
+      { "row": 11, "frozen": "NUMERIC_THRESHOLDS_ORDINAL_SEVERITY_REGISTRY_EXACT_REASON_CATALOG_ORDER_PRIMARY_REASON_REPRESENTATION_AND_RUNTIME_ALGORITHM_REMAIN_OPEN" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "NUMERIC_THRESHOLDS_CUTOFFS_COMPARATORS_AND_CALIBRATION",
+      "ORDINAL_SEVERITY_REGISTRY_VALUES_WEIGHTS_AND_AGGREGATION",
+      "REASON_CATALOG_IDENTIFIERS_CODES_VALUES_MEMBERSHIP_AND_EXACT_ORDER",
+      "SAME_CLASS_SEMANTIC_ORDER_AND_PRIMARY_REASON_REPRESENTATION",
+      "RUNTIME_PRECEDENCE_ALGORITHM_DATA_STRUCTURES_AND_TIE_HANDLING",
+      "ENUM_FIELD_CARRIER_SCHEMA_API_DB_EVENT_AND_TRANSPORT_REPRESENTATION",
+      "VERSIONING_COMPATIBILITY_MIGRATION_SUPERSESSION_AND_ROLLBACK",
+      "EVIDENCE_PROVENANCE_REPLAY_AUDIT_MONITORING_TTL_EXPIRY_AND_RECALCULATION",
+      "QUALIFICATION_POLICY_DATA_CONTRACTS_MANIFEST_DATASET_PRODUCTION_RUNTIME_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G44_SYNTHETIC_NO_NUMERIC_THRESHOLD_SEVERITY_REGISTRY_REASON_CATALOG_ORDER_RUNTIME_ALGORITHM_POLICY_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO NUMERIC THRESHOLD, SEVERITY REGISTRY, REASON-CATALOG ORDER, RUNTIME ALGORITHM, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G44_SYNTHETIC_QUALIFICATION_QUALITATIVE_PRECEDENCE_REFERENCE_VERIFIED",
+  "governance": {
+    "qualification_semantic_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + DEVELOPMENT",
+    "all_causes_preserved": true,
+    "primary_reason_authority": "XFR-D-040",
+    "stale_authority": "XFR-D-038",
+    "favorable_signal_compensation": "PROHIBITED",
+    "incidental_order_as_semantic_priority": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G44_SYNTHETIC_QUALIFICATION_QUALITATIVE_PRECEDENCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-qualitative-precedence-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-qualitative-precedence-reference/G44_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-qualification-qualitative-precedence-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationQualitativePrecedenceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationQualitativePrecedenceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationQualitativePrecedenceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationQualitativePrecedenceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-qualitative-precedence-reference/G44_QUALIFICATION_QUALITATIVE_PRECEDENCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
