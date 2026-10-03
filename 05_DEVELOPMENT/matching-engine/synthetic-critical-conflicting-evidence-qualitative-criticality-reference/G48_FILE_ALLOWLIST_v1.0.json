@@ -1,0 +1,120 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G48_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-critical-conflicting-evidence-qualitative-criticality-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-03",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g48-synthetic-critical-conflicting-evidence-qualitative-criticality-reference",
+    "commit": "e2045b7fc010c82f6d06656ae143fe316e304595"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_policy_or_data_contracts_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-037 v1.0",
+    "source_status": "RESOLVED_QUALITATIVE_BOUNDARY",
+    "canonical_identity": "MQP-10 -> XFR-D-037",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "OUTCOME_SENSITIVE_QUALITATIVE_CONFLICT_CRITICALITY_HUMAN_REVIEW_PRECEDENCE_ALL_VERSION_PRESERVATION_CONFIDENCE_REDUCTION_NON_NEGATIVE_AND_NO_AUTOMATIC_REJECTION_BOUNDARY",
+    "criticality_outcome_classes": [
+      "ELIGIBILITY_RESULT",
+      "ANY_OF_FOUR_QUALIFICATION_RESULTS",
+      "HARD_CONSTRAINT_OR_MANDATORY_ARCHITECTURE_SECTION_18_1_CONDITION",
+      "PROTECTED_PROXY_LAWFUL_BASIS_AUTHORITY_OR_OTHER_LEGAL_RIGHTS_BOUNDARY",
+      "SAFE_PRESENTATION_OR_SUBSEQUENT_DISCLOSURE_ADMISSIBILITY"
+    ],
+    "future_surface": {
+      "title": "SYNTHETIC CRITICAL CONFLICTING-EVIDENCE QUALITATIVE-CRITICALITY REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC CRITICAL CONFLICTING-EVIDENCE QUALITATIVE-CRITICALITY REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — OUTCOME-SENSITIVE CRITICALITY IS NOT NUMERIC THRESHOLD, CRITICAL-FIELD CATALOG OR RUNTIME CLASSIFIER APPROVAL",
+        "NO NUMERIC THRESHOLD, EXHAUSTIVE CRITICAL-FIELD CATALOG, SEVERITY SCALE, RUNTIME CLASSIFIER, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "OUTCOME-SENSITIVE CRITICALITY BOUNDARY",
+        "QUALIFICATION PRECEDENCE AND HUMAN-REVIEW BOUNDARY",
+        "NONCRITICAL CONFLICT PRESERVATION AND NON-NEGATIVE BOUNDARY",
+        "OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_RESOLVED_QUALITATIVE_BOUNDARY_PRESERVED_WITH_NUMERIC_THRESHOLD_AND_EXHAUSTIVE_CRITICAL_FIELD_CATALOG_OPEN" },
+      { "row": 2, "frozen": "QUALIFICATION_SEMANTIC_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_APPROVERS_LEGAL_PLUS_DEVELOPMENT_AND_AI_CONSULTED_WITHOUT_UNILATERAL_AUTHORITY" },
+      { "row": 3, "frozen": "A_CONFLICT_IS_CRITICAL_IF_SELECTING_ANY_PRESERVED_CONFLICTING_VERSION_CAN_CHANGE_THE_ELIGIBILITY_RESULT" },
+      { "row": 4, "frozen": "A_CONFLICT_IS_CRITICAL_IF_SELECTING_ANY_PRESERVED_CONFLICTING_VERSION_CAN_CHANGE_ANY_OF_THE_FOUR_QUALIFICATION_RESULTS" },
+      { "row": 5, "frozen": "A_CONFLICT_IS_CRITICAL_IF_SELECTING_ANY_PRESERVED_CONFLICTING_VERSION_CAN_CHANGE_A_HARD_CONSTRAINT_OR_MANDATORY_ARCHITECTURE_SECTION_18_1_CONDITION" },
+      { "row": 6, "frozen": "A_CONFLICT_IS_CRITICAL_IF_SELECTING_ANY_PRESERVED_CONFLICTING_VERSION_CAN_CHANGE_A_PROTECTED_PROXY_LAWFUL_BASIS_AUTHORITY_OR_OTHER_LEGAL_RIGHTS_BOUNDARY" },
+      { "row": 7, "frozen": "A_CONFLICT_IS_CRITICAL_IF_SELECTING_ANY_PRESERVED_CONFLICTING_VERSION_CAN_CHANGE_SAFE_PRESENTATION_OR_SUBSEQUENT_DISCLOSURE_ADMISSIBILITY" },
+      { "row": 8, "frozen": "A_CRITICAL_CONFLICT_REQUIRES_HUMAN_REVIEW_REQUIRED_SUBJECT_TO_XFR_D_033_PRECEDENCE_AND_DOES_NOT_OVERRIDE_CONFIRMED_INELIGIBILITY" },
+      { "row": 9, "frozen": "A_NONCRITICAL_CONFLICT_PRESERVES_ALL_VERSIONS_AND_EVIDENCE_REFERENCES_REDUCES_CONFIDENCE_AND_IS_NOT_A_NEGATIVE_FACT_OR_AUTOMATIC_REJECTION" },
+      { "row": 10, "frozen": "A_NONCRITICAL_CONFLICT_CONTINUES_ONLY_UNDER_SEPARATELY_APPROVED_CONFIDENCE_COMPLETENESS_AND_VERIFICATION_RULES" },
+      { "row": 11, "frozen": "NUMERIC_THRESHOLD_SEVERITY_SCALE_EXHAUSTIVE_CRITICAL_FIELD_CATALOG_RUNTIME_CLASSIFIER_SCHEMA_POLICY_DATA_PRODUCTION_RUNTIME_AND_IMPLEMENTATION_REMAIN_OPEN" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "NUMERIC_THRESHOLD_SEVERITY_METRIC_SCALE_COMPARATOR_VALUE_UNIT_RANGE_PRECISION_ROUNDING_AND_TOLERANCE",
+      "CRITICAL_FIELD_CATALOG_IDENTIFIERS_MEMBERSHIP_APPLICABILITY_SOURCE_AUTHORITY_VERSIONING_AND_EXHAUSTIVENESS",
+      "CONFLICT_DETECTION_COMPARISON_NORMALIZATION_CLASSIFICATION_AND_EVIDENCE_COMPATIBILITY_PROCEDURE",
+      "OUTCOME_CHANGE_CAPABILITY_DETERMINATION_PROOF_STANDARD_AND_UNCERTAINTY_HANDLING",
+      "MULTIPLE_CONFLICT_AGGREGATION_ORDER_TIE_PRIMARY_CAUSE_AND_CASCADE_BEHAVIOR",
+      "CONFIDENCE_REDUCTION_FORMULA_AMOUNT_DIRECTION_FLOOR_AGGREGATION_AND_INTERACTION_RULE",
+      "REVIEWER_APPOINTMENT_RBAC_QUORUM_FOUR_EYES_CONFLICT_CHECK_APPEAL_QUEUE_SLA_AND_VERDICT_WORKFLOW",
+      "QUALIFICATION_POLICY_DATA_CONTRACTS_MANIFEST_DATASET_EVALUATION_PRODUCTION_SCHEMA_API_DB_EVENT_CARRIER_OBSERVABILITY_RUNTIME_IMPLEMENTATION_RELEASE_AND_GATES"
+    ],
+    "terminal_token": "G48_SYNTHETIC_NO_NUMERIC_THRESHOLD_EXHAUSTIVE_CRITICAL_FIELD_CATALOG_SEVERITY_SCALE_RUNTIME_CLASSIFIER_POLICY_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO NUMERIC THRESHOLD, EXHAUSTIVE CRITICAL-FIELD CATALOG, SEVERITY SCALE, RUNTIME CLASSIFIER, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G48_SYNTHETIC_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFIED",
+  "governance": {
+    "qualification_semantic_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + DEVELOPMENT",
+    "consulted_domain_function": "AI",
+    "consulted_function_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + DEVELOPMENT",
+    "critical_route_authority": "XFR-D-033_PRECEDENCE",
+    "all_conflicting_versions_and_evidence_preserved": true,
+    "noncritical_conflict_as_negative_fact": "PROHIBITED",
+    "automatic_rejection_from_noncritical_conflict": "PROHIBITED",
+    "numeric_or_catalog_surrogate": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    { "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G48_SYNTHETIC_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_AUTHORIZATION_v1.0.md", "state": "present" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-conflicting-evidence-qualitative-criticality-reference/README.md", "state": "present" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-conflicting-evidence-qualitative-criticality-reference/G48_FILE_ALLOWLIST_v1.0.json", "state": "present" },
+    { "path": "apps/web/synthetic-critical-conflicting-evidence-qualitative-criticality-reference.html", "state": "planned" },
+    { "path": "apps/web/src/synthetic/syntheticCriticalConflictingEvidenceQualitativeCriticalityReferenceScenario.ts", "state": "planned" },
+    { "path": "apps/web/src/synthetic/SyntheticCriticalConflictingEvidenceQualitativeCriticalityReference.tsx", "state": "planned" },
+    { "path": "apps/web/src/synthetic/syntheticCriticalConflictingEvidenceQualitativeCriticalityReferenceEntry.tsx", "state": "planned" },
+    { "path": "apps/web/tests/syntheticCriticalConflictingEvidenceQualitativeCriticalityReference.test.ts", "state": "planned" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-conflicting-evidence-qualitative-criticality-reference/G48_CRITICAL_CONFLICTING_EVIDENCE_QUALITATIVE_CRITICALITY_REFERENCE_VERIFICATION.json", "state": "planned" }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
