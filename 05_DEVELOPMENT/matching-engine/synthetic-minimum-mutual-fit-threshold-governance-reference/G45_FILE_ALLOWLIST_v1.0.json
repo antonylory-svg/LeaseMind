@@ -1,0 +1,145 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G45_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-minimum-mutual-fit-threshold-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-03",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g45-synthetic-minimum-mutual-fit-threshold-governance-reference",
+    "commit": "471998837f0d73f44a9bed0f8787e641789a24a1"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_or_scoring_policy_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-034 v1.0",
+    "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identities": [
+      "MQP-05 -> XFR-D-034",
+      "MSP-05 -> XFR-D-034"
+    ],
+    "canonical_relationships": [
+      "PRIMARY_STANDALONE",
+      "SECONDARY_BOUNDARY_REFERENCE"
+    ],
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "scoring_register_rows": 18,
+    "approved_boundary_only": "GOVERNANCE_EVIDENCE_PREREQUISITE_NON_COMPENSATION_NO_SURROGATE_NO_DEFAULT_AND_FAIL_CLOSED_QUALITATIVE_BOUNDARY",
+    "future_surface": {
+      "title": "SYNTHETIC MINIMUM MUTUAL-FIT THRESHOLD GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC MINIMUM MUTUAL-FIT THRESHOLD GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — GOVERNANCE AND EVIDENCE PREREQUISITES ARE NOT THRESHOLD APPROVAL",
+        "NO MUTUAL-FIT OBJECT, FUNCTION, COMPARATOR, NUMERIC VALUE, DATASET, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "ROLE AND AUTHORITY SEPARATION",
+        "QUALIFICATION-ONLY AND NON-COMPENSATION BOUNDARY",
+        "NO-SURROGATE / NO-DEFAULT AND FAIL-CLOSED BOUNDARY",
+        "OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_AND_SECONDARY_CANONICAL_IDENTITIES_AND_PARTIALLY_RESOLVED_BOUNDARY_PRESERVED_WITH_EXACT_THRESHOLD_CONTENT_OPEN" },
+      { "row": 2, "frozen": "GOVERNANCE_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_APPROVERS_LEGAL_PLUS_AI_PLUS_DEVELOPMENT_AND_EVIDENCE_OWNER_AI_PLUS_DEVELOPMENT_WITHOUT_UNILATERAL_AUTHORITY" },
+      { "row": 3, "frozen": "ANY_FUTURE_THRESHOLD_REQUIRES_A_NEW_VERSIONED_RECORD_FULL_OWNER_APPROVAL_AND_APPROVED_EVIDENCE_PACKAGE" },
+      { "row": 4, "frozen": "A_FUTURE_THRESHOLD_IS_QUALIFICATION_ONLY_AND_CANNOT_RECALCULATE_SCORE_RISK_RANKING_HARD_CONSTRAINT_OR_EVIDENCE_STATUS" },
+      { "row": 5, "frozen": "MSP_05_IS_A_SECONDARY_BOUNDARY_REFERENCE_AND_SCORING_HAS_NO_AUTHORITY_TO_SELECT_THE_THRESHOLD" },
+      { "row": 6, "frozen": "XFR_D_045_AND_XFR_F1_EVIDENCE_PREREQUISITES_REMAIN_REQUIRED_WITH_BASELINE_FIRST_FROZEN_MANIFEST_AND_TUNING_FINAL_ISOLATION" },
+      { "row": 7, "frozen": "MUTUAL_FIT_CONFIDENCE_AND_COMPLETENESS_ARE_NON_COMPENSATING_AND_CANNOT_OFFSET_A_FAILED_OR_MISSING_PREREQUISITE" },
+      { "row": 8, "frozen": "MATCH_SCORE_SCALE_ENDPOINT_RANKING_RULE_PILOT_KPI_CONVERSION_TARGET_OR_CONVENTIONAL_PERCENTAGE_CANNOT_SERVE_AS_A_THRESHOLD_SURROGATE" },
+      { "row": 9, "frozen": "ZERO_MIDPOINT_PRIOR_PRODUCT_INTUITION_MODEL_OUTPUT_DISTRIBUTION_OR_IMPLEMENTATION_DEFAULT_CANNOT_SELECT_OR_IMPLY_A_THRESHOLD" },
+      { "row": 10, "frozen": "MISSING_UNKNOWN_STALE_OR_UNAPPROVED_THRESHOLD_CONTENT_FAILS_CLOSED_ONLY_FOR_AFFECTED_QUALIFICATION_PROGRESSION_WITHOUT_NEGATIVE_COERCION_OR_AUTOMATIC_ROUTE" },
+      { "row": 11, "frozen": "MUTUAL_FIT_OBJECT_FUNCTION_COMPARATOR_VALUE_UNIT_PRECISION_DATASET_POLICY_RUNTIME_AND_IMPLEMENTATION_REMAIN_OPEN" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "MUTUAL_FIT_DEFINITION_OBJECT_AND_RELATIONSHIP",
+      "MUTUAL_AGGREGATE_FUNCTION_FORMULA_DIRECTION_SCALE_NORMALIZATION_AND_PENALTY",
+      "COMPARATOR_VALUE_UNIT_RANGE_PRECISION_ROUNDING_TOLERANCE_AND_EQUALITY",
+      "APPLICABILITY_FALLBACK_AND_CASCADE",
+      "XFR_F1_CONTENT_AND_METRIC_STATISTICAL_PROCEDURE",
+      "DATASET_LABELS_RUN_EVIDENCE_RESULTS_VERDICT_AND_PRODUCTION_APPLICABILITY",
+      "POLICY_MANIFEST_RBAC_QUORUM_AND_APPEAL",
+      "SCHEMA_API_DB_EVENT_CARRIER_MONITORING_ROLLOUT_RUNTIME_AND_IMPLEMENTATION"
+    ],
+    "terminal_token": "G45_SYNTHETIC_NO_MUTUAL_FIT_OBJECT_FUNCTION_COMPARATOR_NUMERIC_VALUE_DATASET_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO MUTUAL-FIT OBJECT, FUNCTION, COMPARATOR, NUMERIC VALUE, DATASET, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G45_SYNTHETIC_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + AI + DEVELOPMENT",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + AI + DEVELOPMENT",
+    "threshold_authority": "QUALIFICATION_ONLY_IF_FUTURE_SEPARATELY_APPROVED",
+    "scoring_threshold_selection_authority": "NONE",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G45_SYNTHETIC_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-minimum-mutual-fit-threshold-governance-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-minimum-mutual-fit-threshold-governance-reference/G45_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-minimum-mutual-fit-threshold-governance-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMinimumMutualFitThresholdGovernanceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticMinimumMutualFitThresholdGovernanceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticMinimumMutualFitThresholdGovernanceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticMinimumMutualFitThresholdGovernanceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-minimum-mutual-fit-threshold-governance-reference/G45_MINIMUM_MUTUAL_FIT_THRESHOLD_GOVERNANCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
