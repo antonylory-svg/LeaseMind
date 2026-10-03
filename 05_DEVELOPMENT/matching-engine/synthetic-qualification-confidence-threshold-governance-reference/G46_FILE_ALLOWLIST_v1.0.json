@@ -1,0 +1,139 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G46_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-qualification-confidence-threshold-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-03",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g46-synthetic-qualification-confidence-threshold-governance-reference",
+    "commit": "6ad8b2560481d88b5208b2e628f41e9c4662dc21"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_or_evaluation_policy_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-035 v1.0",
+    "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MQP-06 -> XFR-D-035",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "GOVERNANCE_CONFIDENCE_SEMANTIC_SEPARATION_CALIBRATION_PREREQUISITE_EVIDENCE_NON_COMPENSATION_NO_SURROGATE_NO_DEFAULT_AND_AFFECTED_PROGRESSION_FAIL_CLOSED_BOUNDARY",
+    "future_surface": {
+      "title": "SYNTHETIC QUALIFICATION CONFIDENCE THRESHOLD GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC QUALIFICATION CONFIDENCE THRESHOLD GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — CONFIDENCE GOVERNANCE AND CALIBRATION EVIDENCE ARE NOT CUTOFF APPROVAL",
+        "NO CONFIDENCE DEFINITION, CALIBRATION, COMPARATOR, NUMERIC CUTOFF, DATASET, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "ROLE AND AUTHORITY SEPARATION",
+        "CONFIDENCE SEMANTIC AND CALIBRATION SEPARATION",
+        "QUALIFICATION-ONLY / NON-COMPENSATION / FAIL-CLOSED BOUNDARY",
+        "NO-SURROGATE / NO-DEFAULT AND OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_PARTIALLY_RESOLVED_BOUNDARY_PRESERVED_WITH_EXACT_CONFIDENCE_CUTOFF_CONTENT_OPEN" },
+      { "row": 2, "frozen": "GOVERNANCE_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_APPROVERS_LEGAL_PLUS_AI_PLUS_DEVELOPMENT_AND_EVIDENCE_OWNER_AI_PLUS_DEVELOPMENT_WITHOUT_UNILATERAL_AUTHORITY" },
+      { "row": 3, "frozen": "CONFIDENCE_MEANS_RELIABILITY_NOT_PAIR_ATTRACTIVENESS_AND_ADJACENT_EVIDENCE_MODEL_SCORE_RISK_AND_ROUTE_SPACES_REMAIN_SEPARATE" },
+      { "row": 4, "frozen": "XFR_D_063_CALIBRATION_EVIDENCE_IS_A_PREREQUISITE_NOT_THE_QUALIFICATION_CUTOFF" },
+      { "row": 5, "frozen": "ANY_FUTURE_CUTOFF_IS_QUALIFICATION_ONLY_AND_CANNOT_RECALCULATE_SCORE_RISK_RANKING_HARD_CONSTRAINT_EVIDENCE_STATUS_OR_ROUTE" },
+      { "row": 6, "frozen": "XFR_D_045_AND_XFR_F1_EVIDENCE_PREREQUISITES_REMAIN_REQUIRED_WITH_BASELINE_FIRST_FROZEN_MANIFEST_AND_TUNING_FINAL_ISOLATION" },
+      { "row": 7, "frozen": "MUTUAL_FIT_CONFIDENCE_COMPLETENESS_RISK_RANKING_AND_BUSINESS_OUTCOME_FAMILIES_ARE_NON_COMPENSATING" },
+      { "row": 8, "frozen": "NO_ORDERING_NUMERIC_MAPPING_BUCKET_BAND_SEVERITY_STATUS_ALIAS_OR_FALLBACK_ACROSS_ADJACENT_SEMANTIC_SPACES_IS_APPROVED" },
+      { "row": 9, "frozen": "MODEL_PROBABILITY_MIDPOINT_SCALE_ENDPOINT_PERCENTILE_DISTRIBUTION_PRIOR_CUTOFF_CALIBRATION_TARGET_KPI_UI_BAND_OR_IMPLEMENTATION_DEFAULT_CANNOT_SERVE_AS_A_CUTOFF_SURROGATE" },
+      { "row": 10, "frozen": "MISSING_UNKNOWN_STALE_AMBIGUOUS_CONFLICTING_INCOMPLETE_OR_INCOMPATIBLE_CONTENT_FAILS_CLOSED_ONLY_FOR_AFFECTED_QUALIFICATION_PROGRESSION_WITHOUT_NEGATIVE_COERCION_OR_AUTOMATIC_ROUTE" },
+      { "row": 11, "frozen": "CONFIDENCE_DEFINITION_CALIBRATION_COMPARATOR_NUMERIC_CUTOFF_XFR_F1_DATA_POLICY_PRODUCTION_RUNTIME_AND_IMPLEMENTATION_REMAIN_OPEN" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "CONFIDENCE_SCORE_FORMULA_INPUTS_RANGE_SCALE_NORMALIZATION_DIRECTION_AGGREGATION_AND_REPRESENTATION",
+      "RELATIONSHIP_AMONG_PROFILE_FIT_CONCLUSION_AND_PACKAGE_CONFIDENCE_AND_QUALIFICATION_APPLICABILITY",
+      "CALIBRATION_DEFINITION_METRIC_TARGET_METHOD_DATASET_RESULT_AND_PRODUCTION_VALIDITY",
+      "CUTOFF_SEMANTIC_COMPARATOR_VALUE_UNIT_DIRECTION_EQUALITY_RANGE_PRECISION_ROUNDING_AND_TOLERANCE",
+      "BUCKET_BAND_STATUS_REASON_MAPPING_DEFAULT_FALLBACK_AND_CASCADE_GRANULARITY",
+      "GLOBAL_SEGMENT_INTERSECTION_CAMPAIGN_AND_TEMPORAL_APPLICABILITY",
+      "XFR_F1_METRIC_STATISTICAL_DATASET_RUN_EVIDENCE_RESULT_AND_VERDICT_CONTENT",
+      "POLICY_MANIFEST_APPOINTMENT_RBAC_QUORUM_APPEAL_SCHEMA_API_DB_EVENT_CARRIER_MONITORING_ROLLOUT_RUNTIME_AND_IMPLEMENTATION"
+    ],
+    "terminal_token": "G46_SYNTHETIC_NO_CONFIDENCE_DEFINITION_CALIBRATION_COMPARATOR_NUMERIC_CUTOFF_DATASET_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO CONFIDENCE DEFINITION, CALIBRATION, COMPARATOR, NUMERIC CUTOFF, DATASET, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G46_SYNTHETIC_QUALIFICATION_CONFIDENCE_THRESHOLD_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + AI + DEVELOPMENT",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + AI + DEVELOPMENT",
+    "cutoff_authority": "QUALIFICATION_ONLY_IF_FUTURE_SEPARATELY_APPROVED",
+    "calibration_as_cutoff": "PROHIBITED",
+    "cross_semantic_mapping": "NOT_APPROVED",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    {
+      "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G46_SYNTHETIC_QUALIFICATION_CONFIDENCE_THRESHOLD_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-confidence-threshold-governance-reference/README.md",
+      "state": "present"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-confidence-threshold-governance-reference/G46_FILE_ALLOWLIST_v1.0.json",
+      "state": "present"
+    },
+    {
+      "path": "apps/web/synthetic-qualification-confidence-threshold-governance-reference.html",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationConfidenceThresholdGovernanceReferenceScenario.ts",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/SyntheticQualificationConfidenceThresholdGovernanceReference.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/src/synthetic/syntheticQualificationConfidenceThresholdGovernanceReferenceEntry.tsx",
+      "state": "planned"
+    },
+    {
+      "path": "apps/web/tests/syntheticQualificationConfidenceThresholdGovernanceReference.test.ts",
+      "state": "planned"
+    },
+    {
+      "path": "05_DEVELOPMENT/matching-engine/synthetic-qualification-confidence-threshold-governance-reference/G46_QUALIFICATION_CONFIDENCE_THRESHOLD_GOVERNANCE_REFERENCE_VERIFICATION.json",
+      "state": "planned"
+    }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
