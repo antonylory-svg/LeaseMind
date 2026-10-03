@@ -1,0 +1,111 @@
+{
+  "artifact_type": "LEASEMIND_MATCHING_G47_CLOSED_FILE_ALLOWLIST",
+  "package": "synthetic-critical-data-completeness-threshold-rule-governance-reference",
+  "package_version": "1.0",
+  "authorization_date": "2026-10-03",
+  "baseline": {
+    "branch": "development/sprint-7-matching-g47-synthetic-critical-data-completeness-threshold-rule-governance-reference",
+    "commit": "b693aaea4d6d9a904658a920f5f22630ccd16c2e"
+  },
+  "authorization": {
+    "documentation_only": true,
+    "code_phase_authorized": false,
+    "new_decision_created": false,
+    "canonical_identity_changed": false,
+    "qualification_or_evaluation_policy_edit_authorized": false,
+    "production_or_runtime_use_authorized": false
+  },
+  "reference": {
+    "source_decision": "XFR-D-036 v1.0",
+    "source_status": "PARTIALLY_RESOLVED_BOUNDARY",
+    "canonical_identity": "MQP-07 -> XFR-D-036",
+    "canonical_relationship": "PRIMARY_STANDALONE",
+    "counts": "102_SOURCE_KEYS_90_CANONICAL_IDS_UNCHANGED",
+    "qualification_register_rows": 20,
+    "approved_boundary_only": "GOVERNANCE_COMPLETENESS_SEPARATION_EVIDENCE_PREREQUISITE_NON_COMPENSATION_BASELINE_FIRST_NO_SURROGATE_NO_DEFAULT_AND_AFFECTED_PROGRESSION_FAIL_CLOSED_BOUNDARY",
+    "future_surface": {
+      "title": "SYNTHETIC CRITICAL-DATA COMPLETENESS THRESHOLD/RULE GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+      "permanent_lines": [
+        "SYNTHETIC CRITICAL-DATA COMPLETENESS THRESHOLD/RULE GOVERNANCE REFERENCE — NOT PRODUCTION APPROVED",
+        "MANUAL DEV-ONLY REFERENCE — COMPLETENESS GOVERNANCE AND EVIDENCE PREREQUISITES ARE NOT THRESHOLD/RULE APPROVAL",
+        "NO CRITICAL-DATA SET, COMPLETENESS DEFINITION, COUNTING UNIT, THRESHOLD/RULE, DATASET, POLICY OR RUNTIME USE SELECTED"
+      ],
+      "regions_in_order": [
+        "SOURCE AND STATUS BOUNDARY",
+        "ROLE AND AUTHORITY SEPARATION",
+        "COMPLETENESS SEMANTIC AND REPRESENTATION SEPARATION",
+        "EVIDENCE / NON-COMPENSATION / FAIL-CLOSED BOUNDARY",
+        "NO-SURROGATE / NO-DEFAULT AND OPEN EXACT CONTENT",
+        "NON-DECISION RESULT"
+      ]
+    },
+    "matrix": [
+      { "row": 1, "frozen": "PRIMARY_STANDALONE_IDENTITY_AND_PARTIALLY_RESOLVED_BOUNDARY_PRESERVED_WITH_EXACT_COMPLETENESS_CONTENT_OPEN" },
+      { "row": 2, "frozen": "GOVERNANCE_OWNER_CHIEF_AI_ARCHITECT_PLUS_PRODUCT_APPROVERS_LEGAL_PLUS_AI_PLUS_DEVELOPMENT_AND_EVIDENCE_OWNER_AI_PLUS_DEVELOPMENT_WITHOUT_UNILATERAL_AUTHORITY" },
+      { "row": 3, "frozen": "FUTURE_COMPLETENESS_MAY_EVALUATE_ONLY_A_SEPARATELY_APPROVED_CRITICAL_DATA_SET_FOR_A_SPECIFIC_QUALIFICATION_USE_AND_PURPOSE" },
+      { "row": 4, "frozen": "NO_NUMERIC_ALL_REQUIRED_TYPED_COMPOSITE_OR_OTHER_EXACT_RULE_REPRESENTATION_IS_SELECTED_PREFERRED_EXCLUDED_OR_APPROVED" },
+      { "row": 5, "frozen": "XFR_D_045_AND_XFR_F1_EVIDENCE_PREREQUISITES_REMAIN_REQUIRED_WITH_BASELINE_FIRST_FROZEN_MANIFEST_AND_TUNING_FINAL_ISOLATION" },
+      { "row": 6, "frozen": "MUTUAL_FIT_CONFIDENCE_AND_COMPLETENESS_REMAIN_SEPARATE_NON_COMPENSATING_QUALIFICATION_EVIDENCE_FAMILIES" },
+      { "row": 7, "frozen": "NONCRITICAL_FIELD_ROW_USER_CAMPAIGN_SEGMENT_OR_TIME_WINDOW_AGGREGATES_CANNOT_COMPENSATE_FOR_A_MISSING_APPROVED_CRITICAL_INPUT_OR_REQUIRED_EVIDENCE" },
+      { "row": 8, "frozen": "REQUIRED_EVIDENCE_LEVEL_EVIDENCE_STATUS_FRESHNESS_DATASET_COMPLETENESS_SEGMENT_COVERAGE_AND_QUALIFICATION_COMPLETENESS_REMAIN_DISTINCT" },
+      { "row": 9, "frozen": "CONVENTIONAL_PERCENTAGE_NON_NULL_RATIO_ALL_FIELDS_REQUIRED_EVIDENCE_OR_IMPLEMENTATION_DEFAULT_CANNOT_SERVE_AS_A_COMPLETENESS_RULE_SURROGATE" },
+      { "row": 10, "frozen": "MISSING_UNKNOWN_STALE_AMBIGUOUS_CONFLICTING_INCOMPLETE_OR_INCOMPATIBLE_CONTENT_FAILS_CLOSED_ONLY_FOR_AFFECTED_QUALIFICATION_PROGRESSION_WITHOUT_ZERO_ADVERSE_FACT_OR_AUTOMATIC_ROUTE" },
+      { "row": 11, "frozen": "CRITICAL_DATA_SET_COMPLETENESS_DEFINITION_FORMULA_COUNTING_UNIT_THRESHOLD_RULE_XFR_F1_DATA_POLICY_PRODUCTION_RUNTIME_AND_IMPLEMENTATION_REMAIN_OPEN" },
+      { "row": 12, "frozen": "GATE_IMPACT_NONE_AND_IMPLEMENTATION_READINESS_SYNTHETIC_ACCEPTANCE_AND_PRODUCTION_LAUNCH_REMAIN_BLOCKED" }
+    ],
+    "open_exact_content": [
+      "CRITICAL_DATA_UNIVERSE_FIELD_MEMBERSHIP_APPLICABILITY_REQUIREDNESS_SOURCE_AUTHORITY_AND_PURPOSE",
+      "COMPLETENESS_DEFINITION_NUMERATOR_DENOMINATOR_COUNTING_UNIT_FORMULA_AGGREGATION_AND_WEIGHTING",
+      "NUMERIC_OR_NON_NUMERIC_RULE_FORM_COMPARATOR_VALUE_UNIT_RANGE_SCALE_PRECISION_ROUNDING_AND_TOLERANCE",
+      "MISSING_UNKNOWN_NULL_STALE_EXPIRED_REVOKED_CONFLICTING_DISPUTED_INCONCLUSIVE_AND_INCOMPATIBLE_TREATMENT",
+      "GLOBAL_SEGMENT_INTERSECTION_CAMPAIGN_USER_TEMPORAL_AND_OTHER_APPLICABILITY",
+      "XFR_F1_METRIC_BASELINE_TARGET_SAMPLE_SPLIT_INTERVAL_WINDOW_TEST_AND_UNCERTAINTY_CONTENT",
+      "DATASET_LABELS_EVALUATION_RUN_EVIDENCE_PACKAGE_RESULT_VERDICT_AND_PRODUCTION_DATA_APPLICABILITY",
+      "POLICY_MANIFEST_APPOINTMENT_RBAC_QUORUM_APPEAL_SCHEMA_API_DB_EVENT_CARRIER_OBSERVABILITY_ROLLOUT_RUNTIME_AND_IMPLEMENTATION"
+    ],
+    "terminal_token": "G47_SYNTHETIC_NO_CRITICAL_DATA_SET_COMPLETENESS_DEFINITION_COUNTING_UNIT_THRESHOLD_RULE_DATASET_POLICY_RUNTIME_OR_IMPLEMENTATION_AUTHORITY_ESTABLISHED",
+    "terminal_line": "NO CRITICAL-DATA SET, COMPLETENESS DEFINITION, COUNTING UNIT, THRESHOLD/RULE, DATASET, POLICY, PRODUCTION, RUNTIME OR IMPLEMENTATION ACTION OCCURRED"
+  },
+  "result_label": "G47_SYNTHETIC_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFIED",
+  "governance": {
+    "governance_owner": "Chief AI Architect + PRODUCT",
+    "mandatory_approvers": "LEGAL + AI + DEVELOPMENT",
+    "evidence_technical_procedure_owner": "AI + DEVELOPMENT",
+    "evidence_owner_unilateral_approval": "PROHIBITED",
+    "change_control": "Chief AI Architect + PRODUCT + LEGAL + AI + DEVELOPMENT",
+    "threshold_rule_authority": "QUALIFICATION_ONLY_IF_FUTURE_SEPARATELY_APPROVED",
+    "cross_semantic_conflation": "PROHIBITED",
+    "surrogate_or_hidden_default": "PROHIBITED",
+    "automatic_action": "PROHIBITED",
+    "gate_impact": "NONE",
+    "implementation_readiness_gate": "BLOCKED",
+    "synthetic_acceptance_gate": "BLOCKED",
+    "production_launch_gate": "BLOCKED"
+  },
+  "prohibited_content_classes": [
+    "PERSON",
+    "ORGANIZATION",
+    "ADDRESS",
+    "PROPERTY_VALUE_INSTANCE",
+    "TENANT_REQUEST_VALUE_INSTANCE",
+    "MONEY_VALUE",
+    "DATE_VALUE",
+    "UUID",
+    "CONTACT",
+    "BUSINESS_RECORD",
+    "RAW_DOCUMENT"
+  ],
+  "closed": true,
+  "allowed_paths": [
+    { "path": "05_DEVELOPMENT/matching-engine/decisions/LeaseMind_MATCHING_G47_SYNTHETIC_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_AUTHORIZATION_v1.0.md", "state": "present" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-data-completeness-threshold-rule-governance-reference/README.md", "state": "present" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-data-completeness-threshold-rule-governance-reference/G47_FILE_ALLOWLIST_v1.0.json", "state": "present" },
+    { "path": "apps/web/synthetic-critical-data-completeness-threshold-rule-governance-reference.html", "state": "planned" },
+    { "path": "apps/web/src/synthetic/syntheticCriticalDataCompletenessThresholdRuleGovernanceReferenceScenario.ts", "state": "planned" },
+    { "path": "apps/web/src/synthetic/SyntheticCriticalDataCompletenessThresholdRuleGovernanceReference.tsx", "state": "planned" },
+    { "path": "apps/web/src/synthetic/syntheticCriticalDataCompletenessThresholdRuleGovernanceReferenceEntry.tsx", "state": "planned" },
+    { "path": "apps/web/tests/syntheticCriticalDataCompletenessThresholdRuleGovernanceReference.test.ts", "state": "planned" },
+    { "path": "05_DEVELOPMENT/matching-engine/synthetic-critical-data-completeness-threshold-rule-governance-reference/G47_CRITICAL_DATA_COMPLETENESS_THRESHOLD_RULE_GOVERNANCE_REFERENCE_VERIFICATION.json", "state": "planned" }
+  ],
+  "planned_artifacts_note": "THE SIX PLANNED PATHS ARE RESERVED ONLY FOR A SEPARATELY APPROVED CODE PHASE; THEY ARE NOT CREATED NOW; THIS ALLOWLIST INTENTIONALLY OMITS ITS OWN SHA-256"
+}
